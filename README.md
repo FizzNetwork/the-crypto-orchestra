@@ -36,7 +36,11 @@ SUSPENDED = anchor correcting, oscillator holding / rising. The signal chord.
 
 ## The W8 Signal
 
-BTC×SOL Synthony reads SUSPENDED + Jupiter within 60° of 340.9° in its 398.88-day orbit.
+```
+W8 = SUSPENDED(BTC↓, SOL↑) ∧ |Jupiter° − 340.9°| ≤ 60°  →  LONG SOL
+```
+
+Buy SOL when Bitcoin is falling but Solana is holding up, and Jupiter is within 60° of 340.9° in its 399-day orbit.
 
 **Result: 7/7 wins across 2021–2026.** W8 wallet: $150 → $240.52 (+60.3%).
 
@@ -77,7 +81,8 @@ btc-theatre/
 ## Docs
 
 - [The Crypto Orchestra](./docs/the-crypto-orchestra.md) — the full narrative. Start here.
-- [Project Index](./docs/PROJECT_INDEX.md) — all 42 research arcs, key numbers, open questions.
+- [Project Index](./docs/PROJECT_INDEX.md) — all 43 research arcs, key numbers, open questions.
+- [Arc 43 — Markov Transition Matrix](./docs/arc43-markov.html) — 9x9 chord transition heatmap, Jupiter gate comparison.
 
 ---
 

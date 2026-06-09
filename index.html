@@ -13,7 +13,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .title{font-size:36px;font-weight:700;color:var(--purple);letter-spacing:1px;margin-bottom:8px;line-height:1.2;}
 .sub{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:12px;}
 .tagline{font-size:13px;color:var(--blue);margin-bottom:48px;letter-spacing:1px;}
-.cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:48px;}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:48px;}
 .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:24px 18px;text-decoration:none;color:inherit;transition:border-color 0.2s,transform 0.15s;display:block;}
 .card:hover{border-color:var(--purple);transform:translateY(-2px);}
 .card-icon{font-size:22px;margin-bottom:12px;}
@@ -26,7 +26,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .footer{font-size:10px;color:var(--muted);letter-spacing:1px;}
 .footer a{color:var(--muted);text-decoration:none;}
 .footer a:hover{color:var(--text);}
-@media(max-width:600px){.cards{grid-template-columns:1fr;}}
+@media(max-width:600px){.cards{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
 <body>
@@ -52,8 +52,14 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
     <a class="card research" href="PROJECT_INDEX.html">
       <div class="card-icon">⊞</div>
       <div class="card-title">Research Index</div>
-      <div class="card-desc">All 42 arcs, core laws, signal system, data files, full methodology.</div>
+      <div class="card-desc">All 43 arcs, core laws, signal system, data files, full methodology.</div>
       <span class="card-tag">Deep dive</span>
+    </a>
+    <a class="card research" href="docs/arc43-markov.html">
+      <div class="card-icon">⬡</div>
+      <div class="card-title">Arc 43 — Markov Matrix</div>
+      <div class="card-desc">9x9 chord transition heatmap. Bimodal finding. Jupiter gate comparison. 260 weeks.</div>
+      <span class="card-tag">Arc 43</span>
     </a>
   </div>
 

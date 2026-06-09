@@ -41,6 +41,8 @@ The relationship between assets, music, and math is not metaphor — it's the ac
 
 The **W8 signal** (S1): when the BTC×SOL Synthony is SUSPENDED and Jupiter is within 60° of 340.9° in its 398.88-day synodic orbit, the signal has produced a positive SOL return 7 consecutive times across 2021–2026.
 
+**W8 formula:** `W8 = SUSPENDED(BTC↓, SOL↑) ∧ |Jupiter° − 340.9°| ≤ 60°  →  LONG SOL`
+
 ---
 
 ## The 9-State Chord System
@@ -154,6 +156,17 @@ Sideways threshold: ±0.2% per candle. Off-diagonal cells (divergence states) ca
 - Same 9-state chord framework, SPY as anchor, no Jupiter filter
 - Live on STOCKS tab at traderlive.viktim.xyz
 - W9 (SPY×NVDA) and W10 (SPY×AMC) wallet tracking active
+
+### Arc 43 · Markov Transition Matrix
+- Computed 9×9 empirical chord-to-chord transition probability matrix
+- Dataset: 260 weekly BTC×SOL candles, Jan 2021–Jun 2026 (Kraken OHLC)
+- **Key finding: the market is bimodal** — MAJOR (37.3%) + TRITONE (39.2%) = 76.5% of all states. PEDAL = 0 occurrences.
+- SUSPENDED→MAJOR base rate: 37.5%. With Jupiter gate: 75.0% (6/8 events)
+- PHRYGIAN: only 1 occurrence in 260 weeks — precursor hypothesis **empirically untested**
+- DOMINANT→TRITONE: 50% — strongest warning signal in matrix
+- TRITONE: 40.6% self-loop (bear persistence), 39.6% direct V-shape to MAJOR
+- External validation: ChatGPT and Grok independently identified the chord strip as a Markov chain without prompting
+- Dashboard: [docs/arc43-markov.html](./arc43-markov.html)
 
 ---
 
