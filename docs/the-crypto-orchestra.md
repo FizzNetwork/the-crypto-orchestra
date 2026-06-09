@@ -94,7 +94,7 @@ Extending to three states per instrument gives a 3×3 matrix — nine chords. Fi
 
 **PEDAL** (BTC →, SOL →) — Both flat. In music, a pedal point is a sustained note in the bass while harmonies shift above it. The market is at rest. Energy is accumulating or distributing. Silence before the phrase.
 
-**PHRYGIAN** (BTC ↓, SOL →) — BTC corrects, SOL holds. The Phrygian mode is dark but distinctive — compressed tension at the half-step between root and second degree. SOL is showing relative strength against a falling BTC. Watch for a transition to SUSPENDED.
+**PHRYGIAN** (BTC ↓, SOL →) — BTC corrects, SOL holds. The Phrygian mode is dark but distinctive — compressed tension at the half-step between root and second degree. SOL is showing relative strength against a falling BTC. Theoretically a precursor to SUSPENDED — but empirically, PHRYGIAN appeared only once in 260 weekly observations (Arc 43, 2021–2026). The precursor hypothesis remains unconfirmed.
 
 **NEAPOLITAN** (BTC →, SOL ↓) — SOL distributes while BTC holds flat. The Neapolitan chord (the flat-II major) is a dramatic pre-cadential harmony, often placed just before a large resolution. SOL weakening while BTC is flat is a distribution warning — the more vulnerable instrument is already breaking.
 

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Arc 43 — Markov Transition Matrix · tCO</title>
+<style>
+:root{--bg:#060810;--panel:#0d1117;--border:#1a2332;--text:#c8d8e8;--muted:#4a6080;--purple:#b44fff;--blue:#00d4ff;--green:#00ff88;--gold:#f0b429;--red:#ff3d5a;--orange:#ff8c00;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;padding:0;}
+.nav{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.nav-links{display:flex;gap:20px;}
+.nav-links a{font-size:11px;color:var(--muted);text-decoration:none;letter-spacing:1px;text-transform:uppercase;}
+.nav-links a:hover{color:var(--text);}
+.wrap{max-width:1100px;margin:0 auto;padding:40px 24px 80px;}
+.hero{margin-bottom:40px;}
+.kicker{font-size:10px;letter-spacing:3px;color:var(--purple);text-transform:uppercase;margin-bottom:10px;}
+h1{font-size:26px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.deck{font-size:14px;color:var(--muted);line-height:1.6;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;}
+.card-title{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+.stat-big{font-size:36px;font-weight:700;line-height:1;}
+.stat-label{font-size:12px;color:var(--muted);margin-top:4px;}
+h2{font-size:15px;font-weight:700;color:var(--text);margin:32px 0 14px;letter-spacing:1px;text-transform:uppercase;}
+.dist-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;}
+.dist-name{width:110px;color:var(--text);text-align:right;flex-shrink:0;}
+.dist-bar-wrap{flex:1;background:#0a0e16;border-radius:3px;height:18px;overflow:hidden;}
+.dist-bar{height:100%;border-radius:3px;}
+.dist-val{width:80px;color:var(--muted);flex-shrink:0;}
+.matrix-wrap{overflow-x:auto;}
+table.matrix{border-collapse:collapse;font-size:11px;min-width:600px;width:100%;}
+table.matrix th{padding:6px 8px;background:var(--panel);color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:1px;border:1px solid var(--border);text-align:center;}
+table.matrix td{padding:5px 8px;border:1px solid var(--border);text-align:center;}
+table.matrix td.row-label{text-align:right;font-size:10px;font-weight:600;background:var(--panel);white-space:nowrap;padding-right:10px;}
+table.matrix td.row-n{color:var(--muted);font-size:9px;background:var(--panel);}
+.gate-row{display:flex;gap:16px;margin-bottom:12px;}
+.gate-box{flex:1;background:#0a0e16;border-radius:8px;padding:16px;border:1px solid var(--border);}
+.gate-box.inside{border-color:var(--green);}
+.gate-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+.gate-box.inside .gate-label{color:var(--green);}
+.gate-box.outside .gate-label{color:var(--muted);}
+.gate-pct{font-size:30px;font-weight:700;line-height:1;}
+.gate-box.inside .gate-pct{color:var(--green);}
+.gate-box.outside .gate-pct{color:var(--gold);}
+.gate-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.path-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#0a0e16;border-radius:6px;margin-bottom:6px;font-size:12px;gap:8px;}
+.path-from{color:var(--muted);width:100px;flex-shrink:0;}
+.path-to{color:var(--text);width:100px;flex-shrink:0;}
+.path-pct{font-weight:700;width:50px;text-align:right;flex-shrink:0;}
+.path-n{color:var(--muted);font-size:10px;width:55px;text-align:right;flex-shrink:0;}
+.tag{display:inline-block;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:3px;}
+.tag-warn{background:#2a1a00;color:var(--gold);border:1px solid var(--gold);}
+.tag-ok{background:#001a0a;color:var(--green);border:1px solid var(--green);}
+.tag-info{background:#0a0020;color:var(--purple);border:1px solid var(--purple);}
+.insight{background:var(--panel);border-left:3px solid var(--purple);border-radius:0 8px 8px 0;padding:14px 16px;margin-top:12px;font-size:13px;line-height:1.7;color:var(--text);}
+.footer-bar{margin-top:60px;padding-top:20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.footer-bar a{color:var(--muted);text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-brand">tCO · Arc 43</div>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="../PROJECT_INDEX.html">Index</a>
+    <a href="https://traderlive.viktim.xyz" target="_blank">TraderLive</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="kicker">Arc 43 · June 2026 · BTC x SOL Weekly · n=260</div>
+    <h1>Markov Transition Matrix</h1>
+    <div class="deck">Empirical chord-to-chord transition probabilities, 2021-2026. Each row = where the market went next from that chord state.</div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Weeks analysed</div>
+      <div class="stat-big" style="color:var(--blue)">260</div>
+      <div class="stat-label">Jan 2021 - Jun 2026</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Bimodal dominance</div>
+      <div class="stat-big" style="color:var(--text)">76%</div>
+      <div class="stat-label">MAJOR (37%) + TRITONE (39%)</div>
+    </div>
+    <div class="card">
+      <div class="card-title">SUSPENDED occurrences</div>
+      <div class="stat-big" style="color:var(--purple)">24</div>
+      <div class="stat-label">9.2% of all weeks</div>
+    </div>
+  </div>
+
+  <h2>Chord Distribution</h2>
+  <div class="card" id="dist-container"></div>
+
+  <h2>9x9 Transition Probability Matrix</h2>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:12px">Row = current chord &nbsp;|&nbsp; Column = next chord &nbsp;|&nbsp; Cell = probability (bold = &gt;= 35%)</div>
+    <div class="matrix-wrap"><table class="matrix" id="mtx"></table></div>
+  </div>
+
+  <h2>Key Paths - W8 Signal Chain</h2>
+  <div class="card" id="paths-container"></div>
+
+  <h2>W8 Signal - Jupiter Gate Effect</h2>
+  <div class="gate-row">
+    <div class="gate-box inside">
+      <div class="gate-label">Inside window (plus/minus 60 deg of 340.9 deg)</div>
+      <div class="gate-pct">75.0%</div>
+      <div class="gate-sub">6 / 8 SUSPENDED events next chord was bullish</div>
+    </div>
+    <div class="gate-box outside">
+      <div class="gate-label">Outside window</div>
+      <div class="gate-pct">43.8%</div>
+      <div class="gate-sub">7 / 16 SUSPENDED events next chord was bullish</div>
+    </div>
+  </div>
+  <div class="card" style="font-size:12px;color:var(--muted);line-height:1.8;">
+    The gate converts a near-random base signal (43.8%) into a 75% win-rate signal. The W8 live record (7/7) compounds entry timing and position management on top of this chord-level edge.
+    <br><br>
+    <span class="tag tag-warn">NOTE</span>&nbsp; n=8 inside the gate. Interesting, not conclusive. The next Jupiter window occurrence is the most important single data point remaining.
+  </div>
+
+  <h2>Key Findings</h2>
+  <div class="insight">
+    <strong style="color:var(--green)">The market is bimodal.</strong> MAJOR (37.3%) and TRITONE (39.2%) account for 76.5% of all weekly states. The 9-state system is capturing a two-attractor regime machine that snaps hard between full-bull and full-bear. PEDAL = 0 occurrences in 260 weeks.
+  </div>
+  <div class="insight" style="border-color:var(--gold)">
+    <strong style="color:var(--gold)">PHRYGIAN is a ghost state.</strong> Only 1 occurrence in 260 weeks (0.4%). The claim that PHRYGIAN is the highest-probability W8 precursor was theoretical. With n=1, the transition matrix provides zero statistical evidence for or against this. It remains a hypothesis to watch.
+  </div>
+  <div class="insight" style="border-color:var(--red)">
+    <strong style="color:var(--red)">TRITONE is decisive, not slow.</strong> 40.6% self-loop (bear persistence) but 39.6% jump directly to MAJOR (V-shape). Bear markets don't grind out slowly - they either persist for multiple weeks or reverse sharply. DOMINANT to TRITONE at 50% is the strongest warning signal in the matrix.
+  </div>
+  <div class="insight" style="border-color:var(--purple)">
+    <strong style="color:var(--purple)">SUSPENDED to MAJOR is the primary edge.</strong> 37.5% base rate. Jupiter gate raises it to 75%. Combined with the live 7/7 record, the compound signal remains the only statistically interesting feature in the system.
+  </div>
+
+  <div class="footer-bar">
+    <div><strong style="color:var(--purple)">The Crypto Orchestra (tCO)</strong> &nbsp;Arc 43 &nbsp;Markov Transition Matrix &nbsp;June 2026</div>
+    <div>
+      <a href="../index.html">Home</a> &middot;
+      <a href="https://traderlive.viktim.xyz" target="_blank">TraderLive</a> &middot;
+      <a href="https://github.com/FizzNetwork/the-crypto-orchestra" target="_blank">GitHub</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const CHORDS = ['MAJOR','LEADING','DOMINANT','LYDIAN','PEDAL','NEAPOLITAN','SUSPENDED','PHRYGIAN','TRITONE'];
+const SHORT  = {MAJOR:'MAJ',LEADING:'LED',DOMINANT:'DOM',LYDIAN:'LYD',PEDAL:'PED',NEAPOLITAN:'NEA',SUSPENDED:'SUS',PHRYGIAN:'PHR',TRITONE:'TRI'};
+const COLORS = {MAJOR:'#00ff88',LEADING:'#44ffaa',DOMINANT:'#f0b429',LYDIAN:'#00d4ff',PEDAL:'#4a7090',NEAPOLITAN:'#ff8c00',SUSPENDED:'#b44fff',PHRYGIAN:'#9d6fff',TRITONE:'#ff3d5a'};
+const N_OCC  = {MAJOR:97,LEADING:2,DOMINANT:24,LYDIAN:6,PEDAL:0,NEAPOLITAN:4,SUSPENDED:24,PHRYGIAN:1,TRITONE:101};
+
+const DIST = [
+  {name:'TRITONE',    n:102, pct:39.2},
+  {name:'MAJOR',      n:97,  pct:37.3},
+  {name:'DOMINANT',   n:24,  pct:9.2 },
+  {name:'SUSPENDED',  n:24,  pct:9.2 },
+  {name:'LYDIAN',     n:6,   pct:2.3 },
+  {name:'NEAPOLITAN', n:4,   pct:1.5 },
+  {name:'LEADING',    n:2,   pct:0.8 },
+  {name:'PHRYGIAN',   n:1,   pct:0.4 },
+  {name:'PEDAL',      n:0,   pct:0.0 },
+];
+
+const dc = document.getElementById('dist-container');
+dc.innerHTML = DIST.map(d=>`
+  <div class="dist-row">
+    <div class="dist-name" style="color:${COLORS[d.name]}">${d.name}</div>
+    <div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.max(d.pct*2,0.5)}%;background:${COLORS[d.name]};opacity:${d.n?0.85:0.15}"></div></div>
+    <div class="dist-val">${d.n} &nbsp;<span style="color:#2a3a4a">(${d.pct}%)</span></div>
+  </div>`).join('');
+
+const T = {
+  MAJOR:      {MAJOR:0.381,LEADING:0.000,DOMINANT:0.072,LYDIAN:0.031,PEDAL:0.000,NEAPOLITAN:0.021,SUSPENDED:0.124,PHRYGIAN:0.010,TRITONE:0.361},
+  LEADING:    {MAJOR:1.000,LEADING:0.000,DOMINANT:0.000,LYDIAN:0.000,PEDAL:0.000,NEAPOLITAN:0.000,SUSPENDED:0.000,PHRYGIAN:0.000,TRITONE:0.000},
+  DOMINANT:   {MAJOR:0.167,LEADING:0.042,DOMINANT:0.167,LYDIAN:0.042,PEDAL:0.000,NEAPOLITAN:0.000,SUSPENDED:0.083,PHRYGIAN:0.000,TRITONE:0.500},
+  LYDIAN:     {MAJOR:0.333,LEADING:0.000,DOMINANT:0.000,LYDIAN:0.000,PEDAL:0.000,NEAPOLITAN:0.000,SUSPENDED:0.000,PHRYGIAN:0.000,TRITONE:0.667},
+  PEDAL:      {},
+  NEAPOLITAN: {MAJOR:0.750,LEADING:0.000,DOMINANT:0.000,LYDIAN:0.000,PEDAL:0.000,NEAPOLITAN:0.000,SUSPENDED:0.000,PHRYGIAN:0.000,TRITONE:0.250},
+  SUSPENDED:  {MAJOR:0.375,LEADING:0.000,DOMINANT:0.167,LYDIAN:0.000,PEDAL:0.000,NEAPOLITAN:0.000,SUSPENDED:0.167,PHRYGIAN:0.000,TRITONE:0.292},
+  PHRYGIAN:   {MAJOR:0.000,LEADING:0.000,DOMINANT:0.000,LYDIAN:0.000,PEDAL:0.000,NEAPOLITAN:0.000,SUSPENDED:0.000,PHRYGIAN:0.000,TRITONE:1.000},
+  TRITONE:    {MAJOR:0.396,LEADING:0.010,DOMINANT:0.089,LYDIAN:0.020,PEDAL:0.000,NEAPOLITAN:0.020,SUSPENDED:0.059,PHRYGIAN:0.000,TRITONE:0.406},
+};
+
+function cellBg(p){
+  if(p===0) return 'transparent';
+  if(p<0.15) return `rgba(0,212,255,${p*3})`;
+  if(p<0.35) return `rgba(180,79,255,${p*2})`;
+  return `rgba(0,255,136,${Math.min(p*1.4,0.9)})`;
+}
+
+const tbl = document.getElementById('mtx');
+let html = '<thead><tr><th style="min-width:110px">FROM \\ TO</th>';
+CHORDS.forEach(c=>html+=`<th style="color:${COLORS[c]}">${SHORT[c]}</th>`);
+html+='<th>n</th></tr></thead><tbody>';
+CHORDS.forEach(from=>{
+  if(N_OCC[from]===0) return;
+  html+=`<tr><td class="row-label" style="color:${COLORS[from]}">${from}</td>`;
+  CHORDS.forEach(to=>{
+    const p=(T[from]||{})[to]||0;
+    const bold=p>=0.35?'font-weight:700;':'';
+    const col=p>=0.35?COLORS[to]:(p>0?'#c8d8e8':'#2a3a4a');
+    html+=`<td style="background:${cellBg(p)};${bold}color:${col}">${p>0?p.toFixed(2):'·'}</td>`;
+  });
+  html+=`<td class="row-n">${N_OCC[from]}</td></tr>`;
+});
+html+='</tbody>';
+tbl.innerHTML=html;
+
+const PATHS=[
+  {from:'PHRYGIAN', to:'SUSPENDED',p:0.0,  n:'0/1',  col:'#4a6080',tag:'tag-warn',tl:'N=1 UNTESTED'},
+  {from:'PHRYGIAN', to:'TRITONE',  p:100.0,n:'1/1',  col:'#ff3d5a',tag:'tag-warn',tl:'N=1 UNTESTED'},
+  {from:'SUSPENDED',to:'MAJOR',    p:37.5, n:'9/24', col:'#00ff88',tag:'tag-ok',  tl:'W8 WIN PATH'},
+  {from:'SUSPENDED',to:'TRITONE',  p:29.2, n:'7/24', col:'#ff3d5a',tag:'',        tl:''},
+  {from:'SUSPENDED',to:'SUSPENDED',p:16.7, n:'4/24', col:'#b44fff',tag:'tag-info',tl:'PERSIST'},
+  {from:'SUSPENDED',to:'DOMINANT', p:16.7, n:'4/24', col:'#f0b429',tag:'',        tl:''},
+  {from:'DOMINANT', to:'TRITONE',  p:50.0, n:'12/24',col:'#ff3d5a',tag:'tag-warn',tl:'WARNING'},
+  {from:'TRITONE',  to:'MAJOR',    p:39.6, n:'40/101',col:'#00ff88',tag:'tag-info',tl:'V-SHAPE'},
+  {from:'TRITONE',  to:'TRITONE',  p:40.6, n:'41/101',col:'#ff3d5a',tag:'tag-warn',tl:'BEAR PERSIST'},
+];
+const pc=document.getElementById('paths-container');
+pc.innerHTML=PATHS.map(p=>`
+  <div class="path-row">
+    <div class="path-from" style="color:${COLORS[p.from]}">${p.from}</div>
+    <div style="color:var(--border)">&#8594;</div>
+    <div class="path-to" style="color:${p.col}">${p.to}</div>
+    <div class="path-pct" style="color:${p.col}">${p.p}%</div>
+    <div class="path-n">${p.n}</div>
+    <div>${p.tag?`<span class="tag ${p.tag}">${p.tl}</span>`:''}</div>
+  </div>`).join('');
+</script>
+</body>
+</html>
