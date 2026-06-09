@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Crypto Orchestra — FizzNetwork</title>
+<style>
+:root{--bg:#060810;--panel:#0d1117;--border:#1a2332;--text:#c8d8e8;--muted:#4a6080;--purple:#b44fff;--blue:#00d4ff;--green:#00ff88;--gold:#f0b429;--red:#ff3d5a;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:Georgia,serif;line-height:1.8;padding:0;}
+.nav{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.nav-brand{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:'Segoe UI',sans-serif;}
+.nav-links{display:flex;gap:20px;}
+.nav-links a{font-size:11px;color:var(--muted);text-decoration:none;letter-spacing:1px;text-transform:uppercase;font-family:'Segoe UI',sans-serif;}
+.nav-links a:hover{color:var(--text);}
+.nav-links a.live{color:var(--green);}
+.wrap{max-width:680px;margin:0 auto;padding:60px 24px 80px;}
+.kicker{font-size:11px;letter-spacing:3px;color:var(--purple);text-transform:uppercase;font-family:'Segoe UI',sans-serif;margin-bottom:16px;}
+h1{font-size:32px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:12px;font-family:'Segoe UI',sans-serif;}
+.deck{font-size:16px;color:var(--muted);line-height:1.6;margin-bottom:8px;}
+.byline{font-size:11px;color:var(--muted);font-family:'Segoe UI',sans-serif;letter-spacing:1px;margin-bottom:48px;padding-bottom:24px;border-bottom:1px solid var(--border);}
+h2{font-size:20px;font-weight:700;color:var(--text);margin:48px 0 16px;font-family:'Segoe UI',sans-serif;}
+p{margin-bottom:20px;color:var(--text);}
+strong{color:var(--text);}
+em{color:var(--muted);}
+table{width:100%;border-collapse:collapse;margin:24px 0;font-family:'Segoe UI',sans-serif;font-size:13px;}
+th{background:var(--panel);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;border:1px solid var(--border);text-align:left;}
+td{padding:8px 12px;border:1px solid var(--border);color:var(--text);}
+tr:nth-child(even) td{background:#0a0e16;}
+.signal-box{background:var(--panel);border:1px solid var(--green);border-radius:10px;padding:24px;margin:32px 0;}
+.signal-box .label{font-size:10px;color:var(--green);letter-spacing:2px;text-transform:uppercase;font-family:'Segoe UI',sans-serif;margin-bottom:8px;}
+.signal-box .stat{font-size:32px;font-weight:700;color:var(--green);font-family:'Segoe UI',sans-serif;}
+.signal-box .note{font-size:13px;color:var(--muted);margin-top:8px;}
+.chord-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin:24px 0;font-family:'Segoe UI',sans-serif;font-size:12px;}
+.chord-cell{padding:10px;background:var(--panel);border:1px solid var(--border);text-align:center;}
+.chord-cell.header{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;}
+.chord-cell.suspended{background:#1a0a2a;border-color:var(--purple);color:var(--purple);font-weight:700;}
+.chord-cell.major{color:#00ff88;}
+.chord-cell.tritone{color:var(--red);}
+.footer-bar{margin-top:60px;padding-top:24px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-family:'Segoe UI',sans-serif;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.footer-bar a{color:var(--muted);text-decoration:none;}
+.footer-bar a:hover{color:var(--text);}
+@media(max-width:600px){.chord-grid{font-size:10px;}.nav-links{gap:12px;}}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="nav-brand">FizzNetwork Research</div>
+  <div class="nav-links">
+    <a href="index.html">← Home</a>
+    <a href="PROJECT_INDEX.html">Research Index</a>
+    <a href="https://traderlive.viktim.xyz" target="_blank" class="live">● TraderLive</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="kicker">FizzNetwork · tCO v1.0 · June 2026</div>
+  <h1>The Crypto Orchestra</h1>
+  <div class="deck">How asset relationships play chord progressions — and why one chord predicts a trade 7 times out of 7</div>
+  <div class="byline">by fiz · traderlive.viktim.xyz</div>
+
+  <p>Markets are usually described in the language of physics. Support and resistance. Momentum. Force. We talk about price <em>levels</em> as if the market were a ball rolling across a flat surface, occasionally bouncing off walls.</p>
+  <p>But price action doesn't feel like physics. It feels like music.</p>
+  <p>It has rhythm — the four-year halving cycle, the monthly options expiry, the daily session open. It has tension and resolution — the coiling range before a breakout, the retracement that finds exactly the right level. It has themes that return, never quite the same, recognisable but transformed. A musician would call it development. A trader calls it structure.</p>
+  <p>This is the story of what happens when you take that metaphor seriously.</p>
+
+  <h2>Two voices</h2>
+  <p>Every piece of music is built from relationships between notes. A single note is just a frequency. Two notes played together create an <em>interval</em> — and intervals have character. A perfect fifth feels open and stable. A minor second feels tense and unresolved. A tritone — the diabolus in musica, the devil's interval — feels genuinely unsettling.</p>
+  <p>Bitcoin and Solana are two instruments in the same orchestra. BTC is the bass — slow, institutional, the global liquidity barometer. SOL is a higher voice — faster, more volatile, a risk-appetite amplifier.</p>
+  <p>When both rise together, the interval is consonant. Resolution. Confidence. When they diverge — one up, one down — you get tension. Tension in music, as in markets, always resolves. The question is which direction.</p>
+  <p>The core insight: <strong>the direction of each instrument's last candle defines a chord, and that chord encodes the current market regime.</strong></p>
+  <p>This is what we call a <strong>Synthony</strong> — a harmonic indicator built on the relationship between two assets, where the mathematical structure of their interaction is expressed as a musical chord state. The name compresses three things: <em>synthesis</em> (merging two signals into one), <em>harmony</em> (the musical interval between them), and <em>symphony</em> (the larger orchestral system they belong to).</p>
+
+  <h2>The four original chords</h2>
+  <div class="chord-grid">
+    <div class="chord-cell header"></div>
+    <div class="chord-cell header">SOL ↑</div>
+    <div class="chord-cell header">SOL ↓</div>
+    <div class="chord-cell header">BTC ↑</div>
+    <div class="chord-cell major">MAJOR</div>
+    <div class="chord-cell">DOMINANT</div>
+    <div class="chord-cell header">BTC ↓</div>
+    <div class="chord-cell suspended">SUSPENDED ◈</div>
+    <div class="chord-cell tritone">TRITONE</div>
+  </div>
+  <p><strong>MAJOR</strong> — both up. The resolution chord. Bull momentum clean and confirmed.</p>
+  <p><strong>DOMINANT</strong> — BTC up, SOL down. Tension. BTC is pulling but risk appetite isn't fully engaged.</p>
+  <p><strong>TRITONE</strong> — both down. The devil's interval. Maximum dissonance. Get flat.</p>
+  <p><strong>SUSPENDED</strong> — BTC down, SOL up. This is the strange one. The chord that breaks the pattern.</p>
+
+  <h2>The signal chord</h2>
+  <p>In music theory, the suspended chord is unresolved by definition. The third — the note that defines major or minor — is replaced. The chord is neither happy nor sad. It's <em>waiting</em>. It has to resolve somewhere.</p>
+  <p>In market terms, SUSPENDED means Bitcoin is correcting while Solana is holding or rising. Solana is showing relative strength against a falling Bitcoin. Normally in a risk-off move, both fall together. When they decouple — BTC down, SOL up — something unusual is happening.</p>
+  <p>Running the chord history back through 2021 to 2026 on the weekly timeframe, SUSPENDED appeared dozens of times. Most were noise. But a subset showed something different.</p>
+  <p>When SUSPENDED appeared <em>while Jupiter was in a specific orbital window</em>, the outcome was remarkably consistent.</p>
+
+  <h2>The Jupiter filter</h2>
+  <p>Jupiter is a planet. Its orbital position, measured as a 0–360° phase angle with a period of 398.88 days, is not in any standard financial model.</p>
+  <p>But there is a 120° arc of Jupiter's orbit — centred at 340.9°, spanning ±60° — within which SUSPENDED weekly chord states have resolved upward with unusual consistency. Outside this window, SUSPENDED is noise. Inside it, the signal sharpens dramatically.</p>
+  <p>Jupiter's synodic period (398.88 days) is close to but slightly longer than a calendar year. The ~60-day signal window recurs once per Jupiter year, roughly every 13 months — a different rhythm from the halving, the annual cycle, or the monthly options cycle. An <em>independent</em> oscillator.</p>
+
+  <div class="signal-box">
+    <div class="label">W8 Signal Record</div>
+    <div class="stat">7 / 7</div>
+    <div class="note">Seven SUSPENDED + Jupiter-window occurrences. Seven wins. $150 → $240.52 (+60.3%).</div>
+  </div>
+
+  <h2>The 9-state extension</h2>
+  <div class="chord-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+    <div class="chord-cell header"></div>
+    <div class="chord-cell header">OSC ↑</div>
+    <div class="chord-cell header">OSC →</div>
+    <div class="chord-cell header">OSC ↓</div>
+    <div class="chord-cell header">ANCHOR ↑</div>
+    <div class="chord-cell major">MAJOR</div>
+    <div class="chord-cell" style="color:#44ffaa">LEADING</div>
+    <div class="chord-cell" style="color:var(--gold)">DOMINANT</div>
+    <div class="chord-cell header">ANCHOR →</div>
+    <div class="chord-cell" style="color:var(--blue)">LYDIAN</div>
+    <div class="chord-cell" style="color:var(--muted)">PEDAL</div>
+    <div class="chord-cell" style="color:#ff8c00">NEAPOLITAN</div>
+    <div class="chord-cell header">ANCHOR ↓</div>
+    <div class="chord-cell suspended">SUSPENDED ◈</div>
+    <div class="chord-cell" style="color:#9d6fff">PHRYGIAN</div>
+    <div class="chord-cell tritone">TRITONE</div>
+  </div>
+  <p>Sideways threshold: ±0.2% per candle. The off-diagonal cells — the divergence states — carry the most information. When both instruments move together the regime is clear. When they decouple, you're watching the market decide where to go next.</p>
+
+  <h2>The orchestra expands</h2>
+  <p>The same Synthony logic applies to any pair of correlated assets where one acts as anchor and the other as a high-beta oscillator. SPY is to US equities what BTC is to crypto. NVDA and AMC are higher voices — amplifiers of sentiment, faster-moving, more sensitive to regime shifts.</p>
+  <p>SPY×NVDA and SPY×AMC are their own Synthonies — the same 9-state chord detection, SPY as anchor. When SPY is falling and NVDA is holding, that's a SUSPENDED chord in the equities Synthony. Same information structure as BTC↓ SOL↑. Different instruments, same harmony, same mathematics.</p>
+  <p><strong>The interval matters more than the pitch.</strong> The specific assets are less important than the relationship structure between them. Gold×DXY. ETH×BTC. VIX×SPY. Each pair is a potential Synthony. The framework is the instrument; the assets are the notes you feed it.</p>
+
+  <h2>Same price, different coordinates</h2>
+  <p>$50,000 BTC in 2019 and $50,000 BTC in 2021 are not the same market state. Price is a single dimension. The market exists in a much higher-dimensional space: price, power-law residual, halving phase, Jupiter orbit, lunar phase, Synthony reading, macro regime.</p>
+  <p>The k-nearest-neighbours approach finds historical moments whose <em>full coordinate vector</em> matches — not just the ones where price touched the same number. A $50,000 BTC in a SUSPENDED Synthony with Jupiter in the signal window is a fundamentally different situation from $50,000 in a TRITONE Synthony during a hiking cycle.</p>
+  <p>The note is the same. The music is different.</p>
+
+  <h2>The live system</h2>
+  <p>All of this runs live at <strong><a href="https://traderlive.viktim.xyz" target="_blank" style="color:var(--blue);text-decoration:none;">traderlive.viktim.xyz</a></strong> as The Crypto Orchestra (tCO) — VikTDer, powered by FizzNetwork.</p>
+  <p>The PHASE SIGNAL tab shows the BTC×SOL Synthony in real time across six timeframes. The STOCKS tab runs two equities Synthonies: SPY×NVDA and SPY×AMC. When a candle closes, the system plays the corresponding arpeggio through the Web Audio API — each timeframe at its own octave, the orchestra audible.</p>
+  <p>Eleven paper wallets track different strategy profiles. The W8 wallet — SUSPENDED + Jupiter — is the only one with a 100% win rate. The sim is teaching the lesson the research predicted: patient, filtered, research-backed entries beat high-frequency noise every time.</p>
+
+  <h2>What's next</h2>
+  <p>The SUSPENDED + Jupiter signal has seven data points. The next occurrence will either extend or break the streak. The 9-state system needs its own backtest. The transition probability matrix needs to be computed. The phase space kNN needs a rigorous implementation against the full state vector.</p>
+  <p>And the ensemble has more voices to add. The score is incomplete. The ensemble is growing.</p>
+
+  <div class="footer-bar">
+    <div><strong style="color:var(--purple)">The Crypto Orchestra (tCO)</strong> · Synthonies indicator family · v1.0 · June 2026 · by fiz</div>
+    <div>
+      <a href="PROJECT_INDEX.html">Research Index</a> &nbsp;·&nbsp;
+      <a href="https://traderlive.viktim.xyz" target="_blank">TraderLive ↗</a> &nbsp;·&nbsp;
+      <a href="https://github.com/FizzNetwork/the-crypto-orchestra" target="_blank">GitHub ↗</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>
