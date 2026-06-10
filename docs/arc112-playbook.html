@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arc 112 — Live Playbook · tCO</title>
+<style>
+:root{--bg:#060810;--panel:#0d1117;--panel2:#111820;--border:#1a2332;--text:#c8d8e8;--muted:#4a6080;--purple:#b44fff;--blue:#00d4ff;--green:#00ff88;--gold:#f0b429;--red:#ff3d5a;--orange:#ff9500;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;padding:32px 24px;}
+.wrap{max-width:1000px;margin:0 auto;}
+.brand{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;}
+h1{font-size:28px;font-weight:700;color:var(--purple);letter-spacing:0.5px;margin-bottom:4px;}
+.sub{font-size:13px;color:var(--muted);margin-bottom:32px;}
+
+.section{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:8px;margin:28px 0 14px;}
+
+/* STATUS BAR */
+.status-bar{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:24px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.stat-block{}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.stat-val{font-size:20px;font-weight:700;}
+.stat-note{font-size:11px;color:var(--muted);margin-top:3px;}
+.v-red{color:var(--red);}
+.v-gold{color:var(--gold);}
+.v-green{color:var(--green);}
+.v-blue{color:var(--blue);}
+.v-purple{color:var(--purple);}
+.v-orange{color:var(--orange);}
+
+/* CARDS */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;}
+.card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:0.5px;}
+.badge-purple{background:#1a1830;color:var(--purple);border:1px solid #2a1a50;}
+.badge-gold{background:#1a1500;color:var(--gold);border:1px solid #2a2000;}
+.badge-red{background:#1a0810;color:var(--red);border:1px solid #2a0820;}
+.badge-green{background:#001a10;color:var(--green);border:1px solid #002a18;}
+.badge-blue{background:#001a2a;color:var(--blue);border:1px solid #002a3a;}
+.badge-orange{background:#1a0e00;color:var(--orange);border:1px solid #2a1800;}
+
+/* DATA ROWS */
+.data-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.data-row:last-child{border-bottom:none;}
+.data-key{color:var(--muted);}
+.data-val{font-weight:600;}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:0;}
+.tl-item{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);}
+.tl-item:last-child{border-bottom:none;}
+.tl-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.dot-red{background:var(--red);}
+.dot-gold{background:var(--gold);}
+.dot-green{background:var(--green);}
+.dot-purple{background:var(--purple);}
+.tl-body{}
+.tl-date{font-size:11px;color:var(--muted);margin-bottom:2px;}
+.tl-text{font-size:12px;color:var(--text);}
+
+/* PLAYBOOK TABLE */
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;}
+td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text);}
+tr:last-child td{border-bottom:none;}
+tr.highlight td{background:#0d1a10;}
+
+/* METER */
+.meter{height:6px;background:#1a2332;border-radius:3px;margin-top:8px;overflow:hidden;}
+.meter-fill{height:100%;border-radius:3px;transition:width 0.3s;}
+
+/* COMPARABLE CASES */
+.case-row{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;}
+.case-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.case-date{font-size:12px;font-weight:700;color:var(--blue);}
+.case-run{font-size:10px;color:var(--muted);}
+.case-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.case-stat{font-size:11px;}
+.cs-label{color:var(--muted);font-size:10px;}
+.cs-val{font-weight:700;}
+
+/* ALERT BOX */
+.alert{border-radius:10px;padding:16px 20px;margin-bottom:24px;border:1px solid;}
+.alert-gold{background:#0d0d00;border-color:#3a2a00;color:var(--gold);}
+.alert-red{background:#0d0008;border-color:#2a0018;color:var(--red);}
+.alert-green{background:#000d08;border-color:#00250a;color:var(--green);}
+.alert-title{font-size:13px;font-weight:700;margin-bottom:6px;}
+.alert-body{font-size:12px;line-height:1.7;color:var(--text);}
+
+/* SIGNAL MONITOR */
+.monitor-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.monitor-row:last-child{border-bottom:none;}
+.monitor-flag{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.flag-on{background:var(--green);box-shadow:0 0 6px var(--green);}
+.flag-off{background:var(--red);}
+.flag-mid{background:var(--gold);}
+.monitor-label{flex:1;color:var(--muted);}
+.monitor-val{font-weight:600;min-width:80px;text-align:right;}
+
+@media(max-width:700px){.status-bar{grid-template-columns:1fr 1fr;}.grid2,.grid3{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="brand">FizzNetwork Research · tCO v1.0</div>
+<h1>Arc 112 — Live Signal Playbook</h1>
+<div class="sub">Arcs 108–111 synthesised · Intraweek detection · Kelly sizing · USDT.D trajectory · SOL price context · Last updated Jun 2026</div>
+
+<!-- ALERT -->
+<div class="alert alert-gold">
+  <div class="alert-title">⚡ PRE-ARM — Signal May Fire Week of Jun 12</div>
+  <div class="alert-body">
+    4-week TRITONE streak (heading to 5wk after Jun 12 close). All flip predictor conditions met: run≥3 ✓ · USDT.D rising ✓ · USDT.D≥5% ✓.
+    Historical record for this configuration: <strong style="color:var(--gold)">7/7 = 100% win rate</strong> (train + test).
+    USDT.D at 8.65% — above all historical signal levels. Most extreme pre-signal setup on record.
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="stat-block">
+    <div class="stat-label">Chord</div>
+    <div class="stat-val v-red">TRITONE</div>
+    <div class="stat-note">BTC↓ + SOL↓ · wk 4</div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-label">USDT.D</div>
+    <div class="stat-val v-gold">8.65%</div>
+    <div class="stat-note">Rising · above all prior signals</div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-label">Streak</div>
+    <div class="stat-val v-red">4 wk</div>
+    <div class="stat-note">→ 5wk after Jun 12</div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-label">Signal Score</div>
+    <div class="stat-val v-purple">4 / 5</div>
+    <div class="stat-note">B1=0 B2=1 B3=1 B4=1 B5=?</div>
+  </div>
+</div>
+
+<!-- CONDITION MONITOR -->
+<div class="section">Signal Conditions (Buoyancy Score)</div>
+<div class="card" style="margin-bottom:24px;">
+  <div class="monitor-row">
+    <div class="monitor-flag flag-off"></div>
+    <div class="monitor-label"><strong>B1</strong> — Prior chord NOT TRITONE</div>
+    <div class="monitor-val v-red">0 · FALSE</div>
+  </div>
+  <div class="monitor-row">
+    <div class="monitor-flag flag-on"></div>
+    <div class="monitor-label"><strong>B2</strong> — TRITONE run ≥ 1 week</div>
+    <div class="monitor-val v-green">1 · run = 4wk</div>
+  </div>
+  <div class="monitor-row">
+    <div class="monitor-flag flag-on"></div>
+    <div class="monitor-label"><strong>B3</strong> — BTC streak loss ≥ 5%</div>
+    <div class="monitor-val v-green">1 · −22.3%</div>
+  </div>
+  <div class="monitor-row">
+    <div class="monitor-flag flag-on"></div>
+    <div class="monitor-label"><strong>B4</strong> — USDT.D rising</div>
+    <div class="monitor-val v-green">1 · 8.65% ↑</div>
+  </div>
+  <div class="monitor-row">
+    <div class="monitor-flag flag-mid"></div>
+    <div class="monitor-label"><strong>B5</strong> — Low volume (vs 4wk avg)</div>
+    <div class="monitor-val v-gold">? · unconfirmed</div>
+  </div>
+  <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:12px;color:var(--muted);">Score ≥ 3 + run ≥ 2 → historical WR:</span>
+    <span style="font-size:16px;font-weight:700;color:var(--green);">7/7 = 100%</span>
+  </div>
+</div>
+
+<div class="grid2">
+
+  <!-- ARC 108: INTRAWEEK -->
+  <div class="card">
+    <div class="card-title"><span class="badge badge-blue">Arc 108</span> Intraweek Detection</div>
+    <div class="data-row"><span class="data-key">Historical detectable intraweek</span><span class="data-val v-green">6/6</span></div>
+    <div class="data-row"><span class="data-key">Avg days early (before Wed close)</span><span class="data-val">1.8 days</span></div>
+    <div class="data-row"><span class="data-key">Earliest detection seen</span><span class="data-val">Sunday (d+3)</span></div>
+    <div class="data-row"><span class="data-key">Entry improvement vs. waiting</span><span class="data-val">+0.67% avg SOL</span></div>
+    <div style="margin-top:14px;background:#001018;border-radius:6px;padding:12px;font-size:11px;color:var(--muted);line-height:1.7;">
+      <strong style="color:var(--blue);">Trigger:</strong> BTC close &lt; week open AND SOL close &gt; week open.<br>
+      <strong style="color:var(--blue);">This week (Jun 4 open):</strong> BTC ref $64,036 · SOL ref $71.52<br>
+      SOL needs to recover above <strong style="color:var(--text);">$71.52</strong> before Wed Jun 11 for early entry.<br>
+      Current SOL ~$64.82 — requires +10.3%. <strong style="color:var(--red);">Unlikely.</strong><br>
+      Expect TRITONE close → 5wk streak confirmed Thu Jun 12.
+    </div>
+  </div>
+
+  <!-- ARC 110: USDT.D -->
+  <div class="card">
+    <div class="card-title"><span class="badge badge-gold">Arc 110</span> USDT.D Trajectory</div>
+    <div class="data-row"><span class="data-key">Signals while USDT.D rising</span><span class="data-val v-green">6/6</span></div>
+    <div class="data-row"><span class="data-key">Historical range at signal</span><span class="data-val">5.51% — 7.77%</span></div>
+    <div class="data-row"><span class="data-key">Current USDT.D (Jun 9)</span><span class="data-val v-gold">8.65% ↑</span></div>
+    <div class="data-row"><span class="data-key">4-week change</span><span class="data-val">+1.53%</span></div>
+    <div class="data-row"><span class="data-key">Above historical range?</span><span class="data-val v-gold">YES — unprecedented</span></div>
+    <div style="margin-top:14px;background:#0d0d00;border-radius:6px;padding:12px;font-size:11px;color:var(--muted);line-height:1.7;">
+      <strong style="color:var(--gold);">Key finding:</strong> USDT.D does NOT need to peak before signal fires. 2/3 long-run cases: USDT.D kept rising post-signal.<br>
+      8.65% = extreme fear, above all prior signal levels. More extreme setup = historically larger bounce potential.
+    </div>
+  </div>
+
+</div>
+
+<!-- ARC 109: KELLY -->
+<div class="section">Arc 109 — Kelly Position Sizing</div>
+<div class="grid3">
+  <div class="card">
+    <div class="card-title"><span class="badge badge-red">Score 2</span> Low conviction</div>
+    <div class="data-row"><span class="data-key">WR (wk0)</span><span class="data-val">100% (n=10)</span></div>
+    <div class="data-row"><span class="data-key">Avg SOL wk0</span><span class="data-val v-green">+27.7%</span></div>
+    <div class="data-row"><span class="data-key">Note</span><span class="data-val" style="font-size:10px;">bull-era inflated</span></div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);">Recommended:</div>
+    <div style="font-size:18px;font-weight:700;color:var(--red);margin-top:4px;">SKIP</div>
+    <div style="font-size:11px;color:var(--muted);">run=0 only, no streak confirmation</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="badge badge-purple">Score 3, run≥2</span> Confirmed</div>
+    <div class="data-row"><span class="data-key">WR (wk0)</span><span class="data-val v-green">100% (n=4)</span></div>
+    <div class="data-row"><span class="data-key">Avg SOL wk0</span><span class="data-val v-green">+3.0%</span></div>
+    <div class="data-row"><span class="data-key">Avg SOL wk1</span><span class="data-val v-green">+7.2%</span></div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);">Recommended:</div>
+    <div style="font-size:18px;font-weight:700;color:var(--purple);margin-top:4px;">15–20%</div>
+    <div style="font-size:11px;color:var(--muted);">of risk capital</div>
+  </div>
+  <div class="card" style="border-color:#2a1a50;">
+    <div class="card-title"><span class="badge badge-purple">Score 4, run≥3</span> ← current</div>
+    <div class="data-row"><span class="data-key">WR (wk0)</span><span class="data-val v-green">100% (n=3)</span></div>
+    <div class="data-row"><span class="data-key">Avg SOL wk0</span><span class="data-val v-green">+2.99%</span></div>
+    <div class="data-row"><span class="data-key">Avg SOL wk1</span><span class="data-val v-green">+7.21%</span></div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);">Recommended:</div>
+    <div style="font-size:22px;font-weight:700;color:var(--purple);margin-top:4px;">20–25%</div>
+    <div style="font-size:11px;color:var(--muted);">of risk capital · hold to wk1</div>
+  </div>
+</div>
+
+<!-- ARC 111: SOL PRICE -->
+<div class="section">Arc 111 — SOL Price Context</div>
+<div class="grid2">
+  <div class="card">
+    <div class="card-title"><span class="badge badge-blue">Arc 111</span> Price Levels</div>
+    <div class="data-row"><span class="data-key">Current SOL</span><span class="data-val v-gold">$64.82</span></div>
+    <div class="data-row"><span class="data-key">SOL ATH in dataset</span><span class="data-val">$296.00</span></div>
+    <div class="data-row"><span class="data-key">% from ATH</span><span class="data-val v-red">−78.1%</span></div>
+    <div class="data-row"><span class="data-key">High-conv signal range</span><span class="data-val">$31 — $137</span></div>
+    <div class="data-row"><span class="data-key">Price level → return quality</span><span class="data-val">No correlation</span></div>
+    <div style="margin-top:12px;font-size:11px;color:var(--muted);line-height:1.6;">Current SOL at multi-year lows vs recent signals. Low absolute price = higher % upside per dollar move. No evidence price level predicts signal quality.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Most Comparable Prior Case</div>
+    <div class="case-row" style="margin-bottom:0;">
+      <div class="case-header">
+        <span class="case-date">2026-02-12</span>
+        <span class="case-run">run=4 · score=4 · TEST set</span>
+      </div>
+      <div class="case-stats">
+        <div class="case-stat"><div class="cs-label">SOL entry</div><div class="cs-val">$79.26</div></div>
+        <div class="case-stat"><div class="cs-label">USDT.D</div><div class="cs-val">7.49%</div></div>
+        <div class="case-stat"><div class="cs-label">wk0 SOL</div><div class="cs-val v-green">+2.9%</div></div>
+        <div class="case-stat"><div class="cs-label">wk1 SOL</div><div class="cs-val v-green">+11.1%</div></div>
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--muted);">Also: 2025-11-20 (run=3): wk1=+5.7% · 2022-09-01 (run=3): wk1=+8.3%<br>Avg wk1 across 3 comparables: <strong style="color:var(--green)">+8.4%</strong></div>
+  </div>
+</div>
+
+<!-- TRADE PLAYBOOK TABLE -->
+<div class="section">Trade Playbook — Next Signal</div>
+<div class="card" style="margin-bottom:24px;">
+  <table>
+    <thead>
+      <tr><th>When</th><th>Action</th><th>Detail</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--muted);">Jun 11 (Wed)</td>
+        <td>Monitor intraweek</td>
+        <td>Watch if SOL recovers above $71.52 (week open). BTC↓ + SOL↑ = early SUSPENDED signal.</td>
+      </tr>
+      <tr>
+        <td style="color:var(--muted);">Jun 12 (Thu)</td>
+        <td>Weekly close check</td>
+        <td>If TRITONE again → streak extends to <strong>5wk</strong>. Score stays 4, run increases to 5 → even stronger.</td>
+      </tr>
+      <tr class="highlight">
+        <td style="color:var(--gold);">SUSPENDED open</td>
+        <td style="color:var(--gold);font-weight:700;">ENTER LONG SOL</td>
+        <td><strong style="color:var(--gold);">20–25% risk capital.</strong> Entry at Thursday open of SUSPENDED week. Also watch intraweek for 1-3 day early entry.</td>
+      </tr>
+      <tr>
+        <td style="color:var(--muted);">SUSPENDED Wed close</td>
+        <td>Assess wk0 chord</td>
+        <td>If chord = <strong style="color:var(--green)">MAJOR</strong> → HOLD. If TRITONE → EXIT. wk0 avg return: +3.0% (small).</td>
+      </tr>
+      <tr class="highlight">
+        <td style="color:var(--green);">+1 week (wk1)</td>
+        <td style="color:var(--green);font-weight:700;">TARGET EXIT</td>
+        <td><strong style="color:var(--green);">Avg wk1 SOL: +7.21% — 4/4=100% WR.</strong> If wk1 chord = MAJOR again, can hold to wk2.</td>
+      </tr>
+      <tr>
+        <td style="color:var(--muted);">Any time</td>
+        <td>Hard stop</td>
+        <td>If BTC reclaims dominance intraweek (TRITONE reading mid-week) → reduce size 50%.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- HISTORICAL COMPARABLES -->
+<div class="section">Comparable Cases — Run ≥ 3, Score ≥ 3</div>
+<div class="case-row">
+  <div class="case-header"><span class="case-date">2022-09-01</span><span class="case-run">run=3 · score=3 · TRAIN</span></div>
+  <div class="case-stats">
+    <div class="case-stat"><div class="cs-label">SOL entry</div><div class="cs-val">$31.48</div></div>
+    <div class="case-stat"><div class="cs-label">USDT.D</div><div class="cs-val">7.77%</div></div>
+    <div class="case-stat"><div class="cs-label">wk0 SOL</div><div class="cs-val v-green">+3.8%</div></div>
+    <div class="case-stat"><div class="cs-label">wk1 SOL</div><div class="cs-val v-green">+8.3%</div></div>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-top:8px;">Intraweek: detected Sunday (d+3). Next chord: MAJOR → hold was correct. BTC −3.82% / SOL +3.81% for the week.</div>
+</div>
+<div class="case-row">
+  <div class="case-header"><span class="case-date">2025-11-20</span><span class="case-run">run=3 · score=3 · TEST</span></div>
+  <div class="case-stats">
+    <div class="case-stat"><div class="cs-label">SOL entry</div><div class="cs-val">$136.91</div></div>
+    <div class="case-stat"><div class="cs-label">USDT.D</div><div class="cs-val">5.51%</div></div>
+    <div class="case-stat"><div class="cs-label">wk0 SOL</div><div class="cs-val v-green">+4.5%</div></div>
+    <div class="case-stat"><div class="cs-label">wk1 SOL</div><div class="cs-val v-green">+5.7%</div></div>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-top:8px;">Intraweek: detected Monday (d+4). Next chord: MAJOR → hold paid. USDT.D continued rising post-signal.</div>
+</div>
+<div class="case-row">
+  <div class="case-header"><span class="case-date">2026-02-12</span><span class="case-run">run=4 · score=4 · TEST</span></div>
+  <div class="case-stats">
+    <div class="case-stat"><div class="cs-label">SOL entry</div><div class="cs-val">$79.26</div></div>
+    <div class="case-stat"><div class="cs-label">USDT.D</div><div class="cs-val">7.49%</div></div>
+    <div class="case-stat"><div class="cs-label">wk0 SOL</div><div class="cs-val v-green">+2.9%</div></div>
+    <div class="case-stat"><div class="cs-label">wk1 SOL</div><div class="cs-val v-green">+11.1%</div></div>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-top:8px;">Closest analog to current setup. Detected Wednesday (d+6 = close day). USDT.D was still rising at entry. wk2: +14.7% (held by some).</div>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top:48px;padding-top:20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+  <div style="font-size:11px;color:var(--muted);">
+    <strong style="color:var(--purple)">tCO Arc 112</strong> · Arcs 108–111 synthesised · FizzNetwork Research
+  </div>
+  <div style="font-size:11px;color:var(--muted);">
+    <a href="PROJECT_INDEX.html" style="color:var(--muted);text-decoration:none;">← Research Index</a>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/FizzNetwork/the-crypto-orchestra" target="_blank" style="color:var(--muted);text-decoration:none;">GitHub ↗</a>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

@@ -808,47 +808,62 @@ Gate 2: BTC_consecutive_negative_weeks &gt;= 3
 
 </div>
 
-<!-- CURRENT STATUS -->
-<div class="section-head">Current Status — Jun 2026 · tCO v1.0</div>
-<div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:40px;">
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-    <div>
-      <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Signal Position</div>
-      <div style="font-size:18px;font-weight:700;color:var(--red);">NO SIGNAL</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:4px;">Chord: TRITONE (BTC−, SOL−)<br>Phase: 89.9° — spread past peak, fading<br>Last data: 2026-06-04</div>
+<!-- PHASE 6 -->
+<div class="section-head">Phase 6 — Regime Mechanics &amp; Markov (Arcs 43–47)</div>
+<div class="cards" id="cards-phase6a">
+
+  <div class="card" data-cat="research">
+    <div class="card-header">
+      <span class="arc-badge ab-key">Arc 43</span>
+      <span class="card-title">Markov Transition Matrix</span>
     </div>
-    <div>
-      <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Last Signal</div>
-      <div style="font-size:18px;font-weight:700;color:var(--green);">2026-02-12</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:4px;">Phase: 322.2° (≈0° entry zone)<br>Result: +7.7% SOL next week<br>7/7 signals resolved MAJOR</div>
+    <div class="card-desc">9×9 chord transition heatmap across 260 weeks. Bimodal TRITONE behaviour discovered. Jupiter gate comparison.</div>
+    <div class="card-findings"><ul>
+      <li>SUSPENDED → MAJOR: 37.5% · TRITONE → SUSPENDED: 25%</li>
+      <li>TRITONE longest self-loop chain seen: 6 weeks</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="arc43-markov.html" target="_blank">Open ↗</a>
     </div>
   </div>
-  <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);">
-    <strong style="color:var(--gold);">Next signal criteria:</strong> Look for SUSPENDED chord (BTC&lt;0 weekly, SOL&gt;0 weekly) + SOL&gt;3% + RS4w&lt;20%, OR 3 consecutive negative BTC weeks. Monitor phase approaching 0° with amplitude &gt; 3.
-  </div>
-</div>
 
-  <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-    <div style="font-size:11px;color:var(--muted);">
-      <strong style="color:var(--purple)">The Crypto Orchestra (tCO)</strong> · Synthonies v1.0 · 3 active Synthonies · <a href="https://traderlive.viktim.xyz" target="_blank" style="color:var(--blue);text-decoration:none;">traderlive.viktim.xyz ↗</a>
+  <div class="card" data-cat="research">
+    <div class="card-header">
+      <span class="arc-badge ab-key">Arc 44</span>
+      <span class="card-title">Jupiter-Split Transition Matrix</span>
     </div>
-    <div style="font-size:11px;color:var(--muted);">
-      <a href="https://github.com/FizzNetwork/the-crypto-orchestra" target="_blank" style="color:var(--muted);text-decoration:none;">github.com/FizzNetwork/the-crypto-orchestra ↗</a>
+    <div class="card-desc">9×9 matrices split by Jupiter gate open/closed. DOMINANT→TRITONE 80% in-zone vs 50% out.</div>
+    <div class="card-findings"><ul>
+      <li>Jupiter gate strongly modulates DOMINANT→TRITONE risk</li>
+      <li>SUSPENDED signal quality unchanged by Jupiter</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="arc44-jupiter-matrix.html" target="_blank">Open ↗</a>
     </div>
   </div>
-</div>
 
-</div><!-- /wrap -->
+  <div class="card" data-cat="research">
+    <div class="card-header">
+      <span class="arc-badge ab-key">Arc 45</span>
+      <span class="card-title">HMM + Viterbi Regime Decoder</span>
+    </div>
+    <div class="card-desc">3 hidden market regimes decoded via Hidden Markov Model + Viterbi path. SUSPENDED in Bull regime: 72.7% WR.</div>
+    <div class="card-findings"><ul>
+      <li>Bull / Bear / Transition regime sequence decoded for 260 weeks</li>
+      <li>Bear regime SUSPENDED events: lower WR — avoid or size down</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="arc45-hmm-viterbi.html" target="_blank">Open ↗</a>
+    </div>
+  </div>
 
-<script>
-function filterCards(cat){
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  event.target.classList.add('active');
-  document.querySelectorAll('.card').forEach(c=>{
-    if(cat==='all') c.style.display='';
-    else c.style.display=c.dataset.cat&&c.dataset.cat.includes(cat)?'':'none';
-  });
-}
-</script>
-</body>
-</html>
+  <div class="card" data-cat="research">
+    <div class="card-header">
+      <span class="arc-badge ab-key">Arc 46</span>
+      <span class="card-title">Multi-Week Hold Analysis</span>
+    </div>
+    <div class="card-desc">Optimal exit timing for SUSPENDED entries. Week-by-week SOL excess return decay. TRANSIT regime: avoid hold.</div>
+    <div class="card-findings"><ul>
+      <li>Wk0: +18.2% avg excess · Wk1: +22.6% · Wk2: +29.8%</li>
+      <li>Hold rule: stay if next chord = MAJOR, exit on TRITONE</li>
+    </ul><
