@@ -1226,6 +1226,20 @@ export default function TraderLive() {
         {tab==='phase'      && <TabPhase      chordState={chordState} soundOn={soundOn} setSoundOn={setSoundOn} audioCtxRef={audioCtxRef} activeTFs={activeTFs} setActiveTFs={setActiveTFs} flashTFs={flashTFs} primaryTF={primaryTF}/>}
         {tab==='stocks'     && <TabStocks     nvdaChord={nvdaChord} amcChord={amcChord} stockKlines={stockKlines}/>}
       </div>
+
+      {/* FIZZNETWORK FOOTER */}
+      <div style={{borderTop:`1px solid ${C.border}`,padding:'14px 24px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
+        <div style={{display:'flex',alignItems:'center',gap:16}}>
+          <span style={{fontSize:10,fontFamily:'Space Mono,monospace',color:C.muted,letterSpacing:2}}>◈ THE CRYPTO ORCHESTRA</span>
+          <span style={{fontSize:9,color:C.border}}>|</span>
+          <span style={{fontSize:10,fontFamily:'Space Mono,monospace',color:C.muted}}>tCO v1.0 · 9-state · W8 7/7</span>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:16,fontSize:10,fontFamily:'Space Mono,monospace'}}>
+          <a href="https://fizznetwork.github.io/the-crypto-orchestra" target="_blank" rel="noopener noreferrer" style={{color:C.muted,textDecoration:'none',letterSpacing:1}}>fizznetwork.github.io/the-crypto-orchestra</a>
+          <span style={{color:C.border}}>|</span>
+          <span style={{color:C.muted,letterSpacing:1}}>FizzNetwork · 2026</span>
+        </div>
+      </div>
     </>
   )
 }

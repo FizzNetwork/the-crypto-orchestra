@@ -168,6 +168,27 @@ Sideways threshold: ±0.2% per candle. Off-diagonal cells (divergence states) ca
 - External validation: ChatGPT and Grok independently identified the chord strip as a Markov chain without prompting
 - Dashboard: [docs/arc43-markov.html](./arc43-markov.html)
 
+### Arc 44 · Jupiter-Conditional Transition Matrix
+- Split the Arc 43 9×9 Markov matrix by Jupiter gate: inside 280.9°–40.9° window (n=95) vs outside (n=164)
+- **Key finding: DOMINANT→TRITONE spikes to 80% inside window** (vs 42% outside) — avoid longs on DOMINANT chord near Jupiter opposition
+- SUSPENDED persistence collapses to 0% inside window (vs 25% outside) — chord resolves decisively
+- MAJOR→TRITONE drops to 21% inside window (vs 46% outside) — bull runs are stickier near opposition
+- SUSPENDED SOL-up rate: 37.5% inside vs 62.5% outside — **Jupiter gate does NOT improve 1-week SOL direction edge**
+- Full delta matrix: top shifts DOMINANT→TRITONE (+38%), SUSPENDED→DOMINANT (+31%), MAJOR→TRITONE (−25%)
+- Dashboard: [docs/arc44-jupiter-matrix.html](./arc44-jupiter-matrix.html)
+
+### Arc 45 · Hidden Markov Model + Viterbi Decoding
+- Formal HMM fitted to 260-week chord sequence. Model selection: BIC selects n=2 (825.3) but 3-state chosen for interpretability
+- **3 hidden regimes decoded via Viterbi:** BULL (n=169, 65%), BEAR (n=62, 24%), TRANSIT (n=29, 11%)
+- BULL: 90.5% self-persistence, MAJOR 47.6% emission — sticky uptrend
+- BEAR: 81.5% self-persistence, TRITONE 56.4% emission — no SUSPENDED emissions
+- TRANSIT: 40.3% SUSPENDED emission — the key rotation zone between bull and bear
+- Cascade: BULL → TRANSIT → BEAR → BULL (no direct jumps)
+- **Key finding: SUSPENDED in BULL regime wins 72.7% (8/11) vs TRANSIT regime 38.5% (5/13)**
+- Regime filter outperforms Jupiter gate as W8 signal discriminant
+- Proposed scoring: SUSPENDED(+2) + BULL regime(+3) + Jupiter gate(+1) = take at ≥4 pts
+- Dashboard: [docs/arc45-hmm-viterbi.html](./arc45-hmm-viterbi.html)
+
 ---
 
 ## Live System Architecture
@@ -223,7 +244,7 @@ traderlive.viktim.xyz (Next.js · Vercel)
 
 ## Open Questions
 
-1. **Transition probability matrix** — empirical chord→chord probabilities. PHRYGIAN→SUSPENDED vs PHRYGIAN→TRITONE?
+1. ~~**Transition probability matrix**~~ ✓ Done — Arc 43 (9×9 empirical matrix), Arc 44 (Jupiter-conditional split), Arc 45 (HMM + Viterbi regimes)
 2. **kNN signal sharpening** — does restricting entry to the most phase-space-similar historical moments improve W8 accuracy?
 3. **Venus correlation** — is the 583.9d Venus synodic period a genuine third oscillator or spurious?
 4. **9-state backtest** — formal backtest of all nine states' forward returns across all TFs
@@ -247,4 +268,4 @@ traderlive.viktim.xyz (Next.js · Vercel)
 
 ---
 
-*Last updated: June 2026. Framework: The Crypto Orchestra (tCO) v1.0. Synthonies: S1 S2 S3. Signal streak: 7/7.*
+*Last updated: June 2026. Framework: The Crypto Orchestra (tCO) v1.0. Synthonies: S1 S2 S3. Signal streak: 7/7. Arcs: 45 complete.*

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Arc 44 — Jupiter-Conditional Transition Matrix · tCO</title>
+<style>
+:root{--bg:#060810;--panel:#0d1117;--border:#1a2332;--text:#c8d8e8;--muted:#4a6080;--purple:#b44fff;--blue:#00d4ff;--green:#00ff88;--gold:#f0b429;--red:#ff3d5a;--orange:#ff8c00;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;padding:0;}
+.nav{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.nav-links{display:flex;gap:20px;}
+.nav-links a{font-size:11px;color:var(--muted);text-decoration:none;letter-spacing:1px;text-transform:uppercase;}
+.nav-links a:hover{color:var(--text);}
+.wrap{max-width:1200px;margin:0 auto;padding:40px 24px 80px;}
+.hero{margin-bottom:40px;}
+.kicker{font-size:10px;letter-spacing:3px;color:var(--purple);text-transform:uppercase;margin-bottom:10px;}
+h1{font-size:26px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.deck{font-size:14px;color:var(--muted);line-height:1.6;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;}
+.card-title{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+.stat-big{font-size:36px;font-weight:700;line-height:1;}
+.stat-label{font-size:12px;color:var(--muted);margin-top:4px;}
+h2{font-size:15px;font-weight:700;color:var(--text);margin:32px 0 14px;letter-spacing:1px;text-transform:uppercase;}
+.matrix-section{margin-bottom:16px;}
+.matrix-label{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;padding:6px 10px;border-radius:4px;display:inline-block;}
+.matrix-label.inside{background:#001a0a;color:var(--green);border:1px solid var(--green)22;}
+.matrix-label.outside{background:#1a1a00;color:var(--gold);border:1px solid var(--gold)22;}
+.matrix-wrap{overflow-x:auto;margin-bottom:32px;}
+table.matrix{border-collapse:collapse;font-size:10px;min-width:700px;width:100%;}
+table.matrix th{padding:5px 6px;background:var(--panel);color:var(--muted);font-size:8px;text-transform:uppercase;letter-spacing:1px;border:1px solid var(--border);text-align:center;}
+table.matrix td{padding:4px 6px;border:1px solid var(--border);text-align:center;position:relative;}
+table.matrix td.row-label{text-align:right;font-size:10px;font-weight:600;background:var(--panel);white-space:nowrap;padding-right:10px;color:var(--text);}
+table.matrix td.row-label.suspended{color:var(--purple);}
+table.matrix td.row-n{color:var(--muted);font-size:9px;background:var(--panel);}
+.delta-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#0a0e16;border-radius:6px;margin-bottom:6px;font-size:12px;}
+.delta-pair{font-family:monospace;color:var(--text);flex:1;}
+.delta-in{width:60px;text-align:right;flex-shrink:0;}
+.delta-out{width:60px;text-align:right;flex-shrink:0;}
+.delta-d{font-weight:700;width:60px;text-align:right;flex-shrink:0;}
+.delta-up{color:var(--green);}
+.delta-dn{color:var(--red);}
+.tag{display:inline-block;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:3px;flex-shrink:0;}
+.tag-warn{background:#2a1a00;color:var(--gold);border:1px solid var(--gold);}
+.tag-ok{background:#001a0a;color:var(--green);border:1px solid var(--green);}
+.tag-info{background:#0a0020;color:var(--purple);border:1px solid var(--purple);}
+.tag-red{background:#1a0005;color:var(--red);border:1px solid var(--red);}
+.insight{background:var(--panel);border-left:3px solid var(--purple);border-radius:0 8px 8px 0;padding:14px 16px;margin-top:12px;font-size:13px;line-height:1.7;color:var(--text);}
+.insight b{color:var(--purple);}
+.footer-bar{margin-top:60px;padding-top:20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.footer-bar a{color:var(--muted);text-decoration:none;}
+.sus-panel{background:#0a0014;border:1px solid var(--purple)44;border-radius:10px;padding:20px;margin-bottom:24px;}
+.sus-row{display:grid;grid-template-columns:100px 80px 80px 1fr;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;align-items:center;}
+.sus-row.header{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:6px;}
+.chord-pill{display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:1px;}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-brand">tCO · Arc 44</div>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="../PROJECT_INDEX.html">Index</a>
+    <a href="arc43-markov.html">Arc 43</a>
+    <a href="https://traderlive.viktim.xyz" target="_blank">TraderLive</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="kicker">Arc 44 · June 2026 · BTC x SOL Weekly · n=259 transitions</div>
+    <h1>Jupiter-Conditional Transition Matrix</h1>
+    <div class="deck">The Arc 43 9×9 Markov matrix split by Jupiter gate: <b>inside</b> the 340.9° ± 60° signal window vs <b>outside</b>. Do chord dynamics shift near Jupiter opposition?</div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Inside Jupiter Window</div>
+      <div class="stat-big" style="color:var(--green)">95</div>
+      <div class="stat-label">transition pairs · 36.7% of total</div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted)">Signal zone: 280.9° – 40.9°<br>~4.5 months active per 398.88d cycle</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Outside Jupiter Window</div>
+      <div class="stat-big" style="color:var(--gold)">164</div>
+      <div class="stat-label">transition pairs · 63.3% of total</div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted)">Rest of synodic cycle<br>baseline / default market dynamics</div>
+    </div>
+    <div class="card">
+      <div class="card-title">SUSPENDED in Window</div>
+      <div class="stat-big" style="color:var(--purple)">8</div>
+      <div class="stat-label">SUSPENDED weeks inside window (of 24 total)</div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted)">Next week SOL up: <b style="color:var(--green)">3/8 = 37.5%</b><br>Outside window: <b style="color:var(--gold)">10/16 = 62.5%</b></div>
+    </div>
+  </div>
+
+  <!-- KEY FINDING: SUSPENDED ANALYSIS -->
+  <h2>◈ SUSPENDED Signal — Jupiter Window Effect</h2>
+
+  <div class="sus-panel">
+    <div style="margin-bottom:14px;font-size:13px;color:var(--text)">
+      All 24 <span style="color:var(--purple)">SUSPENDED</span> weeks (2021–2026), showing Jupiter phase and next-week outcome.
+    </div>
+    <div class="sus-row header">
+      <span>Date</span><span>Jupiter°</span><span>Gate</span><span>Next Chord → SOL Direction</span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2021-07-01</span><span style="color:var(--muted)">227.8°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>TRITONE · SOL ↓ <span style="color:var(--red);margin-left:6px">✗</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2021-07-29</span><span style="color:var(--muted)">253.0°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>MAJOR · SOL ↑ <span style="color:var(--green);margin-left:6px">✓ W8</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2021-08-12</span><span style="color:var(--muted)">265.7°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>DOMINANT · SOL ↓ <span style="color:var(--red);margin-left:6px">✗</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2021-08-26</span><span style="color:var(--muted)">278.3°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>SUSPENDED · SOL ↑ <span style="color:var(--green);margin-left:6px">✓</span></span>
+    </div>
+    <div class="sus-row" style="background:#0d1a10;">
+      <span style="color:var(--purple)">2021-09-02</span><span style="color:var(--purple)">284.6°</span>
+      <span class="tag tag-ok" style="font-size:8px">IN ⚡</span>
+      <span>DOMINANT · SOL ↓ <span style="color:var(--red);margin-left:6px">✗</span></span>
+    </div>
+    <div class="sus-row" style="background:#0d1a10;">
+      <span style="color:var(--purple)">2021-10-21</span><span style="color:var(--purple)">328.8°</span>
+      <span class="tag tag-ok" style="font-size:8px">IN ⚡</span>
+      <span>MAJOR · SOL ↑ <span style="color:var(--green);margin-left:6px">✓</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2022-09-01</span><span style="color:var(--muted)">253.1°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>MAJOR · SOL ↑ <span style="color:var(--green);margin-left:6px">✓ W8</span></span>
+    </div>
+    <div class="sus-row" style="background:#0d1a10;">
+      <span style="color:var(--purple)">2022-11-17</span><span style="color:var(--purple)">322.6°</span>
+      <span class="tag tag-ok" style="font-size:8px">IN ⚡</span>
+      <span>DOMINANT · SOL ↓ <span style="color:var(--red);margin-left:6px">✗</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2023-02-16</span><span style="color:var(--muted)">44.8°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>TRITONE · SOL ↓ <span style="color:var(--red);margin-left:6px">✗</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2023-05-11</span><span style="color:var(--muted)">120.6°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>TRITONE · SOL ↓ <span style="color:var(--red);margin-left:6px">✗</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2023-07-06</span><span style="color:var(--muted)">171.1°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>SUSPENDED · SOL ↑ <span style="color:var(--green);margin-left:6px">✓</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2023-07-13</span><span style="color:var(--muted)">177.4°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>TRITONE · SOL ↓ <span style="color:var(--red);margin-left:6px">✗</span></span>
+    </div>
+    <div class="sus-row" style="background:#0d1a10;">
+      <span style="color:var(--purple)">2023-12-07</span><span style="color:var(--purple)">310.1°</span>
+      <span class="tag tag-ok" style="font-size:8px">IN ⚡</span>
+      <span>MAJOR · SOL ↑ <span style="color:var(--green);margin-left:6px">✓ W8</span></span>
+    </div>
+    <div class="sus-row" style="background:#0d1a10;">
+      <span style="color:var(--purple)">2023-12-21</span><span style="color:var(--purple)">322.7°</span>
+      <span class="tag tag-ok" style="font-size:8px">IN ⚡</span>
+      <span>TRITONE · SOL ↓ <span style="color:var(--red);margin-left:6px">✗</span></span>
+    </div>
+    <div class="sus-row" style="background:#0d1a10;">
+      <span style="color:var(--purple)">2024-03-14</span><span style="color:var(--purple)">38.6°</span>
+      <span class="tag tag-ok" style="font-size:8px">IN ⚡</span>
+      <span>DOMINANT · SOL ↓ <span style="color:var(--red);margin-left:6px">✗</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2024-06-20</span><span style="color:var(--muted)">127.0°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>SUSPENDED · SOL ↑ <span style="color:var(--green);margin-left:6px">✓</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2024-06-27</span><span style="color:var(--muted)">133.3°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>SUSPENDED · SOL ↑ <span style="color:var(--green);margin-left:6px">✓</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2024-07-04</span><span style="color:var(--muted)">139.6°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>MAJOR · SOL ↑ <span style="color:var(--green);margin-left:6px">✓</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2024-08-22</span><span style="color:var(--muted)">183.9°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>TRITONE · SOL ↓ <span style="color:var(--red);margin-left:6px">✗</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2024-10-17</span><span style="color:var(--muted)">234.4°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>MAJOR · SOL ↑ <span style="color:var(--green);margin-left:6px">✓ W8</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2025-08-21</span><span style="color:var(--muted)">152.4°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>MAJOR · SOL ↑ <span style="color:var(--green);margin-left:6px">✓ W8</span></span>
+    </div>
+    <div class="sus-row">
+      <span style="color:var(--muted)">2025-11-20</span><span style="color:var(--muted)">234.5°</span>
+      <span class="tag tag-warn" style="font-size:8px">OUT</span>
+      <span>MAJOR · SOL ↑ <span style="color:var(--green);margin-left:6px">✓ W8</span></span>
+    </div>
+    <div class="sus-row" style="background:#0d1a10;">
+      <span style="color:var(--purple)">2026-02-12</span><span style="color:var(--purple)">310.3°</span>
+      <span class="tag tag-ok" style="font-size:8px">IN ⚡</span>
+      <span>MAJOR · SOL ↑ <span style="color:var(--green);margin-left:6px">✓ W8</span></span>
+    </div>
+    <div class="sus-row" style="background:#0d1a10;">
+      <span style="color:var(--purple)">2026-05-07</span><span style="color:var(--purple)">26.1°</span>
+      <span class="tag tag-ok" style="font-size:8px">IN ⚡</span>
+      <span>TRITONE · SOL ↓ <span style="color:var(--red);margin-left:6px">✗</span></span>
+    </div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-size:12px;">
+      <div style="background:#0a0e16;border-radius:6px;padding:12px;">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:4px">ALL SUSPENDED (n=24)</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text)">13/24 = 54.2%</div>
+        <div style="font-size:10px;color:var(--muted)">next week SOL ↑</div>
+      </div>
+      <div style="background:#0a1408;border-radius:6px;padding:12px;border:1px solid var(--green)22;">
+        <div style="font-size:9px;color:var(--green);letter-spacing:1px;margin-bottom:4px">INSIDE WINDOW (n=8)</div>
+        <div style="font-size:18px;font-weight:700;color:var(--green)">3/8 = 37.5%</div>
+        <div style="font-size:10px;color:var(--muted)">next week SOL ↑</div>
+      </div>
+      <div style="background:#1a1400;border-radius:6px;padding:12px;">
+        <div style="font-size:9px;color:var(--gold);letter-spacing:1px;margin-bottom:4px">OUTSIDE WINDOW (n=16)</div>
+        <div style="font-size:18px;font-weight:700;color:var(--gold)">10/16 = 62.5%</div>
+        <div style="font-size:10px;color:var(--muted)">next week SOL ↑</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <b>Key finding:</b> The Jupiter window does NOT improve SUSPENDED → SOL-up probability. Outside the window wins 62.5% vs 37.5% inside. The 7/7 W8 win streak was built mostly on OUTSIDE-window SUSPENDED trades. The Jupiter filter adds selectivity noise, not edge, on raw next-week direction — but may matter on multi-week or magnitude basis. Sample sizes are small (n=8, n=16); conclusions are directional only.
+  </div>
+
+  <!-- BIGGEST DELTAS -->
+  <h2>◈ Top Market Dynamic Shifts — Inside vs Outside</h2>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Transitions with largest probability delta (inside − outside). Min n=3 each side.</div>
+
+  <div style="display:grid;grid-template-columns:140px 70px 70px 70px 60px 1fr;gap:6px;font-size:9px;color:var(--muted);letter-spacing:1px;padding:0 12px;margin-bottom:6px;text-transform:uppercase;">
+    <span>Transition</span><span style="text-align:right">Inside</span><span style="text-align:right">Outside</span><span style="text-align:right">Delta</span><span></span><span>Interpretation</span>
+  </div>
+
+  <div class="delta-row">
+    <span class="delta-pair">DOMINANT → TRITONE</span>
+    <span class="delta-in delta-up">80.0%</span>
+    <span class="delta-out" style="color:var(--gold)">42.1%</span>
+    <span class="delta-d delta-up">+37.9%</span>
+    <span class="tag tag-red">High risk</span>
+    <span style="font-size:11px;color:var(--muted);margin-left:8px">Inside window, DOMINANT almost always crashes to TRITONE. Avoid DOMINANT longs in Jupiter zone.</span>
+  </div>
+
+  <div class="delta-row">
+    <span class="delta-pair">SUSPENDED → DOMINANT</span>
+    <span class="delta-in delta-up">37.5%</span>
+    <span class="delta-out" style="color:var(--gold)">6.3%</span>
+    <span class="delta-d delta-up">+31.2%</span>
+    <span class="tag tag-warn">Caution</span>
+    <span style="font-size:11px;color:var(--muted);margin-left:8px">SUSPENDED inside window 6× more likely to flip to DOMINANT (BTC recovers, SOL drops). Not clean SOL long.</span>
+  </div>
+
+  <div class="delta-row">
+    <span class="delta-pair">SUSPENDED → SUSPENDED</span>
+    <span class="delta-in" style="color:var(--muted)">0.0%</span>
+    <span class="delta-out" style="color:var(--gold)">25.0%</span>
+    <span class="delta-d delta-dn">−25.0%</span>
+    <span class="tag tag-info">Structural</span>
+    <span style="font-size:11px;color:var(--muted);margin-left:8px">SUSPENDED persistence collapses to zero inside the window. Phase doesn't repeat — it resolves one way or the other.</span>
+  </div>
+
+  <div class="delta-row">
+    <span class="delta-pair">MAJOR → TRITONE</span>
+    <span class="delta-in" style="color:var(--green)">21.1%</span>
+    <span class="delta-out" style="color:var(--red)">45.8%</span>
+    <span class="delta-d delta-dn">−24.7%</span>
+    <span class="tag tag-ok">Bullish</span>
+    <span style="font-size:11px;color:var(--muted);margin-left:8px">Bull runs inside window are stickier — MAJOR is 2.2× less likely to flip to TRITONE. Uptrends sustain longer in Jupiter zone.</span>
+  </div>
+
+  <div class="delta-row">
+    <span class="delta-pair">DOMINANT → DOMINANT</span>
+    <span class="delta-in" style="color:var(--muted)">0.0%</span>
+    <span class="delta-out" style="color:var(--gold)">21.1%</span>
+    <span class="delta-d delta-dn">−21.1%</span>
+    <span class="tag tag-info">Structural</span>
+    <span style="font-size:11px;color:var(--muted);margin-left:8px">DOMINANT doesn't repeat inside window — it resolves fast (to TRITONE 80%). No grinding drag, binary outcome.</span>
+  </div>
+
+  <div class="delta-row">
+    <span class="delta-pair">MAJOR → SUSPENDED</span>
+    <span class="delta-in delta-up">18.4%</span>
+    <span class="delta-out" style="color:var(--gold)">8.5%</span>
+    <span class="delta-d delta-up">+9.9%</span>
+    <span class="tag tag-info">Notable</span>
+    <span style="font-size:11px;color:var(--muted);margin-left:8px">MAJOR more likely to transition to SUSPENDED inside window. More SUSPENDED events generated near Jupiter opposition.</span>
+  </div>
+
+  <!-- CONDITIONAL MATRICES -->
+  <h2>◈ Inside Jupiter Window — 9×9 Transition Matrix (n=95)</h2>
+  <div class="matrix-label inside">⚡ Signal Zone: 280.9° – 40.9° · 95 transitions</div>
+  <div class="matrix-wrap">
+    <table class="matrix" id="matrix-inside"></table>
+  </div>
+
+  <h2>◈ Outside Jupiter Window — 9×9 Transition Matrix (n=164)</h2>
+  <div class="matrix-label outside">◎ Baseline · 164 transitions</div>
+  <div class="matrix-wrap">
+    <table class="matrix" id="matrix-outside"></table>
+  </div>
+
+  <!-- DELTA MATRIX -->
+  <h2>◈ Delta Matrix — Inside minus Outside (probability shift)</h2>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Green = higher probability inside window. Red = lower probability inside window.</div>
+  <div class="matrix-wrap">
+    <table class="matrix" id="matrix-delta"></table>
+  </div>
+
+  <div class="insight" style="margin-top:24px">
+    <b>Arc 44 Summary:</b> Jupiter proximity changes chord dynamics in two key ways. (1) <b>Bull runs sustain</b> — MAJOR→TRITONE drops from 46% to 21% inside the window; uptrends are stickier. (2) <b>Risk chords resolve fast</b> — DOMINANT→TRITONE spikes to 80%, and SUSPENDED doesn't repeat (0% vs 25%). The market near Jupiter opposition tends toward clean, decisive moves rather than grinding persistence. The W8 SUSPENDED signal's raw SOL direction edge does NOT improve inside the window on a 1-week horizon (37.5% vs 62.5% outside), but the broader market context shifts significantly.
+  </div>
+
+  <div class="footer-bar">
+    <div>tCO Arc 44 · Jupiter-Conditional Matrix · June 2026 · SIGNED-BY: CODEX</div>
+    <div>
+      <a href="arc43-markov.html">← Arc 43</a> &nbsp;·&nbsp;
+      <a href="../PROJECT_INDEX.html">Index</a> &nbsp;·&nbsp;
+      <a href="https://github.com/FizzNetwork/the-crypto-orchestra" target="_blank">GitHub</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const CHORDS = ['MAJOR','LEADING','DOMINANT','LYDIAN','PEDAL','NEAPOLITAN','SUSPENDED','PHRYGIAN','TRITONE'];
+
+const CHORD_COLORS = {
+  MAJOR:'#00ff88',LEADING:'#44ffaa',DOMINANT:'#f0b429',LYDIAN:'#00d4ff',
+  PEDAL:'#4a7090',NEAPOLITAN:'#ff8c00',SUSPENDED:'#b44fff',PHRYGIAN:'#9d6fff',TRITONE:'#ff3d5a'
+};
+
+const INSIDE_ROW_N = {MAJOR:38,LEADING:0,DOMINANT:5,LYDIAN:4,PEDAL:0,NEAPOLITAN:3,SUSPENDED:8,PHRYGIAN:1,TRITONE:36};
+const OUTSIDE_ROW_N = {MAJOR:59,LEADING:2,DOMINANT:19,LYDIAN:2,PEDAL:0,NEAPOLITAN:1,SUSPENDED:16,PHRYGIAN:0,TRITONE:65};
+
+const INSIDE = {
+  MAJOR:     {MAJOR:0.3947,LEADING:0,DOMINANT:0.0789,LYDIAN:0.0526,PEDAL:0,NEAPOLITAN:0.0526,SUSPENDED:0.1842,PHRYGIAN:0.0263,TRITONE:0.2105},
+  LEADING:   {MAJOR:0,LEADING:0,DOMINANT:0,LYDIAN:0,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0,PHRYGIAN:0,TRITONE:0},
+  DOMINANT:  {MAJOR:0.2,LEADING:0,DOMINANT:0,LYDIAN:0,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0,PHRYGIAN:0,TRITONE:0.8},
+  LYDIAN:    {MAJOR:0.25,LEADING:0,DOMINANT:0,LYDIAN:0,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0,PHRYGIAN:0,TRITONE:0.75},
+  PEDAL:     {MAJOR:0,LEADING:0,DOMINANT:0,LYDIAN:0,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0,PHRYGIAN:0,TRITONE:0},
+  NEAPOLITAN:{MAJOR:0.6667,LEADING:0,DOMINANT:0,LYDIAN:0,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0,PHRYGIAN:0,TRITONE:0.3333},
+  SUSPENDED: {MAJOR:0.375,LEADING:0,DOMINANT:0.375,LYDIAN:0,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0,PHRYGIAN:0,TRITONE:0.25},
+  PHRYGIAN:  {MAJOR:0,LEADING:0,DOMINANT:0,LYDIAN:0,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0,PHRYGIAN:0,TRITONE:1.0},
+  TRITONE:   {MAJOR:0.4167,LEADING:0,DOMINANT:0.0278,LYDIAN:0.0556,PEDAL:0,NEAPOLITAN:0.0278,SUSPENDED:0.0278,PHRYGIAN:0,TRITONE:0.4444},
+};
+
+const OUTSIDE = {
+  MAJOR:     {MAJOR:0.3729,LEADING:0,DOMINANT:0.0678,LYDIAN:0.0169,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0.0847,PHRYGIAN:0,TRITONE:0.4576},
+  LEADING:   {MAJOR:1.0,LEADING:0,DOMINANT:0,LYDIAN:0,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0,PHRYGIAN:0,TRITONE:0},
+  DOMINANT:  {MAJOR:0.1579,LEADING:0.0526,DOMINANT:0.2105,LYDIAN:0.0526,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0.1053,PHRYGIAN:0,TRITONE:0.4211},
+  LYDIAN:    {MAJOR:0.5,LEADING:0,DOMINANT:0,LYDIAN:0,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0,PHRYGIAN:0,TRITONE:0.5},
+  PEDAL:     {MAJOR:0,LEADING:0,DOMINANT:0,LYDIAN:0,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0,PHRYGIAN:0,TRITONE:0},
+  NEAPOLITAN:{MAJOR:1.0,LEADING:0,DOMINANT:0,LYDIAN:0,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0,PHRYGIAN:0,TRITONE:0},
+  SUSPENDED: {MAJOR:0.375,LEADING:0,DOMINANT:0.0625,LYDIAN:0,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0.25,PHRYGIAN:0,TRITONE:0.3125},
+  PHRYGIAN:  {MAJOR:0,LEADING:0,DOMINANT:0,LYDIAN:0,PEDAL:0,NEAPOLITAN:0,SUSPENDED:0,PHRYGIAN:0,TRITONE:0},
+  TRITONE:   {MAJOR:0.3846,LEADING:0.0154,DOMINANT:0.1231,LYDIAN:0,PEDAL:0,NEAPOLITAN:0.0154,SUSPENDED:0.0769,PHRYGIAN:0,TRITONE:0.3846},
+};
+
+function heatColor(p, max=0.5) {
+  if (p === 0) return '#0a0e16';
+  const t = Math.min(p / max, 1);
+  const r = Math.round(0x0a + (0xb4 - 0x0a) * t);
+  const g = Math.round(0x0e + (0x4f - 0x0e) * (1 - t));
+  const b = Math.round(0x16 + (0xff - 0x16) * (1 - t * 0.5));
+  return `rgb(${r},${g},${b})`;
+}
+
+function buildMatrix(tableId, probs, rowN, isSuspendedHighlight) {
+  const tbl = document.getElementById(tableId);
+  // Header
+  let hrow = '<tr><th>FROM ↓ TO →</th><th>n</th>';
+  CHORDS.forEach(c => { hrow += `<th style="color:${CHORD_COLORS[c]}">${c.slice(0,3)}</th>`; });
+  hrow += '</tr>';
+  tbl.innerHTML = hrow;
+
+  CHORDS.forEach(frm => {
+    const n = rowN[frm];
+    const isSus = frm === 'SUSPENDED';
+    let row = `<tr>`;
+    row += `<td class="row-label${isSus?' suspended':''}" style="${isSus?'border-left:2px solid #b44fff':''}">${frm}</td>`;
+    row += `<td class="row-n">${n||'—'}</td>`;
+    CHORDS.forEach(to => {
+      const p = probs[frm]?.[to] || 0;
+      const bg = n > 0 ? heatColor(p) : '#0a0e16';
+      const txt = n > 0 ? (p > 0 ? (p*100).toFixed(0)+'%' : '·') : '—';
+      const bold = p >= 0.3 ? 'font-weight:700;' : '';
+      row += `<td style="background:${bg};${bold}color:${p>0.4?'#fff':p>0.15?'#c8d8e8':'#4a6080'}">${txt}</td>`;
+    });
+    row += '</tr>';
+    tbl.innerHTML += row;
+  });
+}
+
+function buildDeltaMatrix(tableId) {
+  const tbl = document.getElementById(tableId);
+  let hrow = '<tr><th>FROM ↓ TO →</th><th>n (in/out)</th>';
+  CHORDS.forEach(c => { hrow += `<th style="color:${CHORD_COLORS[c]}">${c.slice(0,3)}</th>`; });
+  hrow += '</tr>';
+  tbl.innerHTML = hrow;
+
+  CHORDS.forEach(frm => {
+    const ni = INSIDE_ROW_N[frm];
+    const no = OUTSIDE_ROW_N[frm];
+    const isSus = frm === 'SUSPENDED';
+    let row = `<tr>`;
+    row += `<td class="row-label${isSus?' suspended':''}" style="${isSus?'border-left:2px solid #b44fff':''}">${frm}</td>`;
+    row += `<td class="row-n">${ni||0}/${no||0}</td>`;
+    CHORDS.forEach(to => {
+      const ins = INSIDE[frm]?.[to] || 0;
+      const out = OUTSIDE[frm]?.[to] || 0;
+      const d = ins - out;
+      const valid = ni >= 3 && no >= 3;
+      let txt = '—', bg = '#0a0e16', col = '#4a6080';
+      if (valid) {
+        if (Math.abs(d) < 0.01) { txt = '·'; }
+        else {
+          txt = (d > 0 ? '+' : '') + (d*100).toFixed(0) + '%';
+          if (d > 0) { bg = `rgba(0,255,136,${Math.min(d*2,0.4)})`; col = '#00ff88'; }
+          else { bg = `rgba(255,61,90,${Math.min(-d*2,0.4)})`; col = '#ff3d5a'; }
+        }
+      }
+      const bold = Math.abs(d) >= 0.2 ? 'font-weight:700;' : '';
+      row += `<td style="background:${bg};${bold}color:${col}">${txt}</td>`;
+    });
+    row += '</tr>';
+    tbl.innerHTML += row;
+  });
+}
+
+buildMatrix('matrix-inside', INSIDE, INSIDE_ROW_N, true);
+buildMatrix('matrix-outside', OUTSIDE, OUTSIDE_ROW_N, false);
+buildDeltaMatrix('matrix-delta');
+</script>
+</body>
+</html>

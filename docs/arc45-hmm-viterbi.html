@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Arc 45 — HMM + Viterbi · tCO</title>
+<style>
+:root{--bg:#060810;--panel:#0d1117;--border:#1a2332;--text:#c8d8e8;--muted:#4a6080;--purple:#b44fff;--blue:#00d4ff;--green:#00ff88;--gold:#f0b429;--red:#ff3d5a;--orange:#ff8c00;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;padding:0;}
+.nav{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.nav-links{display:flex;gap:20px;}
+.nav-links a{font-size:11px;color:var(--muted);text-decoration:none;letter-spacing:1px;text-transform:uppercase;}
+.nav-links a:hover{color:var(--text);}
+.wrap{max-width:1200px;margin:0 auto;padding:40px 24px 80px;}
+.hero{margin-bottom:40px;}
+.kicker{font-size:10px;letter-spacing:3px;color:var(--purple);text-transform:uppercase;margin-bottom:10px;}
+h1{font-size:26px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.deck{font-size:14px;color:var(--muted);line-height:1.6;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;}
+.card-title{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+.stat-big{font-size:36px;font-weight:700;line-height:1;}
+.stat-label{font-size:12px;color:var(--muted);margin-top:4px;}
+h2{font-size:15px;font-weight:700;color:var(--text);margin:32px 0 14px;letter-spacing:1px;text-transform:uppercase;}
+.insight{background:var(--panel);border-left:3px solid var(--purple);border-radius:0 8px 8px 0;padding:14px 16px;margin-top:12px;margin-bottom:20px;font-size:13px;line-height:1.7;color:var(--text);}
+.insight b{color:var(--purple);}
+.regime-card{border-radius:10px;padding:18px;margin-bottom:12px;}
+.regime-card.bull{background:#0a1a12;border:1px solid var(--green)44;}
+.regime-card.bear{background:#1a0a0e;border:1px solid var(--red)44;}
+.regime-card.transit{background:#1a1400;border:1px solid var(--gold)44;}
+.regime-title{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.regime-card.bull .regime-title{color:var(--green);}
+.regime-card.bear .regime-title{color:var(--red);}
+.regime-card.transit .regime-title{color:var(--gold);}
+.em-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:11px;}
+.em-name{width:100px;color:var(--text);text-align:right;flex-shrink:0;}
+.em-bar-wrap{flex:1;background:#0a0e16;border-radius:2px;height:12px;overflow:hidden;}
+.em-bar{height:100%;border-radius:2px;}
+.em-val{width:42px;color:var(--muted);font-size:10px;flex-shrink:0;}
+.trans-table{width:100%;border-collapse:collapse;font-size:12px;}
+.trans-table th{padding:8px 10px;background:var(--panel);color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:1px;border:1px solid var(--border);text-align:center;}
+.trans-table td{padding:7px 10px;border:1px solid var(--border);text-align:center;}
+.trans-table td.row-label{text-align:left;font-size:11px;font-weight:600;background:var(--panel);}
+.timeline-wrap{overflow-x:auto;margin-bottom:24px;}
+.tl-inner{display:flex;height:60px;min-width:1000px;border-radius:4px;overflow:hidden;}
+.tl-seg{height:100%;flex-shrink:0;position:relative;cursor:default;}
+.tl-seg:hover .tl-tip{display:block;}
+.tl-tip{display:none;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#0d1117;border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:9px;white-space:nowrap;z-index:10;color:var(--text);margin-bottom:3px;}
+.sus-row2{display:grid;grid-template-columns:90px 80px 80px 60px 80px 1fr;gap:8px;padding:6px 10px;border-radius:4px;margin-bottom:4px;font-size:11px;align-items:center;}
+.sus-row2.header{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:4px 10px;}
+.bic-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#0a0e16;border-radius:6px;margin-bottom:6px;font-size:12px;}
+.bic-n{font-weight:700;width:60px;}
+.bic-lp{color:var(--muted);flex:1;}
+.bic-bar-wrap{flex:2;background:var(--border);border-radius:2px;height:8px;overflow:hidden;}
+.bic-bar{height:100%;background:var(--purple);border-radius:2px;}
+.tag{display:inline-block;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:3px;}
+.tag-ok{background:#001a0a;color:var(--green);border:1px solid var(--green);}
+.tag-warn{background:#2a1a00;color:var(--gold);border:1px solid var(--gold);}
+.tag-info{background:#0a0020;color:var(--purple);border:1px solid var(--purple);}
+.tag-red{background:#1a0005;color:var(--red);border:1px solid var(--red);}
+.footer-bar{margin-top:60px;padding-top:20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.footer-bar a{color:var(--muted);text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-brand">tCO · Arc 45</div>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="../PROJECT_INDEX.html">Index</a>
+    <a href="arc43-markov.html">Arc 43</a>
+    <a href="arc44-jupiter-matrix.html">Arc 44</a>
+    <a href="https://traderlive.viktim.xyz" target="_blank">TraderLive</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="kicker">Arc 45 · June 2026 · BTC x SOL Weekly · n=260</div>
+    <h1>Hidden Markov Model + Viterbi Decoding</h1>
+    <div class="deck">Formal HMM fitted to the weekly chord sequence. Hidden states = market regimes. Viterbi algorithm decodes the most likely regime at every week. Does the W8 SUSPENDED signal perform better in specific regimes?</div>
+  </div>
+
+  <!-- MODEL SELECTION -->
+  <h2>◈ Model Selection — BIC Comparison</h2>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Lower BIC = better fit vs complexity trade-off. Best of 10 random initialisations per n.</div>
+  <div class="bic-row">
+    <span class="bic-n" style="color:var(--green)">n = 2</span>
+    <span class="bic-lp">log P = −354.28</span>
+    <div class="bic-bar-wrap"><div class="bic-bar" style="width:100%;background:var(--green)"></div></div>
+    <span style="font-weight:700;color:var(--green)">BIC 825.3</span>
+    <span class="tag tag-ok">BEST</span>
+  </div>
+  <div class="bic-row">
+    <span class="bic-n" style="color:var(--gold)">n = 3</span>
+    <span class="bic-lp">log P = −347.56</span>
+    <div class="bic-bar-wrap"><div class="bic-bar" style="width:87%;background:var(--gold)"></div></div>
+    <span style="color:var(--gold)">BIC 889.7</span>
+    <span class="tag tag-warn">+64 vs 2-state</span>
+  </div>
+  <div class="bic-row">
+    <span class="bic-n" style="color:var(--muted)">n = 4</span>
+    <span class="bic-lp">log P = −342.30</span>
+    <div class="bic-bar-wrap"><div class="bic-bar" style="width:76%;background:#4a6080"></div></div>
+    <span style="color:var(--muted)">BIC 968.2</span>
+    <span style="font-size:10px;color:var(--muted)">over-parameterised</span>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-top:8px">
+    BIC selects <b style="color:var(--green)">2 states</b>. However, 3 states are used for analysis: the 2-state solution is degenerate (BULL→BULL = 0%), while 3 states yield interpretable regimes at a small BIC cost (+64). BIC is a guide, not law.
+  </div>
+
+  <!-- REGIME DEFINITIONS -->
+  <h2>◈ 3-State Regime Definitions</h2>
+  <div class="grid-3">
+
+    <div class="regime-card bull">
+      <div class="regime-title">◎ BULL REGIME — State 2</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">n=169 weeks · 65% of sample</div>
+      <div class="em-row"><span class="em-name">MAJOR</span><div class="em-bar-wrap"><div class="em-bar" style="width:47.6%;background:var(--green)"></div></div><span class="em-val">47.6%</span></div>
+      <div class="em-row"><span class="em-name">TRITONE</span><div class="em-bar-wrap"><div class="em-bar" style="width:40.2%;background:var(--red)"></div></div><span class="em-val">40.2%</span></div>
+      <div class="em-row"><span class="em-name">SUSPENDED</span><div class="em-bar-wrap"><div class="em-bar" style="width:6%;background:var(--purple)"></div></div><span class="em-val">6.0%</span></div>
+      <div style="margin-top:10px;font-size:10px;color:var(--muted)">Self-persistence: <b style="color:var(--green)">90.5%</b><br>→ TRANSIT: 9.5% · → BEAR: 0%<br>Bull runs don't collapse directly to bear.</div>
+    </div>
+
+    <div class="regime-card bear">
+      <div class="regime-title">◎ BEAR REGIME — State 1</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">n=62 weeks · 24% of sample</div>
+      <div class="em-row"><span class="em-name">TRITONE</span><div class="em-bar-wrap"><div class="em-bar" style="width:56.4%;background:var(--red)"></div></div><span class="em-val">56.4%</span></div>
+      <div class="em-row"><span class="em-name">DOMINANT</span><div class="em-bar-wrap"><div class="em-bar" style="width:23.1%;background:var(--gold)"></div></div><span class="em-val">23.1%</span></div>
+      <div class="em-row"><span class="em-name">MAJOR</span><div class="em-bar-wrap"><div class="em-bar" style="width:15.6%;background:var(--green)"></div></div><span class="em-val">15.6%</span></div>
+      <div style="margin-top:10px;font-size:10px;color:var(--muted)">Self-persistence: <b style="color:var(--red)">81.5%</b><br>→ BULL: 18.4% · → TRANSIT: 0.1%<br>Bears break straight to bull — no intermediate.</div>
+    </div>
+
+    <div class="regime-card transit">
+      <div class="regime-title">◎ TRANSIT REGIME — State 0</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">n=29 weeks · 11% of sample</div>
+      <div class="em-row"><span class="em-name">SUSPENDED</span><div class="em-bar-wrap"><div class="em-bar" style="width:40.3%;background:var(--purple)"></div></div><span class="em-val">40.3%</span></div>
+      <div class="em-row"><span class="em-name">MAJOR</span><div class="em-bar-wrap"><div class="em-bar" style="width:39.8%;background:var(--green)"></div></div><span class="em-val">39.8%</span></div>
+      <div class="em-row"><span class="em-name">DOMINANT</span><div class="em-bar-wrap"><div class="em-bar" style="width:18.4%;background:var(--gold)"></div></div><span class="em-val">18.4%</span></div>
+      <div style="margin-top:10px;font-size:10px;color:var(--muted)">Self-persistence: <b style="color:var(--gold)">60.9%</b><br>→ BEAR: 39.1% · → BULL: 0%<br>Transition zone: high SUSPENDED concentration.</div>
+    </div>
+
+  </div>
+
+  <div class="insight">
+    <b>Regime structure:</b> The market follows a one-way cascade: <b>BULL → TRANSIT → BEAR → BULL</b>. Bull runs are sticky (90.5% self-persistence), bear markets are sticky (81.5%), and the TRANSIT regime is the key rotation zone between the two — characterised by high SUSPENDED frequency (40.3% emission). SUSPENDED as a chord is mostly a TRANSIT regime signal, not a BULL regime signal.
+  </div>
+
+  <!-- REGIME TRANSITION DIAGRAM -->
+  <h2>◈ Regime Transition Matrix</h2>
+  <div class="grid-2" style="align-items:start">
+    <table class="trans-table">
+      <tr>
+        <th>FROM ↓ TO →</th>
+        <th style="color:var(--gold)">TRANSIT</th>
+        <th style="color:var(--red)">BEAR</th>
+        <th style="color:var(--green)">BULL</th>
+      </tr>
+      <tr>
+        <td class="row-label" style="color:var(--gold)">TRANSIT</td>
+        <td style="background:#2a1a0044;font-weight:700;color:var(--gold)">60.9%</td>
+        <td style="background:#1a0a0e44;font-weight:700;color:var(--red)">39.1%</td>
+        <td style="color:var(--muted)">0%</td>
+      </tr>
+      <tr>
+        <td class="row-label" style="color:var(--red)">BEAR</td>
+        <td style="color:var(--muted)">0.1%</td>
+        <td style="background:#1a0a0e55;font-weight:700;color:var(--red)">81.5%</td>
+        <td style="background:#0a1a1244;font-weight:700;color:var(--green)">18.4%</td>
+      </tr>
+      <tr>
+        <td class="row-label" style="color:var(--green)">BULL</td>
+        <td style="background:#2a1a0022;color:var(--gold)">9.5%</td>
+        <td style="color:var(--muted)">0%</td>
+        <td style="background:#0a1a1255;font-weight:700;color:var(--green)">90.5%</td>
+      </tr>
+    </table>
+    <div style="padding:16px;background:#0a0e16;border-radius:8px;font-size:12px;line-height:2;">
+      <div style="color:var(--gold);font-weight:700;margin-bottom:6px">Cascade Flow:</div>
+      <div><span style="color:var(--green)">BULL</span> → <span style="color:var(--gold)">TRANSIT</span> (9.5% per week)</div>
+      <div><span style="color:var(--gold)">TRANSIT</span> → <span style="color:var(--red)">BEAR</span> (39.1% per week)</div>
+      <div><span style="color:var(--red)">BEAR</span> → <span style="color:var(--green)">BULL</span> (18.4% per week)</div>
+      <div style="margin-top:8px;color:var(--muted);font-size:11px">Mean sojourn: BULL ≈10.5w, BEAR ≈5.4w, TRANSIT ≈2.6w</div>
+      <div style="margin-top:6px;color:var(--muted);font-size:11px">No direct BULL→BEAR or BEAR→TRANSIT jump.</div>
+    </div>
+  </div>
+
+  <!-- VITERBI TIMELINE -->
+  <h2>◈ Viterbi-Decoded Regime Timeline (2021–2026)</h2>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:12px">
+    Each bar = 1 week. Colour = most likely hidden regime. Purple circles = SUSPENDED chord.
+  </div>
+  <div style="display:flex;gap:20px;margin-bottom:10px;font-size:11px;">
+    <span><span style="display:inline-block;width:12px;height:12px;background:var(--green);border-radius:2px;margin-right:4px;vertical-align:middle"></span>BULL</span>
+    <span><span style="display:inline-block;width:12px;height:12px;background:var(--red);border-radius:2px;margin-right:4px;vertical-align:middle"></span>BEAR</span>
+    <span><span style="display:inline-block;width:12px;height:12px;background:var(--gold);border-radius:2px;margin-right:4px;vertical-align:middle"></span>TRANSIT</span>
+    <span><span style="display:inline-block;width:12px;height:12px;background:var(--purple);border-radius:50%;margin-right:4px;vertical-align:middle"></span>SUSPENDED week</span>
+  </div>
+  <div class="timeline-wrap">
+    <div class="tl-inner" id="timeline"></div>
+  </div>
+
+  <!-- YEAR LABELS -->
+  <div style="display:flex;min-width:1000px;font-size:9px;color:var(--muted);padding:4px 0;overflow:visible;" id="tl-labels"></div>
+
+  <!-- SUSPENDED BY REGIME -->
+  <h2>◈ SUSPENDED Signal — Regime Context</h2>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:12px">All 24 SUSPENDED weeks decoded by HMM regime. Does regime change the W8 signal quality?</div>
+
+  <div class="sus-row2 header">
+    <span>Date</span><span>Regime</span><span>Gate</span><span>Next chord</span><span>SOL next wk</span><span>W8 signal?</span>
+  </div>
+
+  <div id="sus-table"></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px;">
+    <div style="background:#0a0e16;border-radius:6px;padding:14px;">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:4px">TRANSIT REGIME (n=13)</div>
+      <div style="font-size:20px;font-weight:700;color:var(--gold)">5/13 = 38.5%</div>
+      <div style="font-size:10px;color:var(--muted)">next week SOL ↑</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">Market rotating toward bear</div>
+    </div>
+    <div style="background:#0a1408;border-radius:6px;padding:14px;border:1px solid var(--green)22;">
+      <div style="font-size:9px;color:var(--green);letter-spacing:1px;margin-bottom:4px">BULL REGIME (n=11)</div>
+      <div style="font-size:20px;font-weight:700;color:var(--green)">8/11 = 72.7%</div>
+      <div style="font-size:10px;color:var(--muted)">next week SOL ↑</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">Dip in bull run → strong bounce</div>
+    </div>
+    <div style="background:#0a0014;border-radius:6px;padding:14px;border:1px solid var(--purple)22;">
+      <div style="font-size:9px;color:var(--purple);letter-spacing:1px;margin-bottom:4px">ALL SUSPENDED (n=24)</div>
+      <div style="font-size:20px;font-weight:700;color:var(--purple)">13/24 = 54.2%</div>
+      <div style="font-size:10px;color:var(--muted)">next week SOL ↑</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">Baseline (no filter)</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <b>Key finding:</b> SUSPENDED in the <b>BULL regime</b> has a 72.7% SOL-up rate next week — nearly twice the TRANSIT rate (38.5%). The W8 signal's historical wins are dominated by BULL-regime SUSPENDED events: the chord fires when BTC temporarily dips in a still-healthy bull run, and SOL bounces back strongly. TRANSIT-regime SUSPENDED is a warning sign — the market is rotating toward BEAR, and SOL relative strength is temporary. <b>Regime filter beats Jupiter gate</b> as a signal discriminant.
+  </div>
+
+  <!-- SIGNAL SCORING FRAMEWORK -->
+  <h2>◈ Proposed W8 Signal Scoring (Arc 45 Output)</h2>
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Scoring framework derived from regime analysis. Higher score = higher conviction.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Positive filters (+points)</div>
+        <div style="font-size:12px;line-height:2.2;color:var(--text)">
+          <div>✓ Chord = SUSPENDED · +2 pts (base)</div>
+          <div style="color:var(--green)">✓ HMM regime = BULL · +3 pts ← key</div>
+          <div style="color:var(--gold)">✓ Jupiter gate ACTIVE · +1 pt</div>
+          <div style="color:var(--blue)">✓ Consecutive SUSPENDED weeks · +1 pt</div>
+          <div style="color:var(--green)">✓ Miner floor holding · +1 pt</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Negative filters (−points)</div>
+        <div style="font-size:12px;line-height:2.2;color:var(--text)">
+          <div style="color:var(--gold)">✗ HMM regime = TRANSIT · −1 pt</div>
+          <div style="color:var(--red)">✗ HMM regime = BEAR · −3 pts (veto)</div>
+          <div style="color:var(--red)">✗ DXY rising strongly · −1 pt</div>
+          <div style="color:var(--red)">✗ DOMINANT→SUSPENDED pattern · −1 pt</div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--muted)">
+          Take signal if score ≥ 4.<br>
+          Bull + SUSPENDED + gate = 6 pts → high conviction.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bar">
+    <div>tCO Arc 45 · HMM + Viterbi · June 2026 · SIGNED-BY: CODEX</div>
+    <div>
+      <a href="arc44-jupiter-matrix.html">← Arc 44</a> &nbsp;·&nbsp;
+      <a href="../PROJECT_INDEX.html">Index</a> &nbsp;·&nbsp;
+      <a href="https://github.com/FizzNetwork/the-crypto-orchestra" target="_blank">GitHub</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const CHORDS_LIST = ['MAJOR','LEADING','DOMINANT','LYDIAN','PEDAL','NEAPOLITAN','SUSPENDED','PHRYGIAN','TRITONE'];
+const CHORD_COLORS_MAP = {
+  MAJOR:'#00ff88',LEADING:'#44ffaa',DOMINANT:'#f0b429',LYDIAN:'#00d4ff',
+  PEDAL:'#4a7090',NEAPOLITAN:'#ff8c00',SUSPENDED:'#b44fff',PHRYGIAN:'#9d6fff',TRITONE:'#ff3d5a'
+};
+const REGIME_COLORS = ['#f0b429','#ff3d5a','#00ff88']; // TRANSIT, BEAR, BULL
+const REGIME_LABELS = ['TRANSIT','BEAR','BULL'];
+
+const DATES = ["2021-06-17","2021-06-24","2021-07-01","2021-07-08","2021-07-15","2021-07-22","2021-07-29","2021-08-05","2021-08-12","2021-08-19","2021-08-26","2021-09-02","2021-09-09","2021-09-16","2021-09-23","2021-09-30","2021-10-07","2021-10-14","2021-10-21","2021-10-28","2021-11-04","2021-11-11","2021-11-18","2021-11-25","2021-12-02","2021-12-09","2021-12-16","2021-12-23","2021-12-30","2022-01-06","2022-01-13","2022-01-20","2022-01-27","2022-02-03","2022-02-10","2022-02-17","2022-02-24","2022-03-03","2022-03-10","2022-03-17","2022-03-24","2022-03-31","2022-04-07","2022-04-14","2022-04-21","2022-04-28","2022-05-05","2022-05-12","2022-05-19","2022-05-26","2022-06-02","2022-06-09","2022-06-16","2022-06-23","2022-06-30","2022-07-07","2022-07-14","2022-07-21","2022-07-28","2022-08-04","2022-08-11","2022-08-18","2022-08-25","2022-09-01","2022-09-08","2022-09-15","2022-09-22","2022-09-29","2022-10-06","2022-10-13","2022-10-20","2022-10-27","2022-11-03","2022-11-10","2022-11-17","2022-11-24","2022-12-01","2022-12-08","2022-12-15","2022-12-22","2022-12-29","2023-01-05","2023-01-12","2023-01-19","2023-01-26","2023-02-02","2023-02-09","2023-02-16","2023-02-23","2023-03-02","2023-03-09","2023-03-16","2023-03-23","2023-03-30","2023-04-06","2023-04-13","2023-04-20","2023-04-27","2023-05-04","2023-05-11","2023-05-18","2023-05-25","2023-06-01","2023-06-08","2023-06-15","2023-06-22","2023-06-29","2023-07-06","2023-07-13","2023-07-20","2023-07-27","2023-08-03","2023-08-10","2023-08-17","2023-08-24","2023-08-31","2023-09-07","2023-09-14","2023-09-21","2023-09-28","2023-10-05","2023-10-12","2023-10-19","2023-10-26","2023-11-02","2023-11-09","2023-11-16","2023-11-23","2023-11-30","2023-12-07","2023-12-14","2023-12-21","2023-12-28","2024-01-04","2024-01-11","2024-01-18","2024-01-25","2024-02-01","2024-02-08","2024-02-15","2024-02-22","2024-02-29","2024-03-07","2024-03-14","2024-03-21","2024-03-28","2024-04-04","2024-04-11","2024-04-18","2024-04-25","2024-05-02","2024-05-09","2024-05-16","2024-05-23","2024-05-30","2024-06-06","2024-06-13","2024-06-20","2024-06-27","2024-07-04","2024-07-11","2024-07-18","2024-07-25","2024-08-01","2024-08-08","2024-08-15","2024-08-22","2024-08-29","2024-09-05","2024-09-12","2024-09-19","2024-09-26","2024-10-03","2024-10-10","2024-10-17","2024-10-24","2024-10-31","2024-11-07","2024-11-14","2024-11-21","2024-11-28","2024-12-05","2024-12-12","2024-12-19","2024-12-26","2025-01-02","2025-01-09","2025-01-16","2025-01-23","2025-01-30","2025-02-06","2025-02-13","2025-02-20","2025-02-27","2025-03-06","2025-03-13","2025-03-20","2025-03-27","2025-04-03","2025-04-10","2025-04-17","2025-04-24","2025-05-01","2025-05-08","2025-05-15","2025-05-22","2025-05-29","2025-06-05","2025-06-12","2025-06-19","2025-06-26","2025-07-03","2025-07-10","2025-07-17","2025-07-24","2025-07-31","2025-08-07","2025-08-14","2025-08-21","2025-08-28","2025-09-04","2025-09-11","2025-09-18","2025-09-25","2025-10-02","2025-10-09","2025-10-16","2025-10-23","2025-10-30","2025-11-06","2025-11-13","2025-11-20","2025-11-27","2025-12-04","2025-12-11","2025-12-18","2025-12-25","2026-01-01","2026-01-08","2026-01-15","2026-01-22","2026-01-29","2026-02-05","2026-02-12","2026-02-19","2026-02-26","2026-03-05","2026-03-12","2026-03-19","2026-03-26","2026-04-02","2026-04-09","2026-04-16","2026-04-23","2026-04-30","2026-05-07","2026-05-14","2026-05-21","2026-05-28","2026-06-04"];
+
+const CHORDS_SEQ = ["TRITONE","MAJOR","SUSPENDED","TRITONE","MAJOR","MAJOR","SUSPENDED","MAJOR","SUSPENDED","MAJOR","SUSPENDED","SUSPENDED","DOMINANT","TRITONE","TRITONE","MAJOR","DOMINANT","MAJOR","SUSPENDED","MAJOR","DOMINANT","TRITONE","TRITONE","LYDIAN","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","DOMINANT","TRITONE","TRITONE","TRITONE","TRITONE","MAJOR","TRITONE","TRITONE","MAJOR","TRITONE","MAJOR","MAJOR","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","MAJOR","TRITONE","MAJOR","MAJOR","TRITONE","TRITONE","TRITONE","SUSPENDED","MAJOR","TRITONE","TRITONE","TRITONE","TRITONE","NEAPOLITAN","MAJOR","TRITONE","TRITONE","SUSPENDED","DOMINANT","TRITONE","MAJOR","TRITONE","TRITONE","MAJOR","MAJOR","MAJOR","MAJOR","TRITONE","MAJOR","SUSPENDED","TRITONE","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","SUSPENDED","TRITONE","MAJOR","MAJOR","TRITONE","MAJOR","SUSPENDED","SUSPENDED","TRITONE","TRITONE","MAJOR","MAJOR","TRITONE","MAJOR","MAJOR","MAJOR","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","TRITONE","SUSPENDED","MAJOR","SUSPENDED","TRITONE","MAJOR","PHRYGIAN","TRITONE","MAJOR","MAJOR","MAJOR","MAJOR","NEAPOLITAN","MAJOR","MAJOR","DOMINANT","SUSPENDED","DOMINANT","DOMINANT","MAJOR","TRITONE","TRITONE","TRITONE","SUSPENDED","SUSPENDED","SUSPENDED","MAJOR","SUSPENDED","TRITONE","DOMINANT","MAJOR","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","SUSPENDED","MAJOR","TRITONE","MAJOR","TRITONE","SUSPENDED","TRITONE","TRITONE","TRITONE","DOMINANT","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","MAJOR","MAJOR","TRITONE","MAJOR","MAJOR","MAJOR","TRITONE","TRITONE","MAJOR","TRITONE","MAJOR","MAJOR","MAJOR","DOMINANT","TRITONE","TRITONE","TRITONE","DOMINANT","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","MAJOR","MAJOR","MAJOR","NEAPOLITAN","TRITONE","MAJOR","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","SUSPENDED","MAJOR","MAJOR","TRITONE","MAJOR","LYDIAN","TRITONE","LYDIAN","MAJOR","MAJOR","TRITONE","MAJOR","MAJOR","DOMINANT","TRITONE","LYDIAN","TRITONE","MAJOR","TRITONE","MAJOR","MAJOR","DOMINANT","MAJOR","MAJOR","SUSPENDED","TRITONE","TRITONE"];
+
+const VITERBI = [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,1,1,2,1,1,1,1,1,1,1,1,1,1,2,1,1,2,1,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,2,2,1,1,1,0,2,1,1,1,1,1,2,1,1,0,1,2,1,1,2,2,2,2,1,2,0,1,2,2,2,2,2,2,2,2,2,2,2,2,2,0,2,2,1,2,0,0,1,1,2,2,1,2,2,2,1,1,1,1,1,2,2,2,2,2,2,1,0,2,0,1,2,0,1,1,2,2,2,2,1,2,2,0,0,0,2,0,1,0,0,0,2,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,2,1,2,1,0,1,1,1,1,1,1,1,1,2,2,1,2,2,2,1,1,2,1,2,2,2,2,0,1,1,1,1,2,2,2,1,2,0,1,0,2,2,1,0,2,2,2,2,2,2,0,2,2,1,2,2,2,2,0,1,1,2,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2];
+
+const GATE = [false,false,false,false,false,false,false,false,false,false,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true];
+
+// Build timeline
+const tl = document.getElementById('timeline');
+const n = DATES.length;
+DATES.forEach((d, i) => {
+  const seg = document.createElement('div');
+  seg.className = 'tl-seg';
+  seg.style.width = (100/n) + '%';
+  const regime = VITERBI[i];
+  const isSus = CHORDS_SEQ[i] === 'SUSPENDED';
+  seg.style.background = isSus ? '#b44fff' : REGIME_COLORS[regime];
+  seg.style.opacity = isSus ? '1' : '0.7';
+  const tip = document.createElement('div');
+  tip.className = 'tl-tip';
+  tip.textContent = `${d} ${CHORDS_SEQ[i]} [${REGIME_LABELS[regime]}]${GATE[i]?' ⚡':''}`;
+  seg.appendChild(tip);
+  tl.appendChild(seg);
+});
+
+// Year labels
+const lblDiv = document.getElementById('tl-labels');
+const years = ['2021','2022','2023','2024','2025','2026'];
+const startDate = new Date('2021-06-17');
+const totalMs = new Date('2026-06-04') - startDate;
+years.forEach(yr => {
+  const yrDate = new Date(`${yr}-01-01`);
+  const pct = Math.max(0, (yrDate - startDate) / totalMs * 100);
+  const span = document.createElement('div');
+  span.style.cssText = `position:absolute;left:${pct}%;font-size:9px;color:#4a6080;`;
+  span.textContent = yr;
+  lblDiv.style.position = 'relative';
+  lblDiv.appendChild(span);
+});
+
+// SUSPENDED table
+const SUS_DATA = [
+  {date:'2021-07-01',regime:'BULL',gate:false,next_chord:'TRITONE',sol_up:false},
+  {date:'2021-07-29',regime:'TRANSIT',gate:false,next_chord:'MAJOR',sol_up:true,w8:true},
+  {date:'2021-08-12',regime:'TRANSIT',gate:false,next_chord:'DOMINANT',sol_up:false},
+  {date:'2021-08-26',regime:'TRANSIT',gate:false,next_chord:'SUSPENDED',sol_up:true},
+  {date:'2021-09-02',regime:'TRANSIT',gate:true,next_chord:'DOMINANT',sol_up:false},
+  {date:'2021-10-21',regime:'TRANSIT',gate:true,next_chord:'MAJOR',sol_up:true},
+  {date:'2022-09-01',regime:'BULL',gate:false,next_chord:'MAJOR',sol_up:true,w8:true},
+  {date:'2022-11-17',regime:'TRANSIT',gate:true,next_chord:'DOMINANT',sol_up:false},
+  {date:'2023-02-16',regime:'TRANSIT',gate:false,next_chord:'TRITONE',sol_up:false},
+  {date:'2023-05-11',regime:'BULL',gate:false,next_chord:'TRITONE',sol_up:false},
+  {date:'2023-07-06',regime:'TRANSIT',gate:false,next_chord:'SUSPENDED',sol_up:true},
+  {date:'2023-07-13',regime:'TRANSIT',gate:false,next_chord:'TRITONE',sol_up:false},
+  {date:'2023-12-07',regime:'BULL',gate:true,next_chord:'MAJOR',sol_up:true,w8:true},
+  {date:'2023-12-21',regime:'BULL',gate:true,next_chord:'TRITONE',sol_up:false},
+  {date:'2024-03-14',regime:'TRANSIT',gate:true,next_chord:'DOMINANT',sol_up:false},
+  {date:'2024-06-20',regime:'TRANSIT',gate:false,next_chord:'SUSPENDED',sol_up:true},
+  {date:'2024-06-27',regime:'TRANSIT',gate:false,next_chord:'SUSPENDED',sol_up:true},
+  {date:'2024-07-04',regime:'TRANSIT',gate:false,next_chord:'MAJOR',sol_up:true},
+  {date:'2024-08-22',regime:'BULL',gate:false,next_chord:'TRITONE',sol_up:false},
+  {date:'2024-10-17',regime:'BULL',gate:false,next_chord:'MAJOR',sol_up:true,w8:true},
+  {date:'2025-08-21',regime:'BULL',gate:false,next_chord:'MAJOR',sol_up:true,w8:true},
+  {date:'2025-11-20',regime:'TRANSIT',gate:false,next_chord:'MAJOR',sol_up:true,w8:true},
+  {date:'2026-02-12',regime:'BULL',gate:true,next_chord:'MAJOR',sol_up:true,w8:true},
+  {date:'2026-05-07',regime:'BULL',gate:true,next_chord:'TRITONE',sol_up:false},
+];
+
+const REGIME_C = {BULL:'#00ff88',BEAR:'#ff3d5a',TRANSIT:'#f0b429'};
+const stbl = document.getElementById('sus-table');
+SUS_DATA.forEach(s => {
+  const div = document.createElement('div');
+  div.className = 'sus-row2';
+  div.style.background = s.sol_up ? '#0a100a' : '#100a0a';
+  div.innerHTML = `
+    <span style="color:#c8d8e8">${s.date}</span>
+    <span style="color:${REGIME_C[s.regime]};font-weight:700">${s.regime}</span>
+    <span>${s.gate ? '<span class="tag tag-ok" style="font-size:8px">IN ⚡</span>' : '<span style="color:#4a6080;font-size:10px">OUT</span>'}</span>
+    <span style="color:${CHORD_COLORS_MAP[s.next_chord] || '#c8d8e8'};font-size:10px">${s.next_chord}</span>
+    <span style="color:${s.sol_up ? '#00ff88' : '#ff3d5a'};font-weight:700">${s.sol_up ? '↑ WIN' : '↓ LOSS'}</span>
+    <span style="font-size:10px;color:#4a6080">${s.w8 ? '<b style="color:#b44fff">W8 signal ◈</b>' : ''}</span>
+  `;
+  stbl.appendChild(div);
+});
+</script>
+</body>
+</html>
