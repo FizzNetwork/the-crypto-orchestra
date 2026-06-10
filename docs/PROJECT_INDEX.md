@@ -189,6 +189,15 @@ Sideways threshold: ±0.2% per candle. Off-diagonal cells (divergence states) ca
 - Proposed scoring: SUSPENDED(+2) + BULL regime(+3) + Jupiter gate(+1) = take at ≥4 pts
 - Dashboard: [docs/arc45-hmm-viterbi.html](./arc45-hmm-viterbi.html)
 
+### Arc 46 · Multi-Week Hold Analysis
+- Tested 1W, 2W, 3W forward SOL returns for all 24 SUSPENDED events 2021–2026, split by regime and Jupiter gate
+- **Key finding: don't hold past week 1.** 1W = 54.2%; 2W drops to 45.8%; 3W flat at 45.8% — signal decays after immediate chord resolution
+- BULL regime: 57.1% at 1W (solo first-fire: 66.7%). BEAR: 71.4% (reversal events in bearish context). TRANSIT: 40%→30% degrading — skip.
+- **No compound effect from consecutive SUSPENDED.** Solo first-fire outperforms streak entries. Fire once, exit after week 1.
+- Jupiter gate consistently underperforms: TRANSIT inside = 25%, outside = 50%; BULL inside = 50%, outside = 60%
+- Operational rule update: SUSPENDED + (BULL or BEAR regime) + solo fire → LONG SOL, 1-week hold, exit.
+- Dashboard: [docs/arc46-multiweek-hold.html](./arc46-multiweek-hold.html)
+
 ---
 
 ## Live System Architecture
@@ -211,61 +220,4 @@ traderlive.viktim.xyz (Next.js · Vercel)
 - ◉ CAUTIOUS — 1x, Config C only
 - ⊕ SIGNALS — live signal feed + closed trade log
 - ⊞ MACRO — 6-layer framework, FOMC calendar, key levels
-- ◈ PHASE SIGNAL — S1 (BTC×SOL) Synthony display, Jupiter tracker, audio symphony, W8 backtest log
-- ◎ STOCKS — S2 (SPY×NVDA) + S3 (SPY×AMC) Synthony display, W9/W10 wallets
-
-**Audio engine (Web Audio API):**
-- 9 chord arpeggios + 3 system sounds (ENTRY / EXIT_WIN / EXIT_LOSS)
-- 6 TF channels firing independently on candle close
-- Each TF: distinct octave multiplier, flash animation on fire
-
-**Synthony markers on chart:**
-- LightweightCharts `series.setMarkers()` — coloured dots at chord-change events
-- TF-matched: 1H chart only shows 1H changes, 4H only 4H changes, etc.
-
----
-
-## Key Numbers
-
-| Metric | Value |
-|---|---|
-| W8 signal streak | 7/7 wins |
-| W8 wallet return | +60.3% ($150 → $240.52) |
-| Signal condition | S1 SUSPENDED + Jupiter 340.9° ±60° |
-| Flat threshold | ±0.2% per candle |
-| Jupiter period | 398.88 days synodic |
-| Jupiter ref date | 2026-02-12 (last signal) |
-| Chord states | 9 (extended from 4) |
-| Timeframes | 6 (1m / 15m / 1H / 4H / Daily / Weekly) |
-| Active Synthonies | 3 (S1 BTC×SOL · S2 SPY×NVDA · S3 SPY×AMC) |
-| Wallets | 11 profiles ($150 each, $1,650 total) |
-
----
-
-## Open Questions
-
-1. ~~**Transition probability matrix**~~ ✓ Done — Arc 43 (9×9 empirical matrix), Arc 44 (Jupiter-conditional split), Arc 45 (HMM + Viterbi regimes)
-2. **kNN signal sharpening** — does restricting entry to the most phase-space-similar historical moments improve W8 accuracy?
-3. **Venus correlation** — is the 583.9d Venus synodic period a genuine third oscillator or spurious?
-4. **9-state backtest** — formal backtest of all nine states' forward returns across all TFs
-5. **SOL→BTC leadership spikes** — can the TE regime-switch signal be operationalised as a standalone trade?
-6. **S2/S3 Jupiter filter** — does applying any celestial filter to the equities Synthonies improve signal quality?
-7. **New Synthonies** — Gold×DXY, ETH×BTC, VIX×SPY as candidate S4/S5/S6
-
----
-
-## Files
-
-| File | Description |
-|---|---|
-| `the-crypto-orchestra.md` | Longform article — full tCO narrative, publish-ready |
-| `PROJECT_INDEX.md` | This file — master research index |
-| `btc-theatre/components/TraderLive.jsx` | Main app component (~1230 lines) |
-| `btc-theatre/pages/api/sol-klines.js` | Kraken SOL OHLC proxy |
-| `btc-theatre/pages/api/btc-klines.js` | Kraken BTC OHLC proxy |
-| `btc-theatre/pages/api/stock-klines.js` | Yahoo Finance proxy (equities Synthonies) |
-| `drop pack/pre-edit snapshots/` | All pre-edit snapshots |
-
----
-
-*Last updated: June 2026. Framework: The Crypto Orchestra (tCO) v1.0. Synthonies: S1 S2 S3. Signal streak: 7/7. Arcs: 45 complete.*
+- ◈ PHA
