@@ -1,0 +1,11 @@
+{
+  "rule": "SOL_ret_pct > 3 AND sol_rs_4w_pct < 20 OR consec_neg_btc >= 3",
+  "sol_threshold": 3.0,
+  "rs4w_threshold": 20.0,
+  "consec_threshold": 3,
+  "backtest_n": 7,
+  "win_rate": 1.0,
+  "mean_ret_pct": 7.108571428571429,
+  "sharpe": 9.369357884694065,
+  "compounded": 160.27964065038563
+}

@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Phase Estimator — SOL×BTC Orbit</title>
+<style>
+:root{--bg:#080810;--panel:#0f0f1a;--border:#1a1a2e;--green:#3ddc84;--red:#ff4d6d;--gold:#f0c040;--blue:#06b6d4;--purple:#c77dff;--orange:#ff9f40;--text:#dde0f5;--muted:#5a5a7a;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;min-height:100vh;}
+.layout{display:grid;grid-template-columns:340px 1fr;grid-template-rows:auto auto;gap:16px;padding:20px;max-width:1400px;margin:0 auto;}
+.header{grid-column:1/-1;display:flex;align-items:baseline;gap:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.header h1{font-size:18px;color:var(--purple);letter-spacing:0.5px;}
+.header .sub{color:var(--muted);font-size:13px;}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.panel-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:16px;}
+
+/* Wheel */
+#wheel-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;}
+#phase-canvas{display:block;}
+.state-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
+.stat-box{background:#0a0a14;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.stat-val{font-size:22px;font-weight:700;}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+.chord-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:700;letter-spacing:0.5px;}
+.cb-MAJOR{background:#1a3022;color:var(--green);}
+.cb-SUSPENDED{background:#1a2835;color:var(--blue);}
+.cb-DOMINANT{background:#2a2010;color:var(--gold);}
+.cb-TRITONE{background:#2a1018;color:var(--red);}
+
+/* Timeline */
+#timeline-wrap{position:relative;}
+#timeline-canvas{display:block;width:100%;}
+.tl-legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);}
+.leg-dot{width:10px;height:10px;border-radius:50%;}
+
+/* Signal audit table */
+.audit-table{width:100%;border-collapse:collapse;}
+.audit-table th{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;}
+.audit-table td{padding:9px 10px;border-bottom:1px solid #10101a;font-size:13px;}
+.audit-table tr:last-child td{border-bottom:none;}
+.ph-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:12px;font-weight:600;}
+.ph-hot{background:#1a2820;color:var(--green);}
+.ph-warm{background:#1e1a10;color:var(--gold);}
+.ph-cold{background:#201018;color:var(--red);}
+.pos{color:var(--green)}.neg{color:var(--red)}.gold{color:var(--gold)}
+
+/* Distribution */
+#dist-canvas{display:block;width:100%;}
+.insight-box{background:#0a0c1a;border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:14px;}
+.insight-box h3{font-size:12px;color:var(--gold);margin-bottom:7px;}
+.insight-box p{font-size:12px;color:var(--muted);line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<div class="header">
+  <h1>⊛ Phase Estimator — SOL×BTC Orbit</h1>
+  <span class="sub">Hilbert transform on bandpass-filtered SOL−BTC spread &nbsp;|&nbsp; 259 weeks</span>
+</div>
+
+<!-- LEFT: Wheel + current state -->
+<div class="panel" id="left-panel">
+  <div class="panel-title">Current Phase Position</div>
+  <div id="wheel-wrap">
+    <canvas id="phase-canvas" width="280" height="280"></canvas>
+    <div class="state-row">
+      <div class="stat-box">
+        <div class="stat-label">Phase</div>
+        <div class="stat-val" id="cur-phase" style="color:var(--blue)">—</div>
+        <div class="stat-sub" id="cur-phase-sub">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Signal Depth</div>
+        <div class="stat-val" id="cur-depth" style="color:var(--green)">—</div>
+        <div class="stat-sub">0 = at entry, 1 = opposite</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Amplitude</div>
+        <div class="stat-val" id="cur-amp" style="color:var(--purple)">—</div>
+        <div class="stat-sub">spread cycle strength</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Chord</div>
+        <div class="stat-val" id="cur-chord" style="font-size:14px;padding-top:4px;">—</div>
+        <div class="stat-sub" id="cur-date">—</div>
+      </div>
+    </div>
+    <div class="insight-box" style="width:100%">
+      <h3>What Phase Measures</h3>
+      <p>The spread (SOL−BTC weekly return) oscillates on a ~4-week cycle. The Hilbert transform extracts its instantaneous phase:<br>
+      <strong style="color:var(--green)">0° = spread zero-crossing upward</strong> — SOL just starting to lead BTC.<br>
+      <strong style="color:var(--blue)">90° = spread at peak</strong> — SOL maximum lead.<br>
+      <strong style="color:var(--muted)">180° = zero-crossing downward</strong> — BTC recapturing.<br>
+      <strong style="color:var(--gold)">270° = spread at trough</strong> — BTC maximum lead.</p>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT: Timeline -->
+<div class="panel">
+  <div class="panel-title">Phase History — 259 Weeks &nbsp;<span id="tl-hover" style="color:var(--gold);font-weight:600;font-size:12px;"></span></div>
+  <canvas id="timeline-canvas" width="900" height="220"></canvas>
+  <div class="tl-legend">
+    <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div> Entry zone (315°–45°)</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div> SUSPENDED chord</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div> Filter signal (7 trades)</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--muted)"></div> Phase line</div>
+  </div>
+</div>
+
+<!-- Signal audit -->
+<div class="panel" style="grid-column:1/-1;">
+  <div class="panel-title">Signal Audit — All 7 Filter Trades &amp; Their Phase</div>
+  <table class="audit-table" id="audit-tbl"></table>
+  <div class="insight-box">
+    <h3>Key Finding: Filter Signals Fire at Phase ≈ 0°</h3>
+    <p>6 of 7 confirmed filter signals (100% win rate) landed within ±38° of 0° — the moment the SOL−BTC spread crosses zero upward. This is the <em>entry point</em> of the orbit cycle, not the midpoint. The one outlier (Dec 2023, 265°) fired mid-cycle with an unusually large SOL jump (+13.2%) that overwhelmed the phase. The Hilbert phase is a leading indicator: the filter catches the precise moment SOL begins leading, before the divergence is obvious.</p>
+  </div>
+</div>
+
+<!-- Phase distribution -->
+<div class="panel" style="grid-column:1/-1;">
+  <div class="panel-title">Phase Distribution — All SUSPENDED Bars vs Filter Signals</div>
+  <canvas id="dist-canvas" width="900" height="200"></canvas>
+  <div class="insight-box">
+    <h3>Phase as a Filter Refinement</h3>
+    <p>The polar histogram shows where SUSPENDED chord bars (blue) land in the 0°–360° cycle vs where filter signals (purple) land. SUSPENDED bars concentrate in the 0°–90° quadrant (spread just crossed zero and still rising) — exactly where filter signals fire. But not all SUSPENDED bars near 0° pass the filter: amplitude &lt; 3 and RS4w context still matter. Phase ≈ 0° is a necessary but not sufficient condition. The corrected signal depth metric (closeness to 0°, not 270°) could replace or augment the current filter rule as a continuous pre-screener.</p>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────
+const FILTER_DATES = new Set(['2021-07-29','2022-09-01','2023-12-07','2024-10-17','2025-08-21','2025-11-20','2026-02-12']);
+const FILTER_RETS  = {'2021-07-29':15.4,'2022-09-01':4.2,'2023-12-07':15.1,'2024-10-17':2.4,'2025-08-21':3.8,'2025-11-20':1.2,'2026-02-12':7.7};
+
+const raw=[{d:'2021-06-24',ph:90.0,amp:1.359,dep:0.4999,ch:'MAJOR',btc:3.97,sol:17.76},
+{d:'2021-07-01',ph:38.0,amp:1.573,dep:0.7889,ch:'SUSPENDED',btc:-3.37,sol:1.85},
+{d:'2021-07-08',ph:90.9,amp:8.818,dep:0.4952,ch:'TRITONE',btc:-3.21,sol:-15.31},
+{d:'2021-07-15',ph:178.9,amp:15.321,dep:0.0059,ch:'TRITONE',btc:-2.13,sol:-16.3},
+{d:'2021-07-22',ph:272.3,amp:13.11,dep:0.5126,ch:'MAJOR',btc:21.95,sol:4.48},
+{d:'2021-07-29',ph:5.8,amp:1.752,dep:0.9678,ch:'SUSPENDED',btc:-0.66,sol:25.1},
+{d:'2021-08-05',ph:294.4,amp:11.529,dep:0.6358,ch:'MAJOR',btc:13.67,sol:15.36},
+{d:'2021-08-12',ph:47.6,amp:20.767,dep:0.7353,ch:'SUSPENDED',btc:-1.9,sol:55.7},
+{d:'2021-08-19',ph:168.8,amp:28.848,dep:0.062,ch:'DOMINANT',btc:9.13,sol:-1.17},
+{d:'2021-08-26',ph:284.7,amp:38.469,dep:0.5818,ch:'SUSPENDED',btc:-0.24,sol:43.18},
+{d:'2021-09-02',ph:32.5,amp:42.824,dep:0.8195,ch:'SUSPENDED',btc:-5.9,sol:54.44},
+{d:'2021-09-09',ph:138.1,amp:35.967,dep:0.233,ch:'DOMINANT',btc:4.41,sol:-18.43},
+{d:'2021-09-16',ph:252.1,amp:21.136,dep:0.4005,ch:'TRITONE',btc:-10.02,sol:-6.93},
+{d:'2021-09-23',ph:40.7,amp:11.939,dep:0.7737,ch:'TRITONE',btc:-4.79,sol:-9.14},
+{d:'2021-09-30',ph:172.9,amp:13.042,dep:0.0395,ch:'MAJOR',btc:28.74,sol:13.04},
+{d:'2021-10-07',ph:260.1,amp:9.27,dep:0.4447,ch:'DOMINANT',btc:3.6,sol:-3.93},
+{d:'2021-10-14',ph:278.6,amp:6.638,dep:0.5479,ch:'MAJOR',btc:14.05,sol:17.61},
+{d:'2021-10-21',ph:330.9,amp:13.021,dep:0.8385,ch:'SUSPENDED',btc:-12.12,sol:4.3},
+{d:'2021-10-28',ph:51.9,amp:16.148,dep:0.7118,ch:'MAJOR',btc:7.32,sol:27.65},
+{d:'2021-11-04',ph:136.1,amp:14.313,dep:0.2441,ch:'DOMINANT',btc:3.17,sol:-4.06},
+{d:'2021-11-11',ph:216.4,amp:10.077,dep:0.2025,ch:'TRITONE',btc:-7.35,sol:-6.38},
+{d:'2021-11-18',ph:287.5,amp:6.925,dep:0.597,ch:'TRITONE',btc:-5.38,sol:-6.15},
+{d:'2021-11-25',ph:2.0,amp:6.305,dep:0.989,ch:'MAJOR',btc:0.06,sol:11.02},
+{d:'2021-12-02',ph:93.9,amp:6.693,dep:0.4785,ch:'TRITONE',btc:-12.49,sol:-16.76},
+{d:'2021-12-09',ph:192.9,amp:6.941,dep:0.0716,ch:'TRITONE',btc:-3.29,sol:-8.65},
+{d:'2021-12-16',ph:291.9,amp:6.278,dep:0.6217,ch:'TRITONE',btc:-0.53,sol:-0.46},
+{d:'2021-12-23',ph:36.5,amp:4.078,dep:0.7971,ch:'TRITONE',btc:-4.53,sol:-4.05},
+{d:'2021-12-30',ph:216.0,amp:1.928,dep:0.2,ch:'TRITONE',btc:-6.82,sol:-9.96},
+{d:'2022-01-06',ph:6.5,amp:6.634,dep:0.9637,ch:'DOMINANT',btc:1.19,sol:-1.84},
+{d:'2022-01-13',ph:112.3,amp:11.899,dep:0.3759,ch:'TRITONE',btc:-5.24,sol:-11.31},
+{d:'2022-01-20',ph:215.1,amp:14.93,dep:0.1948,ch:'TRITONE',btc:-12.39,sol:-38.53},
+{d:'2022-01-27',ph:319.4,amp:14.713,dep:0.7742,ch:'MAJOR',btc:0.21,sol:10.19},
+{d:'2022-02-03',ph:68.6,amp:11.948,dep:0.6189,ch:'MAJOR',btc:18.54,sol:11.26},
+{d:'2022-02-10',ph:187.9,amp:8.606,dep:0.0438,ch:'TRITONE',btc:-1.24,sol:-11.31},
+{d:'2022-02-17',ph:317.3,amp:6.851,dep:0.7627,ch:'TRITONE',btc:-16.36,sol:-18.63},
+{d:'2022-02-24',ph:76.2,amp:6.534,dep:0.5768,ch:'MAJOR',btc:16.48,sol:17.51},
+{d:'2022-03-03',ph:169.8,amp:5.665,dep:0.0565,ch:'TRITONE',btc:-4.56,sol:-13.46},
+{d:'2022-03-10',ph:233.0,amp:4.931,dep:0.2945,ch:'TRITONE',btc:-2.03,sol:-0.28},
+{d:'2022-03-17',ph:293.7,amp:6.101,dep:0.6318,ch:'MAJOR',btc:4.25,sol:7.76},
+{d:'2022-03-24',ph:12.3,amp:6.93,dep:0.9319,ch:'MAJOR',btc:9.23,sol:24.14},
+{d:'2022-03-31',ph:98.2,amp:6.174,dep:0.4545,ch:'TRITONE',btc:-8.6,sol:-6.68},
+{d:'2022-04-07',ph:185.8,amp:5.059,dep:0.0325,ch:'TRITONE',btc:-4.81,sol:-7.39},
+{d:'2022-04-14',ph:273.5,amp:5.339,dep:0.5196,ch:'MAJOR',btc:0.53,sol:0.6},
+{d:'2022-04-21',ph:3.5,amp:7.519,dep:0.9806,ch:'TRITONE',btc:-5.26,sol:-7.12},
+{d:'2022-04-28',ph:97.6,amp:10.358,dep:0.4576,ch:'DOMINANT',btc:1.1,sol:-5.91},
+{d:'2022-05-05',ph:197.7,amp:12.057,dep:0.0982,ch:'TRITONE',btc:-31.38,sol:-60.17},
+{d:'2022-05-12',ph:306.3,amp:12.455,dep:0.7018,ch:'TRITONE',btc:-1.14,sol:-1.91},
+{d:'2022-05-19',ph:59.5,amp:13.549,dep:0.6692,ch:'DOMINANT',btc:2.94,sol:-3.99},
+{d:'2022-05-26',ph:164.7,amp:15.66,dep:0.0852,ch:'DOMINANT',btc:0.91,sol:-17.73},
+{d:'2022-06-02',ph:259.2,amp:16.554,dep:0.4402,ch:'DOMINANT',btc:1.34,sol:-3.3},
+{d:'2022-06-09',ph:347.9,amp:14.739,dep:0.9326,ch:'TRITONE',btc:-29.14,sol:-11.25},
+{d:'2022-06-16',ph:73.7,amp:10.247,dep:0.5905,ch:'TRITONE',btc:-12.29,sol:-1.75},
+{d:'2022-06-23',ph:152.9,amp:4.548,dep:0.1503,ch:'MAJOR',btc:0.67,sol:0.0},
+{d:'2022-06-30',ph:151.7,amp:1.55,dep:0.1574,ch:'MAJOR',btc:2.25,sol:8.2},
+{d:'2022-07-07',ph:206.4,amp:3.15,dep:0.1465,ch:'TRITONE',btc:-1.52,sol:-5.7},
+{d:'2022-07-14',ph:315.4,amp:2.833,dep:0.7522,ch:'MAJOR',btc:13.86,sol:18.53},
+{d:'2022-07-21',ph:103.8,amp:2.618,dep:0.4236,ch:'TRITONE',btc:-1.2,sol:-4.28},
+{d:'2022-07-28',ph:234.4,amp:4.266,dep:0.3025,ch:'TRITONE',btc:-0.6,sol:-4.39},
+{d:'2022-08-04',ph:340.7,amp:5.855,dep:0.8927,ch:'MAJOR',btc:4.84,sol:9.73},
+{d:'2022-08-11',ph:77.6,amp:6.741,dep:0.569,ch:'TRITONE',btc:-2.63,sol:-4.8},
+{d:'2022-08-18',ph:169.3,amp:7.092,dep:0.0594,ch:'TRITONE',btc:-8.78,sol:-14.91},
+{d:'2022-08-25',ph:260.9,amp:7.004,dep:0.4494,ch:'TRITONE',btc:-6.39,sol:-10.25},
+{d:'2022-09-01',ph:358.2,amp:6.17,dep:0.9899,ch:'SUSPENDED',btc:-3.91,sol:3.71},
+{d:'2022-09-08',ph:105.3,amp:4.505,dep:0.4152,ch:'MAJOR',btc:4.81,sol:4.25},
+{d:'2022-09-15',ph:224.8,amp:2.545,dep:0.2488,ch:'TRITONE',btc:-9.12,sol:-10.63},
+{d:'2022-09-22',ph:8.3,amp:0.844,dep:0.9536,ch:'MAJOR',btc:4.92,sol:8.11},
+{d:'2022-09-29',ph:262.9,amp:0.48,dep:0.4606,ch:'MAJOR',btc:3.86,sol:2.38},
+{d:'2022-10-06',ph:108.7,amp:2.238,dep:0.3961,ch:'TRITONE',btc:-5.12,sol:-8.84},
+{d:'2022-10-13',ph:233.1,amp:8.243,dep:0.2951,ch:'TRITONE',btc:-0.17,sol:-7.7},
+{d:'2022-10-20',ph:338.7,amp:17.505,dep:0.8814,ch:'MAJOR',btc:8.28,sol:8.08},
+{d:'2022-10-27',ph:78.3,amp:26.316,dep:0.5648,ch:'TRITONE',btc:-3.04,sol:-1.61},
+{d:'2022-11-03',ph:175.2,amp:30.216,dep:0.0266,ch:'TRITONE',btc:-23.93,sol:-78.88},
+{d:'2022-11-10',ph:270.2,amp:26.956,dep:0.5013,ch:'MAJOR',btc:4.92,sol:2.12},
+{d:'2022-11-17',ph:4.0,amp:18.03,dep:0.978,ch:'SUSPENDED',btc:-0.39,sol:0.35},
+{d:'2022-11-24',ph:101.7,amp:7.374,dep:0.4349,ch:'DOMINANT',btc:3.36,sol:-1.26},
+{d:'2022-12-01',ph:307.5,amp:3.577,dep:0.7082,ch:'TRITONE',btc:-1.94,sol:-4.77},
+{d:'2022-12-08',ph:55.2,amp:11.387,dep:0.6933,ch:'MAJOR',btc:5.59,sol:4.56},
+{d:'2022-12-15',ph:141.9,amp:18.431,dep:0.2119,ch:'TRITONE',btc:-5.63,sol:-15.18},
+{d:'2022-12-22',ph:229.2,amp:22.536,dep:0.2732,ch:'TRITONE',btc:-1.72,sol:-21.82},
+{d:'2022-12-29',ph:317.8,amp:21.373,dep:0.7658,ch:'MAJOR',btc:1.84,sol:31.99},
+{d:'2023-01-05',ph:46.6,amp:14.865,dep:0.7413,ch:'MAJOR',btc:6.29,sol:19.72},
+{d:'2023-01-12',ph:131.2,amp:5.874,dep:0.271,ch:'MAJOR',btc:14.2,sol:24.09},
+{d:'2023-01-19',ph:73.7,amp:1.989,dep:0.5903,ch:'MAJOR',btc:10.88,sol:16.35},
+{d:'2023-01-26',ph:142.8,amp:5.593,dep:0.2067,ch:'MAJOR',btc:2.89,sol:1.78},
+{d:'2023-02-02',ph:220.3,amp:5.796,dep:0.2237,ch:'TRITONE',btc:-3.29,sol:-7.4},
+{d:'2023-02-09',ph:286.1,amp:5.093,dep:0.5892,ch:'MAJOR',btc:5.79,sol:2.93},
+{d:'2023-02-16',ph:352.5,amp:5.599,dep:0.9583,ch:'SUSPENDED',btc:-0.61,sol:1.21},
+{d:'2023-02-23',ph:73.8,amp:6.411,dep:0.5899,ch:'TRITONE',btc:-2.31,sol:-7.07},
+{d:'2023-03-02',ph:163.6,amp:6.309,dep:0.0913,ch:'TRITONE',btc:-8.55,sol:-20.26},
+{d:'2023-03-09',ph:259.6,amp:5.026,dep:0.4424,ch:'MAJOR',btc:11.62,sol:4.99},
+{d:'2023-03-16',ph:15.4,amp:3.217,dep:0.9142,ch:'MAJOR',btc:11.34,sol:10.31},
+{d:'2023-03-23',ph:162.6,amp:3.4,dep:0.0965,ch:'DOMINANT',btc:3.8,sol:-1.5},
+{d:'2023-03-30',ph:278.8,amp:5.472,dep:0.5487,ch:'TRITONE',btc:-0.63,sol:-0.62},
+{d:'2023-04-06',ph:17.3,amp:6.673,dep:0.9037,ch:'MAJOR',btc:5.91,sol:12.65},
+{d:'2023-04-13',ph:109.7,amp:6.197,dep:0.3905,ch:'TRITONE',btc:-3.68,sol:-4.69},
+{d:'2023-04-20',ph:194.5,amp:4.526,dep:0.0808,ch:'TRITONE',btc:-1.36,sol:-6.55},
+{d:'2023-04-27',ph:265.5,amp:2.905,dep:0.475,ch:'MAJOR',btc:2.12,sol:4.46},
+{d:'2023-05-04',ph:338.2,amp:1.983,dep:0.8789,ch:'TRITONE',btc:-5.0,sol:-6.07},
+{d:'2023-05-11',ph:131.5,amp:1.331,dep:0.2693,ch:'SUSPENDED',btc:-0.78,sol:0.48},
+{d:'2023-05-18',ph:271.3,amp:4.793,dep:0.5075,ch:'TRITONE',btc:-4.0,sol:-9.1},
+{d:'2023-05-25',ph:8.6,amp:9.412,dep:0.9525,ch:'MAJOR',btc:3.32,sol:8.0},
+{d:'2023-06-01',ph:99.3,amp:11.758,dep:0.4485,ch:'TRITONE',btc:-3.23,sol:-11.07},
+{d:'2023-06-08',ph:183.7,amp:9.716,dep:0.0207,ch:'TRITONE',btc:-4.77,sol:-25.2},
+{d:'2023-06-15',ph:244.3,amp:4.444,dep:0.3573,ch:'MAJOR',btc:17.71,sol:17.5},
+{d:'2023-06-22',ph:231.3,amp:4.687,dep:0.2851,ch:'DOMINANT',btc:0.32,sol:-7.58},
+{d:'2023-06-29',ph:286.6,amp:8.597,dep:0.592,ch:'MAJOR',btc:1.37,sol:17.19},
+{d:'2023-07-06',ph:350.3,amp:10.557,dep:0.9459,ch:'SUSPENDED',btc:-0.35,sol:14.44},
+{d:'2023-07-13',ph:54.8,amp:11.808,dep:0.6957,ch:'SUSPENDED',btc:-1.6,sol:18.2},
+{d:'2023-07-20',ph:126.4,amp:12.185,dep:0.2976,ch:'TRITONE',btc:-1.95,sol:-4.43},
+{d:'2023-07-27',ph:205.3,amp:10.427,dep:0.1407,ch:'TRITONE',btc:-0.63,sol:-8.45},
+{d:'2023-08-03',ph:287.1,amp:6.773,dep:0.5948,ch:'MAJOR',btc:1.43,sol:5.14},
+{d:'2023-08-10',ph:358.5,amp:2.91,dep:0.9917,ch:'TRITONE',btc:-2.99,sol:-6.66},
+{d:'2023-08-17',ph:9.3,amp:1.786,dep:0.9484,ch:'TRITONE',btc:-8.28,sol:-4.72},
+{d:'2023-08-24',ph:71.4,amp:3.12,dep:0.6033,ch:'DOMINANT',btc:3.31,sol:-4.32},
+{d:'2023-08-31',ph:159.2,amp:3.696,dep:0.1155,ch:'TRITONE',btc:-5.81,sol:-5.89},
+{d:'2023-09-07',ph:250.8,amp:3.175,dep:0.3936,ch:'DOMINANT',btc:1.8,sol:-6.53},
+{d:'2023-09-14',ph:338.4,amp:1.296,dep:0.8798,ch:'MAJOR',btc:3.39,sol:9.88},
+{d:'2023-09-21',ph:277.0,amp:2.214,dep:0.5388,ch:'TRITONE',btc:-2.9,sol:-5.94},
+{d:'2023-09-28',ph:11.1,amp:6.814,dep:0.9383,ch:'MAJOR',btc:5.32,sol:19.07},
+{d:'2023-10-05',ph:109.6,amp:11.177,dep:0.3913,ch:'TRITONE',btc:-3.41,sol:-5.05},
+{d:'2023-10-12',ph:208.5,amp:12.999,dep:0.1583,ch:'MAJOR',btc:5.32,sol:6.17},
+{d:'2023-10-19',ph:309.7,amp:10.288,dep:0.7205,ch:'MAJOR',btc:19.66,sol:32.65},
+{d:'2023-10-26',ph:81.3,amp:3.808,dep:0.5482,ch:'MAJOR',btc:2.72,sol:23.8},
+{d:'2023-11-02',ph:277.5,amp:8.12,dep:0.5416,ch:'MAJOR',btc:0.52,sol:4.67},
+{d:'2023-11-09',ph:19.0,amp:15.505,dep:0.8945,ch:'MAJOR',btc:6.18,sol:41.82},
+{d:'2023-11-16',ph:108.3,amp:17.736,dep:0.3983,ch:'TRITONE',btc:-1.24,sol:-12.95},
+{d:'2023-11-23',ph:188.4,amp:14.191,dep:0.0467,ch:'MAJOR',btc:1.17,sol:2.91},
+{d:'2023-11-30',ph:244.0,amp:8.293,dep:0.3555,ch:'MAJOR',btc:14.46,sol:4.34},
+{d:'2023-12-07',ph:264.9,amp:8.877,dep:0.4716,ch:'SUSPENDED',btc:-2.01,sol:13.19},
+{d:'2023-12-14',ph:325.0,amp:14.404,dep:0.8053,ch:'MAJOR',btc:1.71,sol:15.14},
+{d:'2023-12-21',ph:44.2,amp:17.735,dep:0.7543,ch:'SUSPENDED',btc:-0.37,sol:26.32},
+{d:'2023-12-28',ph:131.5,amp:16.963,dep:0.2695,ch:'TRITONE',btc:-1.43,sol:-8.1},
+{d:'2024-01-04',ph:225.6,amp:12.397,dep:0.2533,ch:'MAJOR',btc:8.53,sol:3.41},
+{d:'2024-01-11',ph:333.3,amp:6.177,dep:0.8515,ch:'SUSPENDED',btc:-8.77,sol:0.08},
+{d:'2024-01-18',ph:142.6,amp:3.177,dep:0.2076,ch:'TRITONE',btc:-6.47,sol:-14.04},
+{d:'2024-01-25',ph:277.0,amp:6.083,dep:0.539,ch:'MAJOR',btc:6.01,sol:8.75},
+{d:'2024-02-01',ph:10.8,amp:8.047,dep:0.9397,ch:'MAJOR',btc:4.1,sol:4.29},
+{d:'2024-02-08',ph:91.2,amp:8.355,dep:0.4935,ch:'MAJOR',btc:15.63,sol:14.67},
+{d:'2024-02-15',ph:158.4,amp:7.368,dep:0.1199,ch:'DOMINANT',btc:0.06,sol:-10.8},
+{d:'2024-02-22',ph:204.3,amp:6.688,dep:0.135,ch:'MAJOR',btc:18.63,sol:12.41},
+{d:'2024-02-29',ph:249.7,amp:9.38,dep:0.3874,ch:'MAJOR',btc:5.62,sol:9.56},
+{d:'2024-03-07',ph:318.5,amp:12.967,dep:0.7693,ch:'MAJOR',btc:10.04,sol:22.47},
+{d:'2024-03-14',ph:38.3,amp:12.982,dep:0.7871,ch:'SUSPENDED',btc:-7.41,sol:15.78},
+{d:'2024-03-21',ph:119.7,amp:7.709,dep:0.3351,ch:'DOMINANT',btc:2.29,sol:-3.01},
+{d:'2024-03-28',ph:87.5,amp:1.847,dep:0.5138,ch:'TRITONE',btc:-5.09,sol:-0.54},
+{d:'2024-04-04',ph:137.1,amp:9.321,dep:0.2384,ch:'DOMINANT',btc:6.77,sol:-6.59},
+{d:'2024-04-11',ph:225.7,amp:12.826,dep:0.2539,ch:'TRITONE',btc:-14.17,sol:-27.26},
+{d:'2024-04-18',ph:319.2,amp:11.225,dep:0.7732,ch:'MAJOR',btc:4.79,sol:11.23},
+{d:'2024-04-25',ph:62.1,amp:6.961,dep:0.6548,ch:'TRITONE',btc:-9.83,sol:-9.36},
+{d:'2024-05-02',ph:191.4,amp:4.168,dep:0.0634,ch:'MAJOR',btc:4.86,sol:5.51},
+{d:'2024-05-09',ph:314.3,amp:4.42,dep:0.746,ch:'MAJOR',btc:7.95,sol:10.94},
+{d:'2024-05-16',ph:45.6,amp:4.04,dep:0.7466,ch:'MAJOR',btc:4.3,sol:10.93},
+{d:'2024-05-23',ph:109.7,amp:2.073,dep:0.3908,ch:'TRITONE',btc:-2.29,sol:-5.11},
+{d:'2024-05-30',ph:89.7,amp:2.204,dep:0.5014,ch:'MAJOR',btc:5.09,sol:3.19},
+{d:'2024-06-06',ph:149.1,amp:5.102,dep:0.1718,ch:'TRITONE',btc:-4.12,sol:-11.17},
+{d:'2024-06-13',ph:226.1,amp:6.967,dep:0.2564,ch:'TRITONE',btc:-4.93,sol:-13.41},
+{d:'2024-06-20',ph:307.8,amp:7.19,dep:0.7101,ch:'SUSPENDED',btc:-6.58,sol:0.72},
+{d:'2024-06-27',ph:35.8,amp:6.079,dep:0.8012,ch:'SUSPENDED',btc:-1.11,sol:2.88},
+{d:'2024-07-04',ph:137.5,amp:4.612,dep:0.2359,ch:'SUSPENDED',btc:-4.08,sol:0.97},
+{d:'2024-07-11',ph:253.9,amp:4.173,dep:0.4105,ch:'MAJOR',btc:10.48,sol:9.02},
+{d:'2024-07-18',ph:0.4,amp:4.47,dep:0.9979,ch:'MAJOR',btc:1.93,sol:13.6},
+{d:'2024-07-25',ph:88.1,amp:3.811,dep:0.5103,ch:'TRITONE',btc:-1.12,sol:-3.72},
+{d:'2024-08-01',ph:142.7,amp:2.576,dep:0.207,ch:'TRITONE',btc:-15.98,sol:-17.19},
+{d:'2024-08-08',ph:184.3,amp:3.478,dep:0.0238,ch:'DOMINANT',btc:6.33,sol:-0.36},
+{d:'2024-08-15',ph:263.2,amp:4.727,dep:0.4624,ch:'DOMINANT',btc:4.15,sol:-0.84},
+{d:'2024-08-22',ph:354.5,amp:4.618,dep:0.9697,ch:'SUSPENDED',btc:-3.58,sol:0.8},
+{d:'2024-08-29',ph:86.3,amp:3.559,dep:0.5204,ch:'TRITONE',btc:-1.8,sol:-7.42},
+{d:'2024-09-05',ph:167.1,amp:2.616,dep:0.0716,ch:'TRITONE',btc:-1.07,sol:-0.84},
+{d:'2024-09-12',ph:240.1,amp:2.777,dep:0.3337,ch:'MAJOR',btc:7.44,sol:1.37},
+{d:'2024-09-19',ph:329.5,amp:3.83,dep:0.8307,ch:'MAJOR',btc:2.18,sol:9.74},
+{d:'2024-09-26',ph:71.9,amp:5.043,dep:0.6008,ch:'TRITONE',btc:-4.05,sol:-5.49},
+{d:'2024-10-03',ph:178.9,amp:6.056,dep:0.006,ch:'TRITONE',btc:-0.13,sol:-0.67},
+{d:'2024-10-10',ph:286.0,amp:6.54,dep:0.5891,ch:'MAJOR',btc:10.99,sol:10.18},
+{d:'2024-10-17',ph:30.2,amp:6.121,dep:0.8324,ch:'SUSPENDED',btc:-1.43,sol:10.18},
+{d:'2024-10-24',ph:127.0,amp:4.714,dep:0.2942,ch:'MAJOR',btc:8.2,sol:2.4},
+{d:'2024-10-31',ph:201.8,amp:3.013,dep:0.121,ch:'MAJOR',btc:4.48,sol:6.68},
+{d:'2024-11-07',ph:247.2,amp:3.267,dep:0.3735,ch:'MAJOR',btc:17.92,sol:14.24},
+{d:'2024-11-14',ph:321.6,amp:5.114,dep:0.7866,ch:'MAJOR',btc:4.19,sol:8.92},
+{d:'2024-11-21',ph:51.5,amp:5.888,dep:0.7139,ch:'MAJOR',btc:1.67,sol:2.8},
+{d:'2024-11-28',ph:147.5,amp:4.341,dep:0.1807,ch:'DOMINANT',btc:2.88,sol:-5.4},
+{d:'2024-12-05',ph:287.4,amp:0.938,dep:0.5966,ch:'DOMINANT',btc:2.42,sol:-0.9},
+{d:'2024-12-12',ph:135.4,amp:3.819,dep:0.248,ch:'TRITONE',btc:-1.0,sol:-9.68},
+{d:'2024-12-19',ph:240.5,amp:6.269,dep:0.3362,ch:'TRITONE',btc:-0.86,sol:-4.51},
+{d:'2024-12-26',ph:355.6,amp:5.942,dep:0.9758,ch:'TRITONE',btc:-5.09,sol:-1.82},
+{d:'2025-01-02',ph:140.9,amp:6.072,dep:0.2175,ch:'MAJOR',btc:0.72,sol:1.87},
+{d:'2025-01-09',ph:270.0,amp:10.264,dep:0.5002,ch:'MAJOR',btc:5.56,sol:4.22},
+{d:'2025-01-16',ph:17.5,amp:13.943,dep:0.9027,ch:'MAJOR',btc:3.09,sol:22.31},
+{d:'2025-01-23',ph:121.9,amp:13.84,dep:0.3226,ch:'DOMINANT',btc:0.06,sol:-12.17},
+{d:'2025-01-30',ph:234.8,amp:10.289,dep:0.3043,ch:'TRITONE',btc:-7.08,sol:-15.15},
+{d:'2025-02-06',ph:10.7,amp:7.419,dep:0.9403,ch:'MAJOR',btc:1.29,sol:0.42},
+{d:'2025-02-13',ph:145.6,amp:8.179,dep:0.1909,ch:'TRITONE',btc:-1.28,sol:-15.3},
+{d:'2025-02-20',ph:260.1,amp:8.179,dep:0.4448,ch:'TRITONE',btc:-13.9,sol:-22.31},
+{d:'2025-02-27',ph:14.3,amp:5.504,dep:0.9208,ch:'MAJOR',btc:7.47,sol:7.98},
+{d:'2025-03-06',ph:175.2,amp:2.935,dep:0.0266,ch:'TRITONE',btc:-7.96,sol:-14.43},
+{d:'2025-03-13',ph:329.2,amp:5.752,dep:0.8287,ch:'MAJOR',btc:3.76,sol:6.7},
+{d:'2025-03-20',ph:77.7,amp:8.524,dep:0.5686,ch:'MAJOR',btc:0.02,sol:1.42},
+{d:'2025-03-27',ph:176.1,amp:9.26,dep:0.0219,ch:'TRITONE',btc:-5.18,sol:-15.78},
+{d:'2025-04-03',ph:267.4,amp:8.416,dep:0.4853,ch:'MAJOR',btc:0.06,sol:1.47},
+{d:'2025-04-10',ph:351.3,amp:7.342,dep:0.9519,ch:'MAJOR',btc:1.76,sol:9.77},
+{d:'2025-04-17',ph:74.5,amp:7.051,dep:0.5859,ch:'MAJOR',btc:10.88,sol:14.13},
+{d:'2025-04-24',ph:165.7,amp:7.234,dep:0.0795,ch:'DOMINANT',btc:0.56,sol:-2.4},
+{d:'2025-05-01',ph:263.9,amp:7.144,dep:0.4662,ch:'DOMINANT',btc:2.96,sol:-0.2},
+{d:'2025-05-08',ph:3.6,amp:6.226,dep:0.9801,ch:'MAJOR',btc:6.54,sol:18.14},
+{d:'2025-05-15',ph:99.1,amp:4.269,dep:0.4492,ch:'DOMINANT',btc:5.71,sol:-1.72},
+{d:'2025-05-22',ph:178.9,amp:2.059,dep:0.0062,ch:'TRITONE',btc:-1.71,sol:-0.77},
+{d:'2025-05-29',ph:233.4,amp:1.377,dep:0.2968,ch:'TRITONE',btc:-2.89,sol:-11.73},
+{d:'2025-06-05',ph:347.0,amp:1.875,dep:0.9279,ch:'MAJOR',btc:3.71,sol:4.95},
+{d:'2025-06-12',ph:113.7,amp:3.5,dep:0.3686,ch:'TRITONE',btc:-3.57,sol:-9.49},
+{d:'2025-06-19',ph:224.0,amp:4.995,dep:0.2445,ch:'DOMINANT',btc:2.33,sol:-1.94},
+{d:'2025-06-26',ph:333.2,amp:4.559,dep:0.8509,ch:'MAJOR',btc:1.38,sol:5.92},
+{d:'2025-07-03',ph:114.9,amp:2.502,dep:0.3619,ch:'MAJOR',btc:2.25,sol:3.05},
+{d:'2025-07-10',ph:288.5,amp:4.698,dep:0.603,ch:'MAJOR',btc:6.43,sol:10.13},
+{d:'2025-07-17',ph:40.9,amp:8.702,dep:0.7725,ch:'MAJOR',btc:0.02,sol:8.61},
+{d:'2025-07-24',ph:143.1,amp:10.496,dep:0.2051,ch:'TRITONE',btc:-0.77,sol:-6.38},
+{d:'2025-07-31',ph:244.7,amp:8.946,dep:0.3595,ch:'TRITONE',btc:-2.41,sol:-5.56},
+{d:'2025-08-07',ph:352.2,amp:4.89,dep:0.9568,ch:'MAJOR',btc:7.0,sol:18.14},
+{d:'2025-08-14',ph:157.8,amp:1.406,dep:0.1233,ch:'TRITONE',btc:-7.66,sol:-7.03},
+{d:'2025-08-21',ph:332.7,amp:2.539,dep:0.8485,ch:'SUSPENDED',btc:-2.66,sol:7.69},
+{d:'2025-08-28',ph:107.9,amp:2.016,dep:0.4003,ch:'MAJOR',btc:0.45,sol:3.77},
+{d:'2025-09-04',ph:293.8,amp:2.997,dep:0.6323,ch:'MAJOR',btc:1.93,sol:6.15},
+{d:'2025-09-11',ph:54.4,amp:6.456,dep:0.6975,ch:'MAJOR',btc:2.18,sol:8.87},
+{d:'2025-09-18',ph:160.8,amp:8.455,dep:0.1065,ch:'TRITONE',btc:-2.76,sol:-14.53},
+{d:'2025-09-25',ph:269.3,amp:8.042,dep:0.4964,ch:'MAJOR',btc:4.57,sol:4.8},
+{d:'2025-10-02',ph:28.4,amp:6.269,dep:0.8423,ch:'MAJOR',btc:3.91,sol:3.06},
+{d:'2025-10-09',ph:162.0,amp:5.361,dep:0.1001,ch:'TRITONE',btc:-10.73,sol:-16.63},
+{d:'2025-10-16',ph:289.6,amp:6.179,dep:0.6089,ch:'TRITONE',btc:-2.87,sol:-7.38},
+{d:'2025-10-23',ph:40.5,amp:7.271,dep:0.7751,ch:'MAJOR',btc:2.26,sol:7.44},
+{d:'2025-10-30',ph:140.4,amp:7.572,dep:0.2202,ch:'TRITONE',btc:-5.8,sol:-17.8},
+{d:'2025-11-06',ph:230.9,amp:6.818,dep:0.2827,ch:'TRITONE',btc:-2.17,sol:-5.78},
+{d:'2025-11-13',ph:308.6,amp:5.574,dep:0.7143,ch:'TRITONE',btc:-10.62,sol:-11.31},
+{d:'2025-11-20',ph:14.6,amp:4.971,dep:0.9189,ch:'SUSPENDED',btc:-0.98,sol:4.36},
+{d:'2025-11-27',ph:83.2,amp:4.81,dep:0.5378,ch:'MAJOR',btc:3.18,sol:1.18},
+{d:'2025-12-04',ph:153.7,amp:3.88,dep:0.1462,ch:'TRITONE',btc:-1.55,sol:-5.99},
+{d:'2025-12-11',ph:205.2,amp:2.447,dep:0.1398,ch:'TRITONE',btc:-6.52,sol:-10.09},
+{d:'2025-12-18',ph:228.3,amp:2.609,dep:0.2686,ch:'DOMINANT',btc:1.62,sol:-0.63},
+{d:'2025-12-25',ph:282.9,amp:4.107,dep:0.5719,ch:'SUSPENDED',btc:-0.13,sol:1.6},
+{d:'2026-01-01',ph:355.6,amp:4.985,dep:0.9754,ch:'MAJOR',btc:4.22,sol:9.1},
+{d:'2026-01-08',ph:73.0,amp:4.107,dep:0.5947,ch:'MAJOR',btc:6.02,sol:7.35},
+{d:'2026-01-15',ph:131.1,amp:1.427,dep:0.2718,ch:'TRITONE',btc:-8.12,sol:-12.53},
+{d:'2026-01-22',ph:89.6,amp:2.718,dep:0.502,ch:'TRITONE',btc:-0.24,sol:-3.34},
+{d:'2026-01-29',ph:161.6,amp:5.723,dep:0.1023,ch:'TRITONE',btc:-19.98,sol:-30.85},
+{d:'2026-02-05',ph:240.4,amp:7.456,dep:0.3358,ch:'TRITONE',btc:-8.52,sol:-14.88},
+{d:'2026-02-12',ph:322.2,amp:7.772,dep:0.79,ch:'SUSPENDED',btc:-0.94,sol:2.9},
+{d:'2026-02-19',ph:46.9,amp:6.802,dep:0.7397,ch:'MAJOR',btc:2.31,sol:7.66},
+{d:'2026-02-26',ph:134.1,amp:5.344,dep:0.2552,ch:'MAJOR',btc:6.69,sol:3.17},
+{d:'2026-03-05',ph:227.1,amp:4.51,dep:0.2618,ch:'TRITONE',btc:-3.48,sol:-4.86},
+{d:'2026-03-12',ph:327.7,amp:4.593,dep:0.8204,ch:'MAJOR',btc:1.51,sol:4.0},
+{d:'2026-03-19',ph:68.1,amp:4.68,dep:0.6214,ch:'MAJOR',btc:0.05,sol:1.71},
+{d:'2026-03-26',ph:163.9,amp:3.763,dep:0.0893,ch:'TRITONE',btc:-4.61,sol:-12.15},
+{d:'2026-04-02',ph:253.1,amp:2.237,dep:0.406,ch:'MAJOR',btc:4.33,sol:1.75},
+{d:'2026-04-09',ph:342.3,amp:1.248,dep:0.9016,ch:'MAJOR',btc:5.07,sol:2.77},
+{d:'2026-04-16',ph:96.2,amp:1.135,dep:0.4655,ch:'MAJOR',btc:4.44,sol:2.34},
+{d:'2026-04-23',ph:202.6,amp:1.532,dep:0.1257,ch:'TRITONE',btc:-3.19,sol:-4.6},
+{d:'2026-04-30',ph:289.8,amp:1.942,dep:0.61,ch:'MAJOR',btc:7.24,sol:7.11},
+{d:'2026-05-07',ph:23.2,amp:2.515,dep:0.8711,ch:'SUSPENDED',btc:-2.67,sol:2.19},
+{d:'2026-05-14',ph:141.6,amp:3.293,dep:0.2135,ch:'TRITONE',btc:-2.31,sol:-5.7},
+{d:'2026-05-21',ph:264.0,amp:4.747,dep:0.4665,ch:'TRITONE',btc:-4.14,sol:-4.46},
+{d:'2026-05-28',ph:9.0,amp:5.199,dep:0.95,ch:'TRITONE',btc:-14.92,sol:-14.04},
+{d:'2026-06-04',ph:89.9,amp:2.888,dep:0.5008,ch:'TRITONE',btc:-0.04,sol:-7.07}];
+
+const data = raw.map(r=>({...r, fs:FILTER_DATES.has(r.d)}));
+const last = data[data.length-1];
+
+// ─── CHORD COLORS ───────────────────────────────────────
+function chordColor(ch,a=1){
+  if(ch==='MAJOR')     return `rgba(61,220,132,${a})`;
+  if(ch==='SUSPENDED') return `rgba(6,182,212,${a})`;
+  if(ch==='DOMINANT')  return `rgba(240,192,64,${a})`;
+  return `rgba(255,77,109,${a})`;
+}
+
+// ─── PHASE WHEEL ────────────────────────────────────────
+function drawWheel(){
+  const cv=document.getElementById('phase-canvas');
+  const ctx=cv.getContext('2d');
+  const cx=140,cy=140,R=120;
+  ctx.clearRect(0,0,280,280);
+
+  // Entry zone arc (315°→45°) = -45° to +45° in math angles
+  // SVG convention: 0° right, 90° down. We want 0° at top.
+  // Canvas: angle 0=right, going clockwise. We want 0=top, clockwise.
+  // "phase 0" maps to angle -PI/2 (top). Phase increases clockwise.
+  function phToAngle(ph){ return (ph-90)*Math.PI/180; }
+
+  // Green arc: entry zone 315°→45°
+  ctx.beginPath();
+  ctx.moveTo(cx,cy);
+  ctx.arc(cx,cy,R,phToAngle(315),phToAngle(45));
+  ctx.closePath();
+  ctx.fillStyle='rgba(61,220,132,0.08)';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx,cy,R,phToAngle(315),phToAngle(45));
+  ctx.strokeStyle='rgba(61,220,132,0.3)';
+  ctx.lineWidth=2;
+  ctx.stroke();
+
+  // Concentric rings
+  [0.33,0.67,1.0].forEach(f=>{
+    ctx.beginPath();
+    ctx.arc(cx,cy,R*f,0,2*Math.PI);
+    ctx.strokeStyle='rgba(255,255,255,0.04)';
+    ctx.lineWidth=1;
+    ctx.stroke();
+  });
+
+  // Axis lines
+  [0,90,180,270].forEach(ph=>{
+    const a=phToAngle(ph);
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(a)*20,cy+Math.sin(a)*20);
+    ctx.lineTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R);
+    ctx.strokeStyle='rgba(255,255,255,0.08)';
+    ctx.lineWidth=1;
+    ctx.stroke();
+  });
+
+  // Labels
+  const labels=[['0°\nENTRY',0,'#3ddc84'],['90°\nPEAK',90,'#5a5a7a'],['180°\nEXIT',180,'#5a5a7a'],['270°\nTROUGH',270,'#f0c040']];
+  ctx.font='10px Segoe UI';
+  labels.forEach(([txt,ph,col])=>{
+    const a=phToAngle(ph);
+    const lx=cx+Math.cos(a)*R*1.18;
+    const ly=cy+Math.sin(a)*R*1.18;
+    ctx.fillStyle=col;
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    txt.split('\n').forEach((line,i)=>{
+      ctx.fillText(line,lx,ly+(i-0.5)*12);
+    });
+  });
+
+  // Historical phase dots (last 20 weeks, fading)
+  const recents=data.slice(-20);
+  recents.forEach((r,i)=>{
+    const a=phToAngle(r.ph);
+    const frac=(i+1)/20;
+    const rad=5+r.amp*0.5;
+    const x=cx+Math.cos(a)*(R*0.7);
+    const y=cy+Math.sin(a)*(R*0.7);
+    ctx.beginPath();
+    ctx.arc(x,y,Math.min(rad,12),0,2*Math.PI);
+    ctx.fillStyle=chordColor(r.ch,frac*0.4);
+    ctx.fill();
+  });
+
+  // Current phase needle
+  const a=phToAngle(last.ph);
+  ctx.save();
+  ctx.translate(cx,cy);
+  ctx.rotate(a+Math.PI/2);
+  ctx.beginPath();
+  ctx.moveTo(0,R*0.85);
+  ctx.lineTo(-6,-8);
+  ctx.lineTo(6,-8);
+  ctx.closePath();
+  const col=chordColor(last.ch);
+  ctx.fillStyle=col;
+  ctx.shadowColor=col;
+  ctx.shadowBlur=12;
+  ctx.fill();
+  ctx.restore();
+
+  // Center dot
+  ctx.beginPath();
+  ctx.arc(cx,cy,8,0,2*Math.PI);
+  ctx.fillStyle='var(--panel, #0f0f1a)';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx,cy,5,0,2*Math.PI);
+  ctx.fillStyle=chordColor(last.ch);
+  ctx.fill();
+}
+
+// ─── UPDATE STATS ────────────────────────────────────────
+function updateStats(){
+  document.getElementById('cur-phase').textContent=last.ph.toFixed(1)+'°';
+  const dist=Math.min(last.ph,360-last.ph);
+  document.getElementById('cur-phase-sub').textContent=`${dist.toFixed(0)}° from entry`;
+  const depPct=(last.dep*100).toFixed(0);
+  document.getElementById('cur-depth').textContent=depPct+'%';
+  document.getElementById('cur-depth').style.color=depPct>70?'#3ddc84':depPct>40?'#f0c040':'#ff4d6d';
+  document.getElementById('cur-amp').textContent=last.amp.toFixed(2);
+  document.getElementById('cur-chord').innerHTML=`<span class="chord-badge cb-${last.ch}">${last.ch}</span>`;
+  document.getElementById('cur-date').textContent=last.d;
+}
+
+// ─── TIMELINE ────────────────────────────────────────────
+function drawTimeline(){
+  const cv=document.getElementById('timeline-canvas');
+  const W=cv.offsetWidth||900,H=220;
+  cv.width=W; cv.height=H;
+  const ctx=cv.getContext('2d');
+  const n=data.length;
+  const PAD={t:20,b:30,l:40,r:20};
+  const pw=W-PAD.l-PAD.r, ph=H-PAD.t-PAD.b;
+
+  function xp(i){return PAD.l+i/(n-1)*pw;}
+  function yp(v){return PAD.t+(1-v/360)*ph;}
+
+  // Y grid lines at 0,90,180,270,360
+  [0,90,180,270,360].forEach(v=>{
+    ctx.beginPath();
+    ctx.moveTo(PAD.l,yp(v));
+    ctx.lineTo(W-PAD.r,yp(v));
+    ctx.strokeStyle='rgba(255,255,255,0.05)';
+    ctx.lineWidth=v===0||v===360?1.5:0.5;
+    ctx.stroke();
+    ctx.fillStyle='rgba(90,90,122,0.8)';
+    ctx.font='9px Segoe UI';
+    ctx.textAlign='right';
+    ctx.fillText(v+'°',PAD.l-4,yp(v)+3);
+  });
+
+  // Entry zone shading (315°–45° = top stripe)
+  const yTop=yp(360),yLow=yp(315),yHigh=yp(45);
+  ctx.fillStyle='rgba(61,220,132,0.05)';
+  ctx.fillRect(PAD.l,yTop,pw,yLow-yTop);  // 315–360 zone
+  ctx.fillRect(PAD.l,yp(0),pw,yHigh-yp(0)); // 0–45 zone
+  // Actually let's just shade the phase bands
+  ctx.fillStyle='rgba(61,220,132,0.04)';
+  ctx.fillRect(PAD.l,yp(45),pw,yp(0)-yp(45));   // 0–45
+  ctx.fillStyle='rgba(61,220,132,0.04)';
+  ctx.fillRect(PAD.l,yp(360),pw,yp(315)-yp(360)); // 315–360
+
+  // SUSPENDED chord bars
+  data.forEach((r,i)=>{
+    if(r.ch==='SUSPENDED'){
+      ctx.fillStyle='rgba(6,182,212,0.15)';
+      ctx.fillRect(xp(i)-1,PAD.t,2,ph);
+    }
+  });
+
+  // Phase line
+  ctx.beginPath();
+  data.forEach((r,i)=>{
+    const x=xp(i), y=yp(r.ph);
+    if(i===0) ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle='rgba(180,180,220,0.5)';
+  ctx.lineWidth=1.2;
+  ctx.stroke();
+
+  // Amplitude envelope (scaled)
+  const maxAmp=Math.max(...data.map(r=>r.amp));
+  ctx.beginPath();
+  data.forEach((r,i)=>{
+    const x=xp(i), y=PAD.t+ph*(1-r.amp/maxAmp*0.3);
+    if(i===0) ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle='rgba(199,125,255,0.2)';
+  ctx.lineWidth=1;
+  ctx.stroke();
+
+  // Filter signal markers
+  data.forEach((r,i)=>{
+    if(r.fs){
+      const x=xp(i), y=yp(r.ph);
+      ctx.beginPath();
+      ctx.arc(x,y,7,0,2*Math.PI);
+      ctx.fillStyle='rgba(199,125,255,0.9)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x,y,4,0,2*Math.PI);
+      ctx.fillStyle='#fff';
+      ctx.fill();
+      // Vertical line to bottom
+      ctx.beginPath();
+      ctx.moveTo(x,y+7);
+      ctx.lineTo(x,PAD.t+ph);
+      ctx.strokeStyle='rgba(199,125,255,0.3)';
+      ctx.lineWidth=1;
+      ctx.setLineDash([2,3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  });
+
+  // Current position
+  const last_i=n-1;
+  ctx.beginPath();
+  ctx.arc(xp(last_i),yp(last.ph),5,0,2*Math.PI);
+  ctx.fillStyle=chordColor(last.ch);
+  ctx.fill();
+
+  // X axis year labels
+  ctx.fillStyle='rgba(90,90,122,0.8)';
+  ctx.font='9px Segoe UI';
+  ctx.textAlign='center';
+  const years=['2021','2022','2023','2024','2025','2026'];
+  years.forEach(yr=>{
+    const idx=data.findIndex(r=>r.d.startsWith(yr));
+    if(idx>=0) ctx.fillText(yr,xp(idx),H-8);
+  });
+}
+
+// ─── AUDIT TABLE ─────────────────────────────────────────
+function buildAudit(){
+  const signals=[
+    {d:'2021-07-29',ph:5.8,sol:25.1,rs4w:-7.3,ret:15.4},
+    {d:'2022-09-01',ph:358.2,sol:3.7,rs4w:-24.6,ret:4.2},
+    {d:'2023-12-07',ph:264.9,sol:13.2,rs4w:5.8,ret:15.1},
+    {d:'2024-10-17',ph:30.2,sol:10.2,rs4w:14.0,ret:2.4},
+    {d:'2025-08-21',ph:332.7,sol:7.7,rs4w:11.7,ret:3.8},
+    {d:'2025-11-20',ph:14.6,sol:4.4,rs4w:-28.3,ret:1.2},
+    {d:'2026-02-12',ph:322.2,sol:2.9,rs4w:-41.5,ret:7.7},
+  ];
+  const tbl=document.getElementById('audit-tbl');
+  tbl.innerHTML=`<thead><tr>
+    <th>#</th><th>Date</th><th>Phase</th><th>Phase zone</th>
+    <th>SOL%</th><th>RS4w%</th><th>Next-week ret</th>
+  </tr></thead><tbody></tbody>`;
+  const tb=tbl.querySelector('tbody');
+  signals.forEach((s,i)=>{
+    const dist=Math.min(s.ph,360-s.ph);
+    const zone=dist<=45?'<span class="ph-badge ph-hot">≈0° entry</span>':
+               dist<=90?'<span class="ph-badge ph-warm">near entry</span>':
+               '<span class="ph-badge ph-cold">mid-cycle</span>';
+    tb.innerHTML+=`<tr>
+      <td class="muted">${i+1}</td>
+      <td>${s.d}</td>
+      <td style="color:${dist<=45?'#3ddc84':dist<=90?'#f0c040':'#ff4d6d'};font-weight:700;">${s.ph}°</td>
+      <td>${zone}</td>
+      <td class="${s.sol>0?'pos':'neg'}">${s.sol>0?'+':''}${s.sol}%</td>
+      <td class="${s.rs4w<0?'pos':'neg'}">${s.rs4w>0?'+':''}${s.rs4w}%</td>
+      <td class="pos">+${s.ret}%</td>
+    </tr>`;
+  });
+}
+
+// ─── DISTRIBUTION ────────────────────────────────────────
+function drawDist(){
+  const cv=document.getElementById('dist-canvas');
+  const W=cv.offsetWidth||900, H=200;
+  cv.width=W; cv.height=H;
+  const ctx=cv.getContext('2d');
+
+  const BINS=24; // 15° each
+  const susp_bins=new Array(BINS).fill(0);
+  const filt_bins=new Array(BINS).fill(0);
+
+  data.forEach(r=>{
+    if(r.ch==='SUSPENDED'){
+      const bin=Math.floor(r.ph/360*BINS)%BINS;
+      susp_bins[bin]++;
+    }
+    if(r.fs){
+      const bin=Math.floor(r.ph/360*BINS)%BINS;
+      filt_bins[bin]++;
+    }
+  });
+
+  const maxV=Math.max(...susp_bins,1);
+  const bw=(W-80)/BINS;
+  const H_inner=H-50;
+
+  // Background rings
+  ctx.fillStyle='rgba(255,255,255,0.02)';
+  [0,90,180,270].forEach(ph=>{
+    const binStart=Math.floor(ph/360*BINS);
+    ctx.fillRect(40+binStart*bw,10,bw,H_inner);
+  });
+
+  susp_bins.forEach((v,i)=>{
+    const x=40+i*bw;
+    const h=v/maxV*H_inner;
+    const ph_center=(i+0.5)/BINS*360;
+    const isEntry=ph_center<=45||ph_center>=315;
+    ctx.fillStyle=isEntry?'rgba(6,182,212,0.5)':'rgba(6,182,212,0.2)';
+    ctx.fillRect(x+1,10+H_inner-h,bw-2,h);
+    // label
+    if(v>0){
+      ctx.fillStyle='rgba(6,182,212,0.7)';
+      ctx.font='10px Segoe UI';
+      ctx.textAlign='center';
+      ctx.fillText(v,x+bw/2,10+H_inner-h-4);
+    }
+  });
+
+  filt_bins.forEach((v,i)=>{
+    if(v===0) return;
+    const x=40+i*bw;
+    const h=v/maxV*H_inner;
+    ctx.fillStyle='rgba(199,125,255,0.8)';
+    ctx.fillRect(x+2,10+H_inner-h,bw-4,h);
+    ctx.fillStyle='#c77dff';
+    ctx.font='10px Segoe UI';
+    ctx.textAlign='center';
+    ctx.fillText('●'+v,x+bw/2,10+H_inner-h-14);
+  });
+
+  // X axis labels every 6 bins (90°)
+  ctx.fillStyle='rgba(90,90,122,0.9)';
+  ctx.font='10px Segoe UI';
+  ctx.textAlign='center';
+  [0,90,180,270,360].forEach(ph=>{
+    const x=40+ph/360*(W-80);
+    ctx.fillText(ph+'°',x,H-8);
+    ctx.beginPath();
+    ctx.moveTo(x,10);
+    ctx.lineTo(x,H-20);
+    ctx.strokeStyle='rgba(255,255,255,0.06)';
+    ctx.lineWidth=0.5;
+    ctx.stroke();
+  });
+
+  // Green zone labels
+  ctx.fillStyle='rgba(61,220,132,0.5)';
+  ctx.font='9px Segoe UI';
+  ctx.fillText('← ENTRY →',40+1.5*bw,H-22);
+  ctx.fillText('← ENTRY →',40+(BINS-1.5)*bw,H-22);
+}
+
+// ─── INIT ────────────────────────────────────────────────
+drawWheel();
+updateStats();
+buildAudit();
+drawTimeline();
+drawDist();
+window.addEventListener('resize',()=>{drawTimeline();drawDist();});
+</script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Arc 18 — Celestial Phase Sweep | 4D Phase Space</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #050508; color: #e0e0f0; font-family: 'Courier New', monospace; padding: 20px; min-height: 100vh; }
+
+  .arc-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; }
+  .arc-num { font-size: 0.65rem; color: #2a2a4a; letter-spacing: 3px; text-transform: uppercase; }
+  h1 { color: #c4a0ff; font-size: 1.3rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+  .subtitle { color: #444; font-size: 0.75rem; letter-spacing: 1px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .card { background: #0c0c18; border: 1px solid #1a1a2e; border-radius: 8px; padding: 18px; }
+  .card.full { grid-column: 1 / -1; }
+  .card h2 { font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: #444; margin-bottom: 14px; }
+
+  /* Rankings */
+  .rank-table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+  .rank-table th { color: #444; font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; padding: 6px 10px; text-align: left; border-bottom: 1px solid #1a1a2e; }
+  .rank-table td { padding: 8px 10px; border-bottom: 1px solid #0a0a12; vertical-align: middle; }
+  .rank-table tr:last-child td { border-bottom: none; }
+  .rank-table tr:hover td { background: #10101e; }
+  .rank-table tr.winner td { background: #100c1a; }
+  .rank-table tr.winner:hover td { background: #14101e; }
+
+  .r-bar { display: flex; align-items: center; gap: 6px; }
+  .r-track { width: 80px; height: 8px; background: #1a1a2e; border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+  .r-fill { height: 100%; border-radius: 2px; }
+  .r-val { font-size: 0.72rem; font-weight: bold; }
+  .p-sig { color: #c4a0ff; font-weight: bold; }
+  .p-marg { color: #88aaff; }
+  .p-null { color: #333; }
+  .p-bonf-ok { color: #666; }
+
+  .type-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 0.58rem; letter-spacing: 1px; text-transform: uppercase; }
+  .type-planetary { background: #0c0c1a; color: #9988cc; border: 1px solid #2a2a4a; }
+  .type-lunar { background: #0a0e14; color: #4488cc; border: 1px solid #1a2a3a; }
+  .type-solar { background: #100e0a; color: #cc9944; border: 1px solid #3a2a1a; }
+
+  /* Phase wheel */
+  canvas { display: block; }
+  .wheel-wrap { text-align: center; }
+  .wheel-label { font-size: 0.65rem; color: #555; margin-top: 8px; letter-spacing: 1px; }
+
+  /* Signal table */
+  .sig-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+  .sig-table th { color: #444; font-size: 0.58rem; letter-spacing: 1px; text-transform: uppercase; padding: 5px 8px; text-align: left; border-bottom: 1px solid #1a1a2e; }
+  .sig-table td { padding: 7px 8px; border-bottom: 1px solid #0a0a12; }
+  .sig-table tr:last-child td { border-bottom: none; }
+  .phase-pill { display: inline-block; width: 16px; height: 16px; border-radius: 50%; text-align: center; line-height: 16px; font-size: 0.6rem; margin-right: 3px; }
+  .pill-in { background: #2a1a3a; color: #c4a0ff; border: 1px solid #4a2a6a; }
+  .pill-near { background: #1a1a2a; color: #6666aa; border: 1px solid #2a2a4a; }
+  .pill-out { background: #0a0a0a; color: #333; border: 1px solid #1a1a1a; }
+
+  /* Verdict boxes */
+  .verdict-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .verdict-card { background: #0c0c18; border: 1px solid #1a1a2e; border-radius: 8px; padding: 16px; text-align: center; }
+  .verdict-card .big { font-size: 1.6rem; font-weight: bold; margin-bottom: 4px; }
+  .verdict-card .lbl { font-size: 0.6rem; color: #555; letter-spacing: 1px; text-transform: uppercase; }
+  .verdict-card .sub { font-size: 0.68rem; color: #888; margin-top: 8px; line-height: 1.6; }
+  .v-jup { border-color: #2a1a4a; }
+  .v-null { border-color: #1a1a2e; }
+  .v-warn { border-color: #2a1a1a; }
+
+  /* Key finding */
+  .finding { background: #0c0a14; border: 2px solid #3a2a5a; border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+  .finding .label { font-size: 0.6rem; color: #c4a0ff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .finding p { font-size: 0.75rem; color: #c0b8d8; line-height: 1.8; }
+  .finding .stat { display: inline-block; background: #1a1428; border: 1px solid #3a2a5a; color: #c4a0ff; padding: 2px 8px; border-radius: 3px; font-size: 0.68rem; margin: 0 2px; }
+
+  .warn-box { background: #0e0a0a; border: 1px solid #3a1a1a; border-radius: 6px; padding: 12px 14px; margin-top: 10px; font-size: 0.7rem; color: #cc8877; line-height: 1.6; }
+  .warn-box strong { color: #ff9988; }
+
+  .insight-box { background: #0a0a12; border: 1px solid #1e1e3a; border-radius: 6px; padding: 12px 14px; margin-top: 12px; }
+  .insight-box .label { font-size: 0.6rem; color: #7766bb; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+  .insight-box p { font-size: 0.72rem; color: #a0a0c0; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<div class="arc-header">
+  <div>
+    <div class="arc-num">Arc 18 · Celestial Phase Sweep</div>
+    <h1>Solar, Planetary &amp; All Lunar Cycles</h1>
+    <div class="subtitle">Do SUSPENDED filter signals cluster at specific celestial phases?</div>
+  </div>
+  <div style="font-size:0.65rem;color:#222">n=7 filter signals · 259 weeks · 10 cycles tested</div>
+</div>
+
+<!-- Verdict row -->
+<div class="verdict-row">
+  <div class="verdict-card v-jup">
+    <div class="big" style="color:#c4a0ff">Jupiter</div>
+    <div class="lbl">Strongest signal (uncorrected)</div>
+    <div class="sub">R=0.685, p=0.031 raw<br>6/7 signals within ±60° of phase 340°<br>≈ 3 weeks before Jupiter opposition</div>
+  </div>
+  <div class="verdict-card v-null">
+    <div class="big" style="color:#444">Lunar</div>
+    <div class="lbl">All 4 lunar cycles: null</div>
+    <div class="sub">Synodic R=0.397, p=0.34<br>Sidereal / anomalistic / draconic<br>all p &gt; 0.6 — no clustering</div>
+  </div>
+  <div class="verdict-card v-warn">
+    <div class="big" style="color:#cc8877">Bonferroni</div>
+    <div class="lbl">After correction for 10 cycles</div>
+    <div class="sub">Jupiter corrected p=0.32<br>Testing 10 cycles inflates false positive rate<br>Needs more signals to confirm</div>
+  </div>
+</div>
+
+<!-- Key finding -->
+<div class="finding">
+  <div class="label">Key Finding — Jupiter Synodic Cycle</div>
+  <p>
+    Of all 10 celestial cycles tested, <strong>Jupiter's 399-day synodic cycle</strong> shows the strongest signal clustering:
+    <span class="stat">R = 0.685</span> <span class="stat">p = 0.031 (uncorrected)</span> <span class="stat">6/7 within ±60°</span>.
+    Filter signals tend to fire when Jupiter is at phase <strong>~340°</strong> in its synodic cycle —
+    which corresponds to approximately <strong>3 weeks before Jupiter comes to opposition</strong> with Earth.
+    <br><br>
+    Counter-finding: All 4 lunar cycle variants (synodic, sidereal, anomalistic, draconic) return <strong>null results</strong>.
+    The existing moon_phase feature in the model has p=0.34 — no better than random.
+    The lunar period correlation in the BTC/SOL spread (τ=4w autocorr) appears to be a
+    structural property of the spread, not a predictive signal for the filter.
+  </p>
+  <div class="warn-box">
+    <strong>Statistical caveat:</strong> After Bonferroni correction for 10 cycles tested simultaneously, Jupiter p = 0.32 (not significant).
+    With only n=7 filter signals, this is a hypothesis-generating result, not a confirmed law.
+    The effect size (R=0.685, 6/7 pattern) is large enough to track prospectively.
+    Recommend: add jupiter_phase field to signal_check.py and test next 5–10 signals before acting on it.
+  </div>
+</div>
+
+<!-- Rankings table -->
+<div class="card full" style="margin-bottom:16px">
+  <h2>All 10 Cycles — Ranked by Clustering Strength (R)</h2>
+  <table class="rank-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Cycle</th>
+        <th>Type</th>
+        <th>Period</th>
+        <th>Resultant R</th>
+        <th>Mean Phase</th>
+        <th>Within ±60°</th>
+        <th>p (raw)</th>
+        <th>p (Bonf×10)</th>
+        <th>Verdict</th>
+      </tr>
+    </thead>
+    <tbody id="rank-tbody"></tbody>
+  </table>
+</div>
+
+<!-- Phase wheels -->
+<div class="grid3" style="margin-bottom:16px">
+  <div class="card">
+    <h2>Jupiter (398.88d) — Strongest</h2>
+    <div class="wheel-wrap">
+      <canvas id="wheel-jup" width="220" height="220"></canvas>
+      <div class="wheel-label">Phase 0° = opposition · 340° = 3w before next opposition</div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Saturn (378.09d) — Marginal</h2>
+    <div class="wheel-wrap">
+      <canvas id="wheel-sat" width="220" height="220"></canvas>
+      <div class="wheel-label">Phase 0° = opposition · 40° = just after opposition</div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Synodic Moon (29.53d) — Null</h2>
+    <div class="wheel-wrap">
+      <canvas id="wheel-syn" width="220" height="220"></canvas>
+      <div class="wheel-label">Phase 0° = new moon · No meaningful clustering</div>
+    </div>
+  </div>
+</div>
+
+<!-- Signal detail table -->
+<div class="card full" style="margin-bottom:16px">
+  <h2>Signal Phase Detail — Jupiter, Saturn, Synodic Moon</h2>
+  <table class="sig-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>SOL+1w</th>
+        <th>Jupiter Phase</th>
+        <th>Jup dist from 341°</th>
+        <th>Jupiter Zone?</th>
+        <th>Saturn Phase</th>
+        <th>Synodic Phase</th>
+        <th>Solar Year Phase</th>
+      </tr>
+    </thead>
+    <tbody id="sig-tbody"></tbody>
+  </table>
+</div>
+
+<!-- Interpretation -->
+<div class="grid2">
+  <div class="card">
+    <h2>What Does Jupiter Phase ~340° Mean?</h2>
+    <div class="insight-box" style="margin-top:0">
+      <div class="label">Physical Interpretation</div>
+      <p>Jupiter's synodic cycle starts at <strong>opposition</strong> (closest, brightest — phase 0°).
+      Phase 340° = 376.7 days into the cycle = 22 days <em>before the next opposition</em>.<br><br>
+      Filter signals tend to fire in the late-cycle approaching-opposition window.
+      In market terms: Jupiter opposition historically correlates with broad risk-on peaks.
+      Pre-opposition = markets approaching risk-on climax → SOL divergence appears first (as a leading indicator).<br><br>
+      This is speculative. The mechanism would be: macro liquidity cycles on a ~13-month cadence happen to phase-lock with Jupiter's 13.3-month synodic period.</p>
+    </div>
+    <div class="insight-box" style="margin-top:10px">
+      <div class="label">Jupiter + Saturn Near-Conjunction</div>
+      <p>Jupiter (399d) and Saturn (378d) synodic periods differ by only 21 days.
+      Over 5 years they drift ~105 days out of phase — enough to distinguish them statistically (and they have different mean phases: 341° vs 40°).
+      Their near-synchrony may amplify the signal when both are in zone simultaneously.</p>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Lunar Null — Explanation</h2>
+    <div class="insight-box" style="margin-top:0">
+      <div class="label">Why No Lunar Clustering?</div>
+      <p>The existing analysis (Arc 7) found lunar phase in the 3rd quadrant (new moon region) showed mild correlation.
+      But the Rayleigh test on all 4 lunar cycle variants returns p &gt; 0.34 with n=7 filter signals.
+      This is consistent with the Arc 7 finding being a feature selection artifact —
+      the model selected moon_phase as a feature because of its correlation with the broader dataset,
+      not because it specifically predicts filter-quality SUSPENDED bars.<br><br>
+      The τ=4w BTC/SOL spread autocorrelation is a genuine structural finding (Law 30 — Orbit Identity),
+      but that orbital resonance does not make the lunar calendar itself predictive for filter timing.</p>
+    </div>
+    <div class="insight-box" style="margin-top:10px">
+      <div class="label">Brute-Force Best Period</div>
+      <p>Scanning 14–800d in 0.5d steps, best-fit period = <strong>78.5d</strong> (R=0.900).
+      This should NOT be acted on: with 1500 periods tested and n=7 signals,
+      max-R distributions show this result has corrected p ≈ 0.5 — pure noise.
+      Period optimisation on n=7 always finds something. It means nothing.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const RANKED = [
+  {name:'Jupiter (398.88d)', period:398.88, R:0.685, p_raw:0.031, p_bonf:0.322, mean_ph:340.9, within60:6, type:'planetary'},
+  {name:'Saturn (378.09d)',  period:378.09, R:0.626, p_raw:0.059, p_bonf:0.590, mean_ph:39.8,  within60:5, type:'planetary'},
+  {name:'Solar Year (365.25d)', period:365.25, R:0.500, p_raw:0.177, p_bonf:1.0, mean_ph:202.5, within60:4, type:'solar'},
+  {name:'Synodic Moon (29.53d)', period:29.53, R:0.397, p_raw:0.344, p_bonf:1.0, mean_ph:310.0, within60:5, type:'lunar'},
+  {name:'Venus (583.92d)',   period:583.92, R:0.388, p_raw:0.363, p_bonf:1.0, mean_ph:343.9, within60:4, type:'planetary'},
+  {name:'Mars (779.94d)',    period:779.94, R:0.347, p_raw:0.447, p_bonf:1.0, mean_ph:151.4, within60:4, type:'planetary'},
+  {name:'Draconic Moon (27.21d)', period:27.21, R:0.276, p_raw:0.604, p_bonf:1.0, mean_ph:112.5, within60:3, type:'lunar'},
+  {name:'Sidereal Moon (27.32d)', period:27.32, R:0.235, p_raw:0.696, p_bonf:1.0, mean_ph:304.8, within60:3, type:'lunar'},
+  {name:'Anomalistic Moon (27.55d)', period:27.55, R:0.230, p_raw:0.706, p_bonf:1.0, mean_ph:248.3, within60:3, type:'lunar'},
+  {name:'Mercury (115.88d)', period:115.88, R:0.218, p_raw:0.732, p_bonf:1.0, mean_ph:359.5, within60:4, type:'planetary'},
+];
+
+const SIGNALS = [
+  {date:'2021-07-29', ret:15.4, jup:340.1, sat:356.2, syn:239.0, sol_yr:128.7},
+  {date:'2022-09-01', ret:4.2,  jup:340.3, sat:16.1,  syn:63.1,  sol_yr:162.0},
+  {date:'2023-12-07', ret:15.1, jup:37.2,  sat:96.0,  syn:295.3, sol_yr:257.4},
+  {date:'2024-10-17', ret:2.4,  jup:321.5, sat:35.9,  syn:175.3, sol_yr:207.8},
+  {date:'2025-08-21', ret:3.8,  jup:239.5, sat:329.2, syn:330.1, sol_yr:151.4},
+  {date:'2025-11-20', ret:1.2,  jup:321.6, sat:55.8,  syn:359.5, sol_yr:241.1},
+  {date:'2026-02-12', ret:7.7,  jup:37.4,  sat:135.8, syn:303.5, sol_yr:323.9},
+];
+
+function phaseDist(a, b) {
+  return Math.min(Math.abs(a-b), 360 - Math.abs(a-b));
+}
+
+// Render rank table
+const tbody = document.getElementById('rank-tbody');
+RANKED.forEach((c,i) => {
+  const typeColor = c.type === 'planetary' ? 'type-planetary' : c.type === 'lunar' ? 'type-lunar' : 'type-solar';
+  const rColor = c.R >= 0.65 ? '#c4a0ff' : c.R >= 0.5 ? '#8888cc' : c.R >= 0.35 ? '#555577' : '#2a2a3a';
+  const pClass = c.p_raw < 0.05 ? 'p-sig' : c.p_raw < 0.10 ? 'p-marg' : 'p-null';
+  const pBonfClass = c.p_bonf < 0.1 ? 'p-sig' : c.p_bonf < 0.2 ? 'p-marg' : 'p-bonf-ok';
+  const verdict = i === 0 ? '★ Best (uncorr.)' : i === 1 ? '△ Marginal' : c.p_raw < 0.1 ? '~ weak' : '— null';
+  const verdictColor = i === 0 ? '#c4a0ff' : i === 1 ? '#7777aa' : '#333';
+  const isWinner = i === 0;
+  const tr = document.createElement('tr');
+  if (isWinner) tr.className = 'winner';
+  tr.innerHTML = `
+    <td style="color:#444">${i+1}</td>
+    <td style="color:${rColor};font-weight:${isWinner?'bold':'normal'}">${c.name}</td>
+    <td><span class="type-badge ${typeColor}">${c.type}</span></td>
+    <td style="color:#555">${c.period}d</td>
+    <td>
+      <div class="r-bar">
+        <div class="r-track"><div class="r-fill" style="width:${c.R*100}%;background:${rColor}"></div></div>
+        <div class="r-val" style="color:${rColor}">${c.R.toFixed(3)}</div>
+      </div>
+    </td>
+    <td style="color:#888">${c.mean_ph.toFixed(1)}°</td>
+    <td style="color:${c.within60>=6?'#c4a0ff':c.within60>=5?'#7777aa':'#444'}">${c.within60}/7</td>
+    <td class="${pClass}">${c.p_raw < 0.001 ? '<0.001' : c.p_raw.toFixed(3)}</td>
+    <td class="${pBonfClass}">${c.p_bonf >= 0.99 ? '>0.99' : c.p_bonf.toFixed(3)}</td>
+    <td style="color:${verdictColor};font-size:0.65rem">${verdict}</td>
+  `;
+  tbody.appendChild(tr);
+});
+
+// Render signal table
+const stbody = document.getElementById('sig-tbody');
+const JUP_MEAN = 340.9;
+SIGNALS.forEach(s => {
+  const jupDist = phaseDist(s.jup, JUP_MEAN);
+  const inZone = jupDist <= 60;
+  const pillClass = jupDist <= 30 ? 'pill-in' : jupDist <= 60 ? 'pill-near' : 'pill-out';
+  const jupColor = jupDist <= 30 ? '#c4a0ff' : jupDist <= 60 ? '#7766bb' : '#333';
+  const retColor = s.ret >= 5 ? '#c4a0ff' : s.ret >= 2 ? '#8888aa' : '#555';
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="color:#888">${s.date}</td>
+    <td style="color:${retColor};font-weight:bold">+${s.ret}%</td>
+    <td style="color:${jupColor}">${s.jup.toFixed(1)}°</td>
+    <td style="color:${jupColor}">${jupDist.toFixed(1)}° ${jupDist<=30?'★':jupDist<=60?'△':'✗'}</td>
+    <td><span class="phase-pill ${pillClass}">${jupDist<=60?'✓':'✗'}</span> ${inZone?'IN ZONE':'outside'}</td>
+    <td style="color:#555">${s.sat.toFixed(1)}°</td>
+    <td style="color:#444">${s.syn.toFixed(1)}°</td>
+    <td style="color:#444">${s.sol_yr.toFixed(1)}°</td>
+  `;
+  stbody.appendChild(tr);
+});
+
+// Draw phase wheels
+function drawWheel(canvasId, filterPhases, meanPhase, zoneSize, color, label0) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const cx = 110, cy = 110, r = 90;
+
+  ctx.clearRect(0, 0, 220, 220);
+
+  // Background circle
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.strokeStyle = '#1a1a2e'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = '#07070f'; ctx.fill();
+
+  // Zone highlight
+  const z0 = (meanPhase - zoneSize) * Math.PI / 180 - Math.PI/2;
+  const z1 = (meanPhase + zoneSize) * Math.PI / 180 - Math.PI/2;
+  ctx.beginPath(); ctx.moveTo(cx, cy);
+  ctx.arc(cx, cy, r, z0, z1);
+  ctx.closePath();
+  ctx.fillStyle = color + '18'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy, r, z0, z1);
+  ctx.strokeStyle = color + '44'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Tick marks
+  for (let deg = 0; deg < 360; deg += 30) {
+    const a = deg * Math.PI / 180 - Math.PI/2;
+    const isCard = deg % 90 === 0;
+    ctx.beginPath();
+    ctx.moveTo(cx + (r-4) * Math.cos(a), cy + (r-4) * Math.sin(a));
+    ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+    ctx.strokeStyle = isCard ? '#2a2a4a' : '#1a1a2e'; ctx.lineWidth = 1; ctx.stroke();
+  }
+
+  // Mean phase arrow
+  const ma = meanPhase * Math.PI / 180 - Math.PI/2;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + r*0.7 * Math.cos(ma), cy + r*0.7 * Math.sin(ma));
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx + r*0.7*Math.cos(ma), cy + r*0.7*Math.sin(ma), 3, 0, Math.PI*2);
+  ctx.fillStyle = color; ctx.fill();
+
+  // Label 0°
+  const label0Angle = 0 * Math.PI / 180 - Math.PI/2;
+  ctx.fillStyle = '#444'; ctx.font = '9px Courier New'; ctx.textAlign = 'center';
+  ctx.fillText(label0, cx + (r+12)*Math.cos(label0Angle), cy + (r+12)*Math.sin(label0Angle) + 3);
+
+  // Filter signal dots
+  filterPhases.forEach(ph => {
+    const a = ph * Math.PI / 180 - Math.PI/2;
+    const dist = phaseDist(ph, meanPhase);
+    const dotColor = dist <= 30 ? color : dist <= 60 ? color + '88' : '#333';
+    ctx.beginPath();
+    ctx.arc(cx + r*0.85 * Math.cos(a), cy + r*0.85 * Math.sin(a), 5, 0, Math.PI*2);
+    ctx.fillStyle = dotColor; ctx.fill();
+    ctx.strokeStyle = '#0a0a12'; ctx.lineWidth = 1; ctx.stroke();
+  });
+
+  // Center dot
+  ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2);
+  ctx.fillStyle = '#2a2a4a'; ctx.fill();
+
+  // R value text
+  ctx.fillStyle = color; ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'center';
+  ctx.fillText(`R = ${RANKED.find(c=>c.name.startsWith(canvasId==='wheel-jup'?'Jup':canvasId==='wheel-sat'?'Sat':'Syn'))?.R?.toFixed(3) || ''}`, cx, cy + r + 16);
+}
+
+// Get filter phases from signal data
+const jupPhases = SIGNALS.map(s => s.jup);
+const satPhases = SIGNALS.map(s => s.sat);
+const synPhases = SIGNALS.map(s => s.syn);
+
+drawWheel('wheel-jup', jupPhases, 340.9, 60, '#c4a0ff', 'Opp');
+drawWheel('wheel-sat', satPhases, 39.8,  60, '#8888cc', 'Opp');
+drawWheel('wheel-syn', synPhases, 310.0, 60, '#4488cc', 'New');
+
+// Fix R label lookup
+function drawWheelFixed(canvasId, filterPhases, meanPhase, zoneSize, color, label0, Rval, pval) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const cx = 110, cy = 110, r = 90;
+  ctx.clearRect(0, 0, 220, 220);
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.strokeStyle = '#1a1a2e'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = '#07070f'; ctx.fill();
+  const z0 = (meanPhase - zoneSize) * Math.PI / 180 - Math.PI/2;
+  const z1 = (meanPhase + zoneSize) * Math.PI / 180 - Math.PI/2;
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, z0, z1); ctx.closePath();
+  ctx.fillStyle = color + '18'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy, r, z0, z1);
+  ctx.strokeStyle = color + '55'; ctx.lineWidth = 2; ctx.stroke();
+  for (let deg = 0; deg < 360; deg += 30) {
+    const a = deg * Math.PI / 180 - Math.PI/2;
+    ctx.beginPath();
+    ctx.moveTo(cx + (r-4)*Math.cos(a), cy + (r-4)*Math.sin(a));
+    ctx.lineTo(cx + r*Math.cos(a), cy + r*Math.sin(a));
+    ctx.strokeStyle = deg%90===0?'#2a2a4a':'#1a1a2e'; ctx.lineWidth=1; ctx.stroke();
+    if (deg % 90 === 0) {
+      ctx.fillStyle = '#333'; ctx.font = '8px Courier New'; ctx.textAlign = 'center';
+      const lx = cx + (r+14)*Math.cos(a), ly = cy + (r+14)*Math.sin(a);
+      ctx.fillText(deg + '°', lx, ly + 3);
+    }
+  }
+  const ma = meanPhase * Math.PI / 180 - Math.PI/2;
+  ctx.beginPath(); ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + r*0.65*Math.cos(ma), cy + r*0.65*Math.sin(ma));
+  ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx + r*0.65*Math.cos(ma), cy + r*0.65*Math.sin(ma), 4, 0, Math.PI*2);
+  ctx.fillStyle = color; ctx.fill();
+  filterPhases.forEach(ph => {
+    const a = ph * Math.PI / 180 - Math.PI/2;
+    const dist = phaseDist(ph, meanPhase);
+    const dotColor = dist <= 30 ? color : dist <= 60 ? color + 'aa' : '#2a2a3a';
+    ctx.beginPath();
+    ctx.arc(cx + r*0.83*Math.cos(a), cy + r*0.83*Math.sin(a), 5.5, 0, Math.PI*2);
+    ctx.fillStyle = dotColor; ctx.fill();
+    ctx.strokeStyle = '#050508'; ctx.lineWidth = 1.5; ctx.stroke();
+  });
+  ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2); ctx.fillStyle = '#2a2a3a'; ctx.fill();
+  ctx.fillStyle = color; ctx.font = 'bold 10px Courier New'; ctx.textAlign = 'center';
+  ctx.fillText(`R=${Rval}  p=${pval}`, cx, 16);
+}
+
+drawWheelFixed('wheel-jup', jupPhases, 340.9, 60, '#c4a0ff', 'Opp', '0.685', '0.031');
+drawWheelFixed('wheel-sat', satPhases, 39.8,  60, '#8888cc', 'Opp', '0.626', '0.059');
+drawWheelFixed('wheel-syn', synPhases, 310.0, 60, '#4488aa', 'New', '0.397', '0.344');
+</script>
+</body>
+</html>

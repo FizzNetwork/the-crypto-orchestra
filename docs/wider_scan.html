@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wider Scan — SUSPENDED Filter Across Pairs</title>
+<style>
+  :root { --bg:#0a0a0f; --panel:#12121a; --border:#1e1e2e; --green:#3ddc84; --red:#ff4d6d; --gold:#f0c040; --blue:#06b6d4; --purple:#c77dff; --text:#e0e0f0; --muted:#6b6b8a; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; font-size:14px; padding:32px; max-width:900px; margin:0 auto; }
+  h1 { font-size:20px; color:var(--purple); margin-bottom:6px; }
+  p.sub { color:var(--muted); font-size:13px; margin-bottom:28px; }
+  table { width:100%; border-collapse:collapse; margin-bottom:28px; }
+  th { text-align:left; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:0.8px; padding:8px 12px; border-bottom:2px solid var(--border); }
+  td { padding:11px 12px; border-bottom:1px solid #16161f; font-size:13px; }
+  tr:hover td { background:#14141f; }
+  .bar-cell { width:160px; }
+  .bar { height:18px; border-radius:3px; display:flex; align-items:center; padding-left:6px; font-size:11px; font-weight:700; color:#fff; min-width:6px; }
+  .pos { color:var(--green); } .neg { color:var(--red); } .gold { color:var(--gold); } .muted { color:var(--muted); }
+  .verdict { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+  .v-sol    { background:#1a4030; color:var(--green); }
+  .v-good   { background:#162030; color:var(--blue); }
+  .v-noise  { background:#1a1a28; color:var(--muted); }
+  .v-bad    { background:#2a1018; color:var(--red); }
+  .insight { background:#0d1020; border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:20px; }
+  .insight h3 { color:var(--gold); font-size:14px; margin-bottom:10px; }
+  .insight p  { color:var(--muted); font-size:13px; line-height:1.7; }
+  .sol-row td { background:#0d1a0d !important; }
+</style>
+</head>
+<body>
+<h1>SUSPENDED Filter — Does the Edge Generalize?</h1>
+<p class="sub">Same filter applied to all major pairs vs BTC: asset_ret &gt; 3% AND rs4w &lt; 20%, or consec_neg_btc ≥ 3</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Asset</th>
+      <th>Filtered signals (n)</th>
+      <th>Win rate</th>
+      <th>Win rate bar</th>
+      <th>Avg next-week return</th>
+      <th>Verdict</th>
+    </tr>
+  </thead>
+  <tbody id="tbl"></tbody>
+</table>
+
+<div class="insight">
+  <h3>Main finding: SOL's edge is specific, not universal</h3>
+  <p>The same filter that gives SOL 100% win rate produces near-random results on most other assets (46–56%). ADA and DOT are actively destructive (0% win rate — these assets keep falling through SUSPENDED into TRITONE even after BTC dips deeply). ETH is the closest runner-up at 56% / +5.5% but far weaker in conviction. The edge is in the BTC→SOL causal relationship specifically — confirmed by transfer entropy in earlier work — not in a generic "crypto recovers after BTC dips" pattern.</p>
+</div>
+
+<div class="insight">
+  <h3>Why SOL and not ETH?</h3>
+  <p>SOL has the highest realized beta to BTC of any large-cap, meaning it overshoots BTC on both sides. When SOL holds up during a BTC dip (SUSPENDED), it's fighting its own natural beta — that divergence is a genuine signal. ETH tracks BTC more smoothly and with less lag, so SUSPENDED is less meaningful. ADA/DOT are dying assets where SUSPENDED is just a brief pause before continued collapse — no recovery bid.</p>
+</div>
+
+<div class="insight">
+  <h3>What this means for the system</h3>
+  <p>The orchestra framework is valid universally — every asset has chord states vs BTC. But the <em>trading edge</em> lives specifically in SOL×BTC SUSPENDED. The filter is not magic — it's calibrated to SOL's dynamics. Running it blindly on other pairs without re-calibrating will lose money (see ADA, DOT). ETH could be worth its own investigation with a separately tuned filter and longer lookback, but the SOL signal should remain the primary instrument.</p>
+</div>
+
+<script>
+const data = [
+  { sym:'SOL', n:7,  wins:7,  wr:100, avg:7.1,  special:true },
+  { sym:'ETH', n:9,  wins:5,  wr:56,  avg:5.5  },
+  { sym:'UNI', n:11, wins:6,  wr:55,  avg:3.7  },
+  { sym:'MATIC',n:5, wins:3,  wr:60,  avg:0.5  },
+  { sym:'LINK',n:9,  wins:5,  wr:56,  avg:1.5  },
+  { sym:'ATOM',n:12, wins:6,  wr:50,  avg:-2.7 },
+  { sym:'XRP', n:13, wins:6,  wr:46,  avg:0.6  },
+  { sym:'BNB', n:13, wins:6,  wr:46,  avg:0.0  },
+  { sym:'AVAX',n:13, wins:6,  wr:46,  avg:-2.0 },
+  { sym:'ADA', n:6,  wins:0,  wr:0,   avg:-17.2},
+  { sym:'DOT', n:8,  wins:0,  wr:0,   avg:-17.7},
+];
+
+const tb = document.getElementById('tbl');
+data.forEach(d => {
+  const barW = Math.max(d.wr, 4);
+  const barColor = d.wr >= 70 ? '#3ddc84' : d.wr >= 50 ? '#06b6d4' : d.wr >= 30 ? '#f0c040' : '#ff4d6d';
+  let verdict, vclass;
+  if (d.wr === 100)     { verdict='★ SOL-specific edge';   vclass='v-sol'; }
+  else if (d.wr >= 56 && d.avg > 3) { verdict='Decent, re-tune';   vclass='v-good'; }
+  else if (d.wr >= 45)  { verdict='Random noise';          vclass='v-noise'; }
+  else                  { verdict='Actively harmful';      vclass='v-bad'; }
+
+  const retClass = d.avg > 2 ? 'pos' : d.avg > -1 ? 'muted' : 'neg';
+  const rowClass = d.special ? 'sol-row' : '';
+
+  tb.innerHTML += `<tr class="${rowClass}">
+    <td><strong>${d.sym}</strong></td>
+    <td class="muted">${d.n}</td>
+    <td class="${d.wr>=56?'pos':d.wr>=45?'muted':'neg'}">${d.wr}%</td>
+    <td class="bar-cell">
+      <div style="background:#1a1a28;border-radius:3px;overflow:hidden;height:18px;">
+        <div class="bar" style="width:${barW}%;background:${barColor};">${d.wr}%</div>
+      </div>
+    </td>
+    <td class="${retClass}">${d.avg >= 0 ? '+' : ''}${d.avg}%</td>
+    <td><span class="verdict ${vclass}">${verdict}</span></td>
+  </tr>`;
+});
+</script>
+</body>
+</html>

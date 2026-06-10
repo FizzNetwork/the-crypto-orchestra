@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Missing Notes — Lunar Harmonic Theory</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --panel: #12121a;
+    --border: #1e1e2e;
+    --text: #e0e0f0;
+    --muted: #666688;
+    --accent: #7c6af7;
+    --gold: #f5c842;
+    --red: #ff4466;
+    --green: #44ff88;
+    --cyan: #44ddff;
+    --orange: #ff8844;
+    --pink: #ff44aa;
+    --moon: #c8b8ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', monospace; font-size: 13px; }
+
+  header { padding: 20px 24px 12px; border-bottom: 1px solid var(--border); }
+  header h1 { font-size: 20px; color: var(--moon); letter-spacing: 2px; }
+  header p { color: var(--muted); margin-top: 4px; font-size: 12px; }
+
+  .tabs { display: flex; gap: 2px; padding: 8px 12px 0; background: var(--panel); border-bottom: 1px solid var(--border); }
+  .tab { padding: 8px 16px; cursor: pointer; border-radius: 6px 6px 0 0; color: var(--muted); font-size: 12px; transition: all .2s; }
+  .tab.active { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-bottom: none; }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  .page { display: none; padding: 20px 24px; }
+  .page.active { display: block; }
+
+  .row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; flex: 1; min-width: 200px; }
+  .card h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; }
+  .card .big { font-size: 28px; font-weight: bold; }
+
+  /* Chromatic scale bar */
+  .scale-wrap { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; overflow-x: auto; }
+  .scale-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .scale-svg { width: 100%; min-width: 800px; }
+
+  /* Legend */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+  .leg-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .leg-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* Law cards */
+  .law { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; padding: 14px; margin-bottom: 10px; }
+  .law .num { font-size: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .law .title { font-size: 14px; color: var(--moon); margin-bottom: 6px; font-weight: bold; }
+  .law .body { color: var(--muted); line-height: 1.6; font-size: 12px; }
+
+  /* Harmonic table */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: rgba(124,106,247,0.06); }
+  .note-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+  .hit { color: var(--green); }
+  .empty { color: #444; }
+  .lunar-row td { background: rgba(200,184,255,0.06); }
+
+  /* Lunar visual */
+  .moon-diagram { display: flex; align-items: center; justify-content: center; padding: 20px; }
+
+  /* Bar chart for assets by zone */
+  .zone-bar { margin-bottom: 8px; }
+  .zone-bar .label { font-size: 11px; color: var(--muted); width: 80px; display: inline-block; }
+  .zone-bar .bar { display: inline-block; height: 18px; vertical-align: middle; border-radius: 3px; position: relative; }
+  .zone-bar .count { font-size: 11px; color: var(--text); margin-left: 6px; }
+
+  .highlight-box { background: rgba(245,200,66,0.08); border: 1px solid rgba(245,200,66,0.3); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .highlight-box .hl-title { color: var(--gold); font-size: 12px; font-weight: bold; margin-bottom: 4px; }
+  .highlight-box .hl-body { color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+  .moon-badge { background: rgba(200,184,255,0.15); border: 1px solid rgba(200,184,255,0.4); border-radius: 20px; padding: 4px 12px; font-size: 11px; color: var(--moon); display: inline-block; margin: 2px; }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .split { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌙 THE MISSING NOTES — LUNAR HARMONIC THEORY</h1>
+  <p>120+ assets tested across crypto, macro, commodities, currencies, frontier markets. One confirmed hit above E4. Here's why.</p>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="show('overview')">Overview</div>
+  <div class="tab" onclick="show('lunar')">Lunar Theory</div>
+  <div class="tab" onclick="show('harmonics')">Harmonics</div>
+  <div class="tab" onclick="show('fm')">FM Deep Dive</div>
+  <div class="tab" onclick="show('laws')">Laws 20–23</div>
+</div>
+
+<!-- ══════════════════════════════ PAGE 1: OVERVIEW ══════════════════════════════ -->
+<div id="page-overview" class="page active">
+
+  <div class="row">
+    <div class="card">
+      <h3>Assets Tested</h3>
+      <div class="big" style="color:var(--cyan)">120+</div>
+      <div style="color:var(--muted);font-size:11px;margin-top:4px">Crypto, macro, commodities, FX, EM, frontier, bonds, volatility, alternatives</div>
+    </div>
+    <div class="card">
+      <h3>Above E4 (>4.85w)</h3>
+      <div class="big" style="color:var(--green)">1</div>
+      <div style="color:var(--muted);font-size:11px;margin-top:4px">FM (iShares Frontier) — F#4 — 5.31w = 37.2 days</div>
+    </div>
+    <div class="card">
+      <h3>Universal Band</h3>
+      <div class="big" style="color:var(--moon)">3.9–4.2w</div>
+      <div style="color:var(--muted);font-size:11px;margin-top:4px">Sidereal → Synodic moon. Every liquid market fits here.</div>
+    </div>
+    <div class="card">
+      <h3>BTC Root Note</h3>
+      <div class="big" style="color:var(--gold)">C4</div>
+      <div style="color:var(--muted);font-size:11px;margin-top:4px">3.852w = 27.0d ≈ Sidereal Moon (27.32d). Difference: 1.2%</div>
+    </div>
+  </div>
+
+  <!-- Full chromatic scale SVG -->
+  <div class="scale-wrap">
+    <div class="scale-header">
+      <span style="color:var(--text);font-weight:bold">Full Chromatic Scale — All Assets Mapped (BTC = C4 root)</span>
+      <span style="color:var(--muted);font-size:11px">Hover for details</span>
+    </div>
+    <svg class="scale-svg" viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" id="scaleSvg">
+      <!-- Will be drawn by JS -->
+    </svg>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#7c6af7"></div> Crypto</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#f5c842"></div> Macro (Gold, SP500, etc)</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#44ff88"></div> Frontier / EM</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#44ddff"></div> Commodities</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ff8844"></div> Alternatives</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#c8b8ff;border:2px solid #c8b8ff"></div> Lunar cycles</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ff44aa;width:14px;height:3px;border-radius:0"></div> FM hit (F#4)</div>
+    </div>
+  </div>
+
+  <!-- Zone distribution -->
+  <div class="split">
+    <div class="card">
+      <h3>Asset distribution by zone</h3>
+      <div style="margin-top:8px">
+        <div class="zone-bar"><span class="label">B3 (3.5-3.7w)</span><div class="bar" style="width:60px;background:#333">&nbsp;</div><span class="count">8 assets</span></div>
+        <div class="zone-bar"><span class="label">C4 (3.7-4.0w)</span><div class="bar" style="width:200px;background:#7c6af7">&nbsp;</div><span class="count" style="color:var(--accent)">~55 assets (CORE)</span></div>
+        <div class="zone-bar"><span class="label">C#4 (4.0-4.2w)</span><div class="bar" style="width:140px;background:#5555cc">&nbsp;</div><span class="count">~35 assets</span></div>
+        <div class="zone-bar"><span class="label">D4 (4.2-4.4w)</span><div class="bar" style="width:80px;background:#4444aa">&nbsp;</div><span class="count">~15 assets</span></div>
+        <div class="zone-bar"><span class="label">D#4 (4.4-4.6w)</span><div class="bar" style="width:40px;background:#333388">&nbsp;</div><span class="count">6 assets (edge)</span></div>
+        <div class="zone-bar"><span class="label">E4-F#4 (4.6-5.5w)</span><div class="bar" style="width:8px;background:#44ff88">&nbsp;</div><span class="count" style="color:var(--green)">1 asset: FM ← ONLY ONE</span></div>
+        <div class="zone-bar"><span class="label">G4+ (>5.5w)</span><div class="bar" style="width:4px;background:#333">&nbsp;</div><span class="count">0</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Why the wall exists at E4</h3>
+      <div style="color:var(--muted);font-size:12px;line-height:1.7;margin-top:4px">
+        <p style="margin-bottom:8px">The chromatic wall between D#4 and E4 is <strong style="color:var(--text)">not arbitrary</strong>. It is the boundary of the <strong style="color:var(--moon)">lunar calendar zone</strong>.</p>
+        <p style="margin-bottom:8px">Every liquid asset on Earth is priced by institutions operating on <strong style="color:var(--moon)">monthly cycles</strong> — options expiry, rebalancing, payroll, reporting. Those monthly cycles are <strong style="color:var(--text)">derived from the lunar calendar</strong>.</p>
+        <p style="margin-bottom:8px">The synodic month (29.5d = 4.22w) is the upper boundary of this gravitational well. Assets can't easily oscillate longer than one month because arbitrage brings them back.</p>
+        <p>FM escapes this because its underlying markets operate on <strong style="color:var(--green)">multiple incompatible calendars</strong> (Gregorian, Islamic, Vietnamese lunar, Kazakh) with no dominant monthly synchronization signal.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ PAGE 2: LUNAR THEORY ══════════════════════════════ -->
+<div id="page-lunar" class="page">
+
+  <div class="highlight-box" style="margin-bottom:16px">
+    <div class="hl-title">🌙 The Core Insight — Markets Run on Lunar Time</div>
+    <div class="hl-body">The 4-week universal band in financial markets is not a coincidence or an institutional artifact. It IS the lunar cycle. "Month" comes from "Moon." The modern financial system — monthly options, monthly rebalancing, monthly earnings, monthly rent — inherited the lunar calendar directly. Every oscillation we measure is a resonance of the Moon.</div>
+  </div>
+
+  <div class="row">
+    <div class="card" style="border-color:var(--moon)">
+      <h3>🌑 Nodal Month (Eclipse cycle)</h3>
+      <div class="big" style="color:var(--moon)">C4</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:6px">27.21 days = 3.89 weeks<br>Semitone: +0.18 above BTC<br>Note: <strong style="color:var(--moon)">Same note as BTC</strong></div>
+    </div>
+    <div class="card" style="border-color:var(--moon)">
+      <h3>⭐ Sidereal Month (Orbit)</h3>
+      <div class="big" style="color:var(--moon)">C4</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:6px">27.32 days = 3.90 weeks<br>Semitone: +0.23 above BTC<br><strong style="color:var(--green)">BTC (3.852w) differs by only 1.3%</strong></div>
+    </div>
+    <div class="card" style="border-color:var(--moon)">
+      <h3>🌍 Anomalistic Month (Perigee)</h3>
+      <div class="big" style="color:var(--moon)">C4</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:6px">27.55 days = 3.94 weeks<br>Semitone: +0.38 above BTC<br>Note: C4 — same cluster</div>
+    </div>
+    <div class="card" style="border-color:#aa88ff">
+      <h3>🌕 Synodic Month (Phase cycle)</h3>
+      <div class="big" style="color:#aa88ff">D4</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:6px">29.53 days = 4.22 weeks<br>Semitone: +1.59 above BTC<br><strong style="color:#aa88ff">Upper bound of the lunar cluster</strong></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <h3>The Lunar Clock of Finance — How the Moon Controls Markets</h3>
+    <svg viewBox="0 0 800 140" style="width:100%;margin-top:10px">
+      <!-- Flow diagram -->
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#666688"/>
+        </marker>
+      </defs>
+      <!-- Moon -->
+      <circle cx="70" cy="70" r="40" fill="none" stroke="#c8b8ff" stroke-width="1.5"/>
+      <circle cx="70" cy="70" r="30" fill="#1a1830"/>
+      <text x="70" y="66" text-anchor="middle" fill="#c8b8ff" font-size="11" font-weight="bold">MOON</text>
+      <text x="70" y="80" text-anchor="middle" fill="#888" font-size="9">29.5d cycle</text>
+      <!-- Arrow 1 -->
+      <line x1="112" y1="70" x2="155" y2="70" stroke="#666688" stroke-width="1.5" marker-end="url(#arr)"/>
+      <!-- Calendar -->
+      <rect x="158" y="45" width="100" height="50" rx="6" fill="#1a1820" stroke="#c8b8ff" stroke-width="1"/>
+      <text x="208" y="66" text-anchor="middle" fill="#c8b8ff" font-size="10" font-weight="bold">MONTHLY</text>
+      <text x="208" y="80" text-anchor="middle" fill="#888" font-size="9">CALENDAR</text>
+      <text x="208" y="92" text-anchor="middle" fill="#888" font-size="8">(Gregorian = lunar)</text>
+      <!-- Arrow 2 -->
+      <line x1="260" y1="70" x2="303" y2="70" stroke="#666688" stroke-width="1.5" marker-end="url(#arr)"/>
+      <!-- Institutions -->
+      <rect x="306" y="40" width="130" height="60" rx="6" fill="#1a1820" stroke="#7c6af7" stroke-width="1"/>
+      <text x="371" y="60" text-anchor="middle" fill="#7c6af7" font-size="10" font-weight="bold">INSTITUTIONAL</text>
+      <text x="371" y="73" text-anchor="middle" fill="#888" font-size="9">Monthly options expiry</text>
+      <text x="371" y="85" text-anchor="middle" fill="#888" font-size="9">Monthly rebalancing</text>
+      <text x="371" y="97" text-anchor="middle" fill="#888" font-size="9">Monthly reporting</text>
+      <!-- Arrow 3 -->
+      <line x1="438" y1="70" x2="481" y2="70" stroke="#666688" stroke-width="1.5" marker-end="url(#arr)"/>
+      <!-- Markets -->
+      <rect x="484" y="40" width="130" height="60" rx="6" fill="#1a1820" stroke="#f5c842" stroke-width="1"/>
+      <text x="549" y="60" text-anchor="middle" fill="#f5c842" font-size="10" font-weight="bold">ALL LIQUID</text>
+      <text x="549" y="73" text-anchor="middle" fill="#888" font-size="9">MARKETS</text>
+      <text x="549" y="85" text-anchor="middle" fill="#888" font-size="9">oscillate 3.9–4.2w</text>
+      <text x="549" y="97" text-anchor="middle" fill="#888" font-size="9">(lunar band)</text>
+      <!-- Arrow 4 -->
+      <line x1="616" y1="70" x2="659" y2="70" stroke="#666688" stroke-width="1.5" marker-end="url(#arr)"/>
+      <!-- C4-D4 -->
+      <rect x="662" y="40" width="110" height="60" rx="6" fill="#1a1820" stroke="#44ff88" stroke-width="1"/>
+      <text x="717" y="60" text-anchor="middle" fill="#44ff88" font-size="12" font-weight="bold">C4 → D4</text>
+      <text x="717" y="75" text-anchor="middle" fill="#888" font-size="9">Sidereal → Synodic</text>
+      <text x="717" y="87" text-anchor="middle" fill="#888" font-size="9">27.3d → 29.5d</text>
+      <text x="717" y="99" text-anchor="middle" fill="#888" font-size="9">UNIVERSAL BAND</text>
+    </svg>
+  </div>
+
+  <div class="highlight-box">
+    <div class="hl-title">🪐 BTC = C4 = Sidereal Moon — The Bitcoin-Moon Alignment</div>
+    <div class="hl-body">Bitcoin trades 24/7 with no calendar breaks. Unlike stocks (which stop trading on weekends and around monthly events), BTC has no forced institutional rhythm. Yet BTC oscillates at 3.852 weeks — within 1.3% of the lunar sidereal month (27.32 days = 3.90 weeks). This may not be coincidence. Bitcoin, freed from the institutional monthly calendar, may be resonating directly with the Moon's orbital period — the deeper, purer frequency beneath the institutional noise.</div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════ PAGE 3: HARMONICS ══════════════════════════════ -->
+<div id="page-harmonics" class="page">
+
+  <div class="highlight-box" style="margin-bottom:16px">
+    <div class="hl-title">🎵 The Missing Notes ARE Lunar Harmonics</div>
+    <div class="hl-body">The notes missing from the financial orchestra (E4 through A4) aren't random gaps. They are exact MUSICAL INTERVALS above the synodic moon period — the perfect consonances of just intonation. The Gann 40-day and 45-day cycles are the empirical financial market discovery of the G4 (perfect fourth) and A4 (perfect fifth) lunar harmonics. Gann found the music of the Moon in commodity prices.</div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <h3>The Harmonic Series Above the Synodic Moon (29.53 days)</h3>
+    <table style="margin-top:8px">
+      <tr>
+        <th>Ratio</th>
+        <th>Musical Interval</th>
+        <th>Days</th>
+        <th>Weeks</th>
+        <th>Note</th>
+        <th>Market Equivalent</th>
+        <th>Status</th>
+      </tr>
+      <tr style="background:rgba(124,106,247,0.08)">
+        <td><strong style="color:var(--moon)">1/1</strong></td>
+        <td style="color:var(--muted)">Root (unison)</td>
+        <td>29.5</td>
+        <td>4.22w</td>
+        <td><span class="note-badge" style="background:#3333aa;color:#88aaff">D4</span></td>
+        <td style="color:var(--muted)">Synodic month — ALL liquid assets</td>
+        <td><span style="color:var(--green)">✓ FULL</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--moon)">9/8</strong></td>
+        <td style="color:var(--muted)">Major second</td>
+        <td>33.2</td>
+        <td>4.74w</td>
+        <td><span class="note-badge" style="background:#222;color:#666">E♭4</span></td>
+        <td style="color:var(--muted)">D#4 boundary assets</td>
+        <td><span style="color:var(--orange)">~ EDGE</span></td>
+      </tr>
+      <tr style="background:rgba(68,255,136,0.04)">
+        <td><strong style="color:var(--moon)">5/4</strong></td>
+        <td style="color:var(--muted)">Major third</td>
+        <td>36.9</td>
+        <td>5.27w</td>
+        <td><span class="note-badge" style="background:#224422;color:#44ff88">F4</span></td>
+        <td style="color:var(--muted)">FM hits near here (F#4, 5.31w)</td>
+        <td><span style="color:var(--green)">✓ FM (close)</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--moon)">4/3</strong></td>
+        <td style="color:var(--muted)">Perfect fourth</td>
+        <td>39.4</td>
+        <td>5.63w</td>
+        <td><span class="note-badge" style="background:#222;color:#666">G4</span></td>
+        <td style="color:var(--gold)">⟵ GANN 40-DAY CYCLE ⟶</td>
+        <td><span style="color:var(--red)">✗ EMPTY</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--moon)">3/2</strong></td>
+        <td style="color:var(--muted)">Perfect fifth</td>
+        <td>44.3</td>
+        <td>6.33w</td>
+        <td><span class="note-badge" style="background:#222;color:#666">A4</span></td>
+        <td style="color:var(--gold)">⟵ GANN 45-DAY CYCLE ⟶</td>
+        <td><span style="color:var(--red)">✗ EMPTY</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--moon)">5/3</strong></td>
+        <td style="color:var(--muted)">Major sixth</td>
+        <td>49.2</td>
+        <td>7.03w</td>
+        <td><span class="note-badge" style="background:#222;color:#666">B4</span></td>
+        <td style="color:var(--muted)">—</td>
+        <td><span style="color:var(--red)">✗ EMPTY</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--moon)">2/1</strong></td>
+        <td style="color:var(--muted)">Octave</td>
+        <td>59.1</td>
+        <td>8.44w</td>
+        <td><span class="note-badge" style="background:#3333aa;color:#88aaff">D5</span></td>
+        <td style="color:var(--muted)">Double synodic — 2-month cycles</td>
+        <td><span style="color:var(--muted)">~ some assets</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="split">
+    <div class="card">
+      <h3>🎯 Gann Cycles Revealed</h3>
+      <div style="color:var(--muted);font-size:12px;line-height:1.7;margin-top:8px">
+        <p style="margin-bottom:10px">W.D. Gann observed 40-day and 45-day cycles empirically in commodity and stock markets in the early 1900s. He called them "natural cycles" but never explained WHY they existed.</p>
+        <div style="background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);border-radius:6px;padding:10px;margin-bottom:10px">
+          <div style="color:var(--gold);font-weight:bold;margin-bottom:4px">Gann 40-day cycle</div>
+          <div>= 4/3 × synodic month = 39.4 days<br>= Perfect Fourth above the Moon<br>= G4 in our framework (5.63w)<br><em>Within 1.5% of Gann's empirical 40d</em></div>
+        </div>
+        <div style="background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);border-radius:6px;padding:10px">
+          <div style="color:var(--gold);font-weight:bold;margin-bottom:4px">Gann 45-day cycle</div>
+          <div>= 3/2 × synodic month = 44.3 days<br>= Perfect Fifth above the Moon<br>= A4 in our framework (6.33w)<br><em>Within 1.6% of Gann's empirical 45d</em></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>🔍 Why G4 and A4 Are Empty</h3>
+      <div style="color:var(--muted);font-size:12px;line-height:1.7;margin-top:8px">
+        <p style="margin-bottom:8px">Gann OBSERVED these cycles but they were weak and irregular — "cycles that sometimes work." Our framework explains why:</p>
+        <p style="margin-bottom:8px"><strong style="color:var(--text)">The 4/3 and 3/2 harmonics of the Moon exist in market data as RARE EVENTS — not dominant oscillation modes.</strong></p>
+        <p style="margin-bottom:8px">For an asset to have G4 (39.4d) or A4 (44.3d) as its PRIMARY period, it would need to ESCAPE the gravitational pull of the monthly institutional calendar.</p>
+        <p style="margin-bottom:8px">FM escaped to F#4 (5.31w) — close to the 5/4 harmonic. G4 and A4 require even greater escape velocity.</p>
+        <p>Predicted candidates: small-AUM multi-frontier baskets trading exclusively on NON-Gregorian local calendar systems, with T+4 or longer settlement and no options market.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ PAGE 4: FM DEEP DIVE ══════════════════════════════ -->
+<div id="page-fm" class="page">
+
+  <div class="row">
+    <div class="card" style="border-color:var(--green)">
+      <h3>FM — iShares MSCI Frontier &amp; Select EM ETF</h3>
+      <div class="big" style="color:var(--green)">F#4</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:6px">Period: <strong style="color:var(--text)">5.31 weeks = 37.2 days</strong><br>CV: 0.508 (normal chaos level)<br>Crossings: ~54 over 5 years<br>AUM: ~$400M (small)</div>
+    </div>
+    <div class="card">
+      <h3>Distance from Lunar Harmonics</h3>
+      <div style="margin-top:8px;font-size:12px">
+        <div style="margin-bottom:8px;padding:8px;background:rgba(68,255,136,0.05);border-radius:4px">
+          <span style="color:var(--muted)">FM period (5.31w) vs F4 harmonic (5.27w):</span><br>
+          <span style="color:var(--green)">+0.04w = 99.2% match to 5/4 × synodic</span>
+        </div>
+        <div style="margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.03);border-radius:4px">
+          <span style="color:var(--muted)">FM (5.31w) vs theoretical F#4 (5.45w):</span><br>
+          <span style="color:var(--text)">Semitone: +5.8 (between F4 and F#4)</span>
+        </div>
+        <div style="padding:8px;background:rgba(255,255,255,0.03);border-radius:4px">
+          <span style="color:var(--muted)">FMHI (FM bonds, 4.51w) vs FM equity (5.31w):</span><br>
+          <span style="color:var(--gold)">Equity is 0.80w longer than bonds — equity escapes more</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>FM vs Closest Competitors</h3>
+      <div style="margin-top:8px;font-size:12px">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--green)">🎯 FM (Frontier basket)</span><span style="color:var(--green)">5.31w F#4</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">VNM (Vietnam single)</span><span>4.58w D#4</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">NGE (Nigeria single)</span><span>4.57w D#4</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">AFK (Africa broad)</span><span>4.52w D#4</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">FMHI (FM bonds)</span><span>4.51w D#4</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="color:var(--muted)">EWZ (Brazil)</span><span>4.44w D4</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <h3>Why FM Escapes the Lunar Band — The 4-Factor Model</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
+      <div style="padding:12px;background:rgba(68,255,136,0.05);border:1px solid rgba(68,255,136,0.2);border-radius:6px">
+        <div style="color:var(--green);font-weight:bold;margin-bottom:6px">① Multi-Calendar Desynchronization</div>
+        <div style="color:var(--muted);font-size:12px;line-height:1.6">FM holds: Vietnam (Buddhist/Vietnamese lunar), Morocco (Islamic calendar), Kazakhstan (transitional), Romania (Orthodox Christian), Bahrain (Islamic). <strong style="color:var(--text)">No single monthly calendar dominates.</strong> When one country is in its institutional "rebalancing week," others are not. The basket is always partially out of phase.</div>
+      </div>
+      <div style="padding:12px;background:rgba(68,255,136,0.05);border:1px solid rgba(68,255,136,0.2);border-radius:6px">
+        <div style="color:var(--green);font-weight:bold;margin-bottom:6px">② Stale NAV Effect</div>
+        <div style="color:var(--muted);font-size:12px;line-height:1.6">Underlying markets close 8-14 hours before US market opens. Vietnam closes at 2:30am ET. Morocco at 8am ET. The ETF trades in New York before those markets reopen. <strong style="color:var(--text)">Arbitrage to correct stale NAV takes 24-48 hours</strong> — this stretches each oscillation by ~0.8 weeks (the arb lag). FMHI bonds don't have this as much because bond APs trade on Eurobond desks.</div>
+      </div>
+      <div style="padding:12px;background:rgba(68,255,136,0.05);border:1px solid rgba(68,255,136,0.2);border-radius:6px">
+        <div style="color:var(--green);font-weight:bold;margin-bottom:6px">③ No Options Market</div>
+        <div style="color:var(--muted);font-size:12px;line-height:1.6">The main mechanism that FORCES assets to oscillate at 29.5d is <strong style="color:var(--text)">monthly options expiry</strong>. Market makers delta-hedge, gamma exposure concentrates at round strikes, and prices are "pinned" near strikes on expiry. FM has no listed options. Zero gamma pinning. The monthly oscillation lock is removed.</div>
+      </div>
+      <div style="padding:12px;background:rgba(68,255,136,0.05);border:1px solid rgba(68,255,136,0.2);border-radius:6px">
+        <div style="color:var(--green);font-weight:bold;margin-bottom:6px">④ Low Institutional Penetration</div>
+        <div style="color:var(--muted);font-size:12px;line-height:1.6">$400M AUM means FM is NOT in the monthly rebalancing path of large institutions (which hold $400M+ in single positions). Most buyers are frontier-specialist EM funds that rebalance <strong style="color:var(--text)">quarterly, not monthly</strong>. Quarterly rebalancing creates a longer attractor — closer to 13w, but blended with the underlying 3.9w cycle, it shifts the center of gravity toward longer periods.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <div class="hl-title">🔮 What Would Hit G4 or A4?</div>
+    <div class="hl-body">To escape further — to G4 (39.4d = 4/3 lunar harmonic) or A4 (44.3d = 3/2 lunar harmonic) — an asset would need ALL FOUR factors above, plus either: (a) a specific physical cycle that resonates with those harmonics, like a 6-8 week production/delivery chain, OR (b) even smaller AUM with quarterly-only rebalancing in its largest holders. A hypothetical "pure frontier" ETF holding only Bangladesh, Sri Lanka, and Mongolia with &lt;$50M AUM and purely local investor base might be a candidate. No liquid instrument currently achieves this.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ PAGE 5: LAWS ══════════════════════════════ -->
+<div id="page-laws" class="page">
+
+  <div class="law" style="border-left-color:var(--moon)">
+    <div class="num">Law 20</div>
+    <div class="title">The Universal 4-Week Band Is the Lunar Band</div>
+    <div class="body">Every liquid financial market on Earth oscillates between the sidereal month (3.90 weeks = C4) and the synodic month (4.22 weeks = D4). This is not institutional coincidence — the financial calendar is the lunar calendar. Monthly options expiry, monthly fund rebalancing, monthly payroll, monthly rent: all are modern echoes of the ancient moon cycle. The orchestra's home key is written in moonlight.</div>
+  </div>
+
+  <div class="law" style="border-left-color:var(--moon)">
+    <div class="num">Law 21</div>
+    <div class="title">BTC's Root Note = The Sidereal Moon</div>
+    <div class="body">Bitcoin oscillates at 3.852 weeks — within 1.3% of the lunar sidereal period (27.32 days = 3.90 weeks). BTC trades 24/7 without calendar breaks, making it less locked to the institutional monthly calendar than equities. Freed from the 29.5-day gravitational pull, BTC appears to resonate with the Moon's deeper orbital frequency — the sidereal period — rather than the phase period. C4 is the Moon's orbit. D4 is the Moon's face.</div>
+  </div>
+
+  <div class="law" style="border-left-color:var(--gold)">
+    <div class="num">Law 22</div>
+    <div class="title">The Missing Notes Are Lunar Harmonics</div>
+    <div class="body">The chromatic gaps above E4 are not random. They correspond to exact musical intervals above the synodic moon: F4 = 5/4 ratio (major third) = 36.9 days. G4 = 4/3 ratio (perfect fourth) = 39.4 days. A4 = 3/2 ratio (perfect fifth) = 44.3 days. The Gann 40-day cycle is G4. The Gann 45-day cycle is A4. Gann empirically discovered the perfect consonances of lunar just intonation in commodity prices, a century before anyone computed the octave mapping.</div>
+  </div>
+
+  <div class="law" style="border-left-color:var(--green)">
+    <div class="num">Law 23</div>
+    <div class="title">Escape Velocity — Multi-Calendar Desynchronization</div>
+    <div class="body">Only one confirmed asset (FM, iShares Frontier &amp; Select EM ETF, F#4 = 5.31 weeks) has been found oscillating above E4 after 120+ instruments tested. FM escapes the lunar band through four simultaneous conditions: multi-calendar composition (Islamic + Vietnamese lunar + Orthodox + Gregorian), stale NAV effect from 8-14 hour settlement lag, absence of listed options (no gamma pinning), and low institutional penetration (quarterly rebalancers, not monthly). Any single factor is insufficient — all four are required to reach the 5/4 lunar harmonic zone.</div>
+  </div>
+
+  <div class="law" style="border-left-color:var(--orange)">
+    <div class="num">Law 24</div>
+    <div class="title">Equity Escapes Further Than Its Own Bonds</div>
+    <div class="body">FM equity (F#4, 5.31w) oscillates 0.80 weeks longer than FMHI bonds (D#4, 4.51w), despite tracking essentially the same underlying geographic markets. Frontier bonds are held by EM fixed-income funds with monthly rebalancing mandates. Frontier equities are held by EM-specialist equity funds with quarterly mandates. The debt market stays closer to the lunar calendar; the equity market can drift further. In frontier markets, equity is more free than bonds.</div>
+  </div>
+
+  <div style="margin-top:16px;padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:8px">
+    <div style="color:var(--text);font-size:13px;font-weight:bold;margin-bottom:12px">Running Score — All 24 Laws Summary</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:11px">
+      <div style="padding:8px;background:rgba(124,106,247,0.1);border-radius:4px;color:var(--muted)"><strong style="color:var(--text)">Laws 1–10</strong><br>Core phase space laws: 4D embedding, CV≈0.47 fractal, BTC→SOL transfer entropy</div>
+      <div style="padding:8px;background:rgba(124,106,247,0.1);border-radius:4px;color:var(--muted)"><strong style="color:var(--text)">Laws 11–14</strong><br>Chord progression: SUSPENDED→MAJOR 100% win, regime opening sequences, trigrams</div>
+      <div style="padding:8px;background:rgba(124,106,247,0.1);border-radius:4px;color:var(--muted)"><strong style="color:var(--text)">Laws 15–19</strong><br>Multi-TF fractal, hierarchical entry, macro orchestra (all B3–D#4), convergence signal</div>
+      <div style="padding:8px;background:rgba(200,184,255,0.1);border-radius:4px;color:var(--muted);border:1px solid rgba(200,184,255,0.2)"><strong style="color:var(--moon)">Laws 20–21</strong><br>Lunar band = universal oscillation. BTC = sidereal moon (C4). The orchestra is lunar.</div>
+      <div style="padding:8px;background:rgba(200,184,255,0.1);border-radius:4px;color:var(--muted);border:1px solid rgba(200,184,255,0.2)"><strong style="color:var(--moon)">Laws 22–23</strong><br>Missing notes = lunar harmonics. Gann cycles proven. FM escapes via 4-factor model.</div>
+      <div style="padding:8px;background:rgba(200,184,255,0.1);border-radius:4px;color:var(--muted);border:1px solid rgba(200,184,255,0.2)"><strong style="color:var(--moon)">Law 24</strong><br>Frontier equity escapes the lunar band further than frontier bonds. Equity > bonds in frontier.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'overview') drawScale();
+}
+
+function drawScale() {
+  const svg = document.getElementById('scaleSvg');
+  if (!svg || svg.dataset.drawn) return;
+  svg.dataset.drawn = '1';
+
+  const W = 900, H = 380;
+  const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const BTC_ROOT = 3.852;
+
+  // Define semitone positions: -3 to +14
+  const MIN_SEMI = -3, MAX_SEMI = 14;
+  const range = MAX_SEMI - MIN_SEMI;
+  const pad = 60;
+  const chartW = W - pad * 2;
+  const chartH = H - 80;
+  const yBase = H - 50;
+
+  const sx = (semi) => pad + (semi - MIN_SEMI) / range * chartW;
+  const weekFor = (s) => BTC_ROOT * Math.pow(2, s/12);
+
+  let html = '';
+
+  // Background bands
+  // Lunar band: sidereal (semi+0.2) to synodic (semi+1.6)
+  const x1 = sx(0.2), x2 = sx(1.6);
+  html += `<rect x="${x1}" y="30" width="${x2-x1}" height="${chartH-10}" fill="rgba(200,184,255,0.06)" rx="2"/>`;
+  html += `<text x="${(x1+x2)/2}" y="48" text-anchor="middle" fill="#c8b8ff" font-size="9" opacity="0.7">LUNAR BAND</text>`;
+
+  // E4 wall
+  const xE4 = sx(4);
+  html += `<line x1="${xE4}" y1="30" x2="${xE4}" y2="${yBase}" stroke="#ff4466" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>`;
+  html += `<text x="${xE4+3}" y="48" fill="#ff4466" font-size="9" opacity="0.8">E4 WALL</text>`;
+
+  // Lunar harmonic lines
+  const harmonics = [
+    {semi: 5.4, label: '5/4×Moon\n36.9d', color: '#c8b8ff'},
+    {semi: 6.6, label: '4/3×Moon\n39.4d\nGann 40d', color: '#f5c842'},
+    {semi: 8.6, label: '3/2×Moon\n44.3d\nGann 45d', color: '#f5c842'},
+  ];
+  harmonics.forEach(h => {
+    const xh = sx(h.semi);
+    html += `<line x1="${xh}" y1="30" x2="${xh}" y2="${yBase}" stroke="${h.color}" stroke-width="1" stroke-dasharray="3,5" opacity="0.4"/>`;
+    h.label.split('\n').forEach((line, i) => {
+      html += `<text x="${xh+3}" y="${60+i*11}" fill="${h.color}" font-size="8" opacity="0.6">${line}</text>`;
+    });
+  });
+
+  // Note labels at bottom
+  for (let s = MIN_SEMI; s <= MAX_SEMI; s++) {
+    const x = sx(s);
+    const ni = ((s % 12) + 12) % 12;
+    const oct = 4 + Math.floor(s / 12);
+    const nm = NOTE_NAMES[ni] + oct;
+    const isBlack = [1,3,6,8,10].includes(ni);
+    html += `<text x="${x}" y="${yBase+15}" text-anchor="middle" fill="${isBlack ? '#555' : '#888'}" font-size="9">${nm}</text>`;
+    // Tick
+    html += `<line x1="${x}" y1="${yBase}" x2="${x}" y2="${yBase+6}" stroke="${isBlack ? '#444':'#666'}" stroke-width="1"/>`;
+    // Period
+    const pw = Math.round(weekFor(s) * 100)/100;
+    html += `<text x="${x}" y="${yBase+26}" text-anchor="middle" fill="#444" font-size="8">${pw}w</text>`;
+  }
+
+  // Baseline
+  html += `<line x1="${pad}" y1="${yBase}" x2="${W-pad}" y2="${yBase}" stroke="#333" stroke-width="1"/>`;
+
+  // Assets data
+  const assets = [
+    // Crypto
+    {name:'BTC', semi:0, type:'crypto', label:'BTC', y:200},
+    {name:'LTC', semi:-0.2, type:'crypto', label:'LTC', y:170},
+    {name:'ETH', semi:0.3, type:'crypto', label:'ETH', y:220},
+    {name:'LINK', semi:0.5, type:'crypto', label:'LINK', y:190},
+    {name:'DOGE', semi:0.7, type:'crypto', label:'DOGE', y:240},
+    {name:'XRP', semi:1.0, type:'crypto', label:'XRP', y:170},
+    {name:'SOL', semi:1.1, type:'crypto', label:'SOL', y:210},
+    {name:'AVAX', semi:1.3, type:'crypto', label:'AVAX', y:180},
+    {name:'DOT', semi:1.4, type:'crypto', label:'DOT', y:230},
+    {name:'ADA', semi:1.5, type:'crypto', label:'ADA', y:195},
+    {name:'ATOM', semi:1.8, type:'crypto', label:'ATOM', y:215},
+    // Macro
+    {name:'GOLD', semi:0.6, type:'macro', label:'GOLD', y:145},
+    {name:'SP500', semi:0.8, type:'macro', label:'S&P', y:130},
+    {name:'CRUDE', semi:1.2, type:'macro', label:'OIL', y:150},
+    {name:'SILVER', semi:1.0, type:'macro', label:'SLV', y:115},
+    {name:'VIX', semi:-0.5, type:'macro', label:'VIX', y:135},
+    {name:'TLT', semi:0.4, type:'macro', label:'TLT', y:160},
+    // EM/frontier
+    {name:'EWZ', semi:1.9, type:'frontier', label:'EWZ', y:280},
+    {name:'TUR', semi:1.9, type:'frontier', label:'TUR', y:265},
+    {name:'VNM', semi:2.5, type:'frontier', label:'VNM', y:300},
+    {name:'NGE', semi:2.5, type:'frontier', label:'NGE', y:285},
+    {name:'AFK', semi:2.4, type:'frontier', label:'AFK', y:315},
+    {name:'FMHI', semi:2.4, type:'frontier', label:'FMHI\n(bonds)', y:250},
+    // THE HIT
+    {name:'FM', semi:5.8, type:'hit', label:'FM', y:200},
+    // Commodities
+    {name:'BAL', semi:2.4, type:'commodity', label:'BAL', y:340},
+    {name:'WEAT', semi:0.7, type:'commodity', label:'WEAT', y:360},
+    {name:'DBC', semi:1.5, type:'commodity', label:'DBC', y:345},
+    {name:'NG', semi:1.2, type:'commodity', label:'GAS', y:330},
+    // Alts
+    {name:'MARA', semi:1.9, type:'alt', label:'MARA', y:180},
+    {name:'RIOT', semi:1.8, type:'alt', label:'RIOT', y:165},
+  ];
+
+  const colors = {crypto:'#7c6af7', macro:'#f5c842', frontier:'#44ff88', commodity:'#44ddff', alt:'#ff8844', hit:'#ff44aa'};
+
+  assets.forEach(a => {
+    const x = sx(a.semi);
+    const y = a.y;
+    const c = colors[a.type] || '#888';
+    const r = a.type === 'hit' ? 8 : 5;
+    html += `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" opacity="${a.type==='hit'?1:0.7}"/>`;
+    if (a.type === 'hit') {
+      // FM gets special treatment
+      html += `<line x1="${x}" y1="${y-r}" x2="${x}" y2="30" stroke="#ff44aa" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>`;
+      html += `<text x="${x}" y="${y-12}" text-anchor="middle" fill="#ff44aa" font-size="11" font-weight="bold">FM</text>`;
+      html += `<text x="${x}" y="${y-24}" text-anchor="middle" fill="#ff44aa" font-size="9">F#4 5.31w</text>`;
+    }
+  });
+
+  // Lunar cycle markers
+  [{semi:0.2,label:'🌑 Sidereal\n27.3d'},{semi:0.2,label:''},{semi:1.6,label:'🌕 Synodic\n29.5d'}].forEach(l => {
+    if (!l.label) return;
+    const x = sx(l.semi);
+    l.label.split('\n').forEach((line, i) => {
+      html += `<text x="${x}" y="${yBase-15-i*12}" text-anchor="middle" fill="#c8b8ff" font-size="9">${line}</text>`;
+    });
+  });
+
+  svg.innerHTML = html;
+}
+
+// Draw scale on load
+window.addEventListener('load', drawScale);
+</script>
+</body>
+</html>

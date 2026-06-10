@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Crypto Orchestra — Chord Progression History</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a12;color:#e0e0e0;font-family:'Courier New',monospace;font-size:13px}
+h1{text-align:center;color:#c8a0ff;padding:18px 0 4px;font-size:19px;letter-spacing:2px}
+.subtitle{text-align:center;color:#666;font-size:11px;margin-bottom:16px}
+
+/* KPI bar */
+.kpi-row{display:flex;gap:10px;padding:0 20px 14px;justify-content:center;flex-wrap:wrap}
+.kpi{background:#13131f;border:1px solid #2a2a3f;border-radius:8px;padding:10px 18px;text-align:center;min-width:140px}
+.kpi .val{font-size:22px;font-weight:bold;margin-bottom:2px}
+.kpi .lbl{font-size:10px;color:#888;letter-spacing:1px;text-transform:uppercase}
+
+/* chord colours */
+.MAJOR{color:#4fc3f7}
+.DOMINANT{color:#ffb74d}
+.SUSPENDED{color:#a5d6a7}
+.TRITONE{color:#ef9a9a}
+.bg-MAJOR{background:#0d2a38}
+.bg-DOMINANT{background:#2d1e00}
+.bg-SUSPENDED{background:#0d2a1a}
+.bg-TRITONE{background:#2a0d0d}
+
+/* nav tabs */
+.tabs{display:flex;gap:0;padding:0 20px;border-bottom:1px solid #222}
+.tab{padding:8px 22px;cursor:pointer;border:1px solid transparent;border-bottom:none;border-radius:4px 4px 0 0;color:#888;font-size:12px;letter-spacing:1px}
+.tab.active{color:#c8a0ff;border-color:#333;background:#0f0f1a}
+.tab:hover:not(.active){color:#bbb}
+
+.panel{display:none;padding:16px 20px}
+.panel.active{display:block}
+
+/* timeline */
+.timeline-wrap{overflow-x:auto}
+.timeline{display:flex;gap:2px;height:40px;align-items:stretch;min-width:1040px}
+.tw-cell{flex:1;min-width:3px;border-radius:2px;cursor:pointer;position:relative;transition:opacity .15s}
+.tw-cell:hover{opacity:.7}
+
+/* grid table */
+table{border-collapse:collapse;width:100%;font-size:12px}
+th{background:#1a1a2a;color:#888;padding:6px 10px;text-align:left;border-bottom:1px solid #333;letter-spacing:1px;font-size:10px;text-transform:uppercase}
+td{padding:5px 10px;border-bottom:1px solid #1a1a1a}
+tr:hover td{background:#11111e}
+
+/* legend */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px}
+.legend-dot{width:12px;height:12px;border-radius:50%}
+
+/* chord card */
+.chord-card{background:#13131f;border:1px solid #2a2a3f;border-radius:8px;padding:14px 18px;margin-bottom:10px}
+.chord-card h3{font-size:13px;letter-spacing:1px;margin-bottom:8px}
+.chord-card .stats{display:flex;gap:20px;flex-wrap:wrap}
+.chord-card .stat{text-align:center}
+.chord-card .stat .v{font-size:18px;font-weight:bold}
+.chord-card .stat .l{font-size:10px;color:#666;text-transform:uppercase}
+
+/* markov */
+.matrix{display:grid;grid-template-columns:100px repeat(4,1fr);gap:2px;font-size:11px;margin-top:8px}
+.mcell{padding:5px 8px;border-radius:4px;text-align:center}
+.mhdr{color:#666;text-align:right;padding:5px 8px;align-self:center;font-size:10px}
+
+/* pattern list */
+.pattern-row{display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid #1a1a1a}
+.pattern-row:hover{background:#11111e}
+.arrow{color:#555;font-size:10px}
+.pill{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold}
+
+/* chart bar */
+.bar-wrap{display:flex;align-items:center;gap:8px;margin:3px 0}
+.bar-label{width:80px;text-align:right;font-size:11px}
+.bar-track{flex:1;height:16px;background:#111;border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.bar-val{width:60px;font-size:11px}
+
+/* tooltip */
+#tip{position:fixed;background:#1a1a2e;border:1px solid #444;border-radius:6px;padding:8px 12px;font-size:11px;pointer-events:none;display:none;z-index:100;line-height:1.7}
+
+/* regime badge */
+.regime-badge{display:inline-block;padding:1px 8px;border-radius:3px;font-size:10px;font-weight:bold;margin-left:6px}
+</style>
+</head>
+<body>
+
+<h1>⟁ CHORD PROGRESSION HISTORY</h1>
+<div class="subtitle">BTC × SOL 4-State Phase Orchestra · 259 Weeks · Jan 2021 – Jun 2026</div>
+
+<!-- KPI bar -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="val MAJOR">40%</div>
+    <div class="lbl">MAJOR weeks</div>
+  </div>
+  <div class="kpi">
+    <div class="val TRITONE">40%</div>
+    <div class="lbl">TRITONE weeks</div>
+  </div>
+  <div class="kpi">
+    <div class="val SUSPENDED">+9.6%</div>
+    <div class="lbl">SUS→MAJ mean SOL</div>
+  </div>
+  <div class="kpi">
+    <div class="val" style="color:#a5d6a7">100%</div>
+    <div class="lbl">SUS→SUS win rate</div>
+  </div>
+  <div class="kpi">
+    <div class="val" style="color:#c8a0ff">19</div>
+    <div class="lbl">SUS events</div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" onclick="show('timeline')">Timeline</div>
+  <div class="tab" onclick="show('states')">Chord States</div>
+  <div class="tab" onclick="show('markov')">Transitions</div>
+  <div class="tab" onclick="show('patterns')">Patterns</div>
+  <div class="tab" onclick="show('regimes')">Regimes</div>
+</div>
+
+<!-- ═══ PANEL: Timeline ═══ -->
+<div class="panel active" id="panel-timeline">
+  <div class="legend" style="margin-bottom:10px">
+    <div class="legend-item"><div class="legend-dot" style="background:#4fc3f7"></div><span class="MAJOR">MAJOR — BTC↑ SOL↑ (39.8%)</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ffb74d"></div><span class="DOMINANT">DOMINANT — BTC↑ SOL↓ (10.4%)</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a5d6a7"></div><span class="SUSPENDED">SUSPENDED — BTC↓ SOL↑ (10.0%)</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ef9a9a"></div><span class="TRITONE">TRITONE — BTC↓ SOL↓ (39.8%)</span></div>
+  </div>
+
+  <!-- Regime labels -->
+  <div style="display:flex;gap:2px;min-width:1040px;margin-bottom:2px;overflow-x:auto" id="regime-bar"></div>
+
+  <div class="timeline-wrap">
+    <div class="timeline" id="main-timeline"></div>
+  </div>
+
+  <div style="margin-top:10px;font-size:11px;color:#555">← hover cells for weekly data &nbsp;|&nbsp; week 0 = Jan 2021</div>
+
+  <!-- Return chart below timeline -->
+  <div style="margin-top:16px">
+    <div style="color:#888;font-size:11px;margin-bottom:6px;letter-spacing:1px">SOL WEEKLY RETURN (%)</div>
+    <div class="timeline-wrap">
+      <div id="return-chart" style="display:flex;gap:2px;height:60px;align-items:center;min-width:1040px"></div>
+    </div>
+  </div>
+
+  <!-- Recent chord sequence -->
+  <div style="margin-top:16px">
+    <div style="color:#888;font-size:11px;margin-bottom:8px;letter-spacing:1px">MOST RECENT 20 CHORDS</div>
+    <div id="recent-seq" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+  </div>
+</div>
+
+<!-- ═══ PANEL: Chord States ═══ -->
+<div class="panel" id="panel-states">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+    <div class="chord-card bg-MAJOR" style="border-color:#1a3a4a">
+      <h3 class="MAJOR">▲ MAJOR &nbsp; BTC↑ + SOL↑</h3>
+      <div style="font-size:11px;color:#888;margin-bottom:10px">Both assets in positive return territory. Bull alignment.</div>
+      <div class="stats">
+        <div class="stat"><div class="v MAJOR">103</div><div class="l">Weeks</div></div>
+        <div class="stat"><div class="v MAJOR">+2.19%</div><div class="l">Fwd 1w mean</div></div>
+        <div class="stat"><div class="v MAJOR">53%</div><div class="l">Win 1w</div></div>
+        <div class="stat"><div class="v MAJOR">+2.04%</div><div class="l">Fwd 2w mean</div></div>
+        <div class="stat"><div class="v MAJOR">1.69w</div><div class="l">Avg run</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:#888">Exits to: <span class="MAJOR">MAJOR 41%</span> &nbsp; <span class="TRITONE">TRITONE 38%</span> &nbsp; <span class="SUSPENDED">SUS 13%</span></div>
+    </div>
+
+    <div class="chord-card bg-TRITONE" style="border-color:#3a1a1a">
+      <h3 class="TRITONE">▼ TRITONE &nbsp; BTC↓ + SOL↓</h3>
+      <div style="font-size:11px;color:#888;margin-bottom:10px">Both assets in negative return territory. Bear alignment.</div>
+      <div class="stats">
+        <div class="stat"><div class="v TRITONE">103</div><div class="l">Weeks</div></div>
+        <div class="stat"><div class="v TRITONE">−1.80%</div><div class="l">Fwd 1w mean</div></div>
+        <div class="stat"><div class="v TRITONE">48%</div><div class="l">Win 1w</div></div>
+        <div class="stat"><div class="v TRITONE">−1.81%</div><div class="l">Fwd 2w mean</div></div>
+        <div class="stat"><div class="v TRITONE">1.72w</div><div class="l">Avg run</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:#888">Exits to: <span class="MAJOR">MAJOR 43%</span> &nbsp; <span class="TRITONE">TRITONE 42%</span> &nbsp; <span class="DOMINANT">DOM 9%</span></div>
+    </div>
+
+    <div class="chord-card bg-SUSPENDED" style="border-color:#1a3a2a">
+      <h3 class="SUSPENDED">⟳ SUSPENDED &nbsp; BTC↓ + SOL↑</h3>
+      <div style="font-size:11px;color:#888;margin-bottom:10px">SOL leads BTC in recovery. Rarest and most explosive chord.</div>
+      <div class="stats">
+        <div class="stat"><div class="v SUSPENDED">26</div><div class="l">Weeks</div></div>
+        <div class="stat"><div class="v SUSPENDED">+2.96%</div><div class="l">Fwd 1w mean</div></div>
+        <div class="stat"><div class="v SUSPENDED">54%</div><div class="l">Win 1w</div></div>
+        <div class="stat"><div class="v SUSPENDED">+6.50%</div><div class="l">Fwd 2w mean</div></div>
+        <div class="stat"><div class="v SUSPENDED">1.18w</div><div class="l">Avg run</div></div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:#a5d6a7;font-weight:bold">⚡ If resolves → MAJOR: 100% win, +9.6% mean</div>
+      <div style="font-size:11px;color:#a5d6a7;font-weight:bold">⚡ If stays SUSPENDED: 100% win, +19.1% mean</div>
+      <div style="margin-top:6px;font-size:11px;color:#888">Exits to: <span class="MAJOR">MAJOR 38%</span> &nbsp; <span class="TRITONE">TRITONE 31%</span> &nbsp; <span class="SUSPENDED">SUS 15%</span> &nbsp; <span class="DOMINANT">DOM 15%</span></div>
+    </div>
+
+    <div class="chord-card bg-DOMINANT" style="border-color:#3a2a0a">
+      <h3 class="DOMINANT">→ DOMINANT &nbsp; BTC↑ + SOL↓</h3>
+      <div style="font-size:11px;color:#888;margin-bottom:10px">BTC racing ahead while SOL lags. Divergence. Worst forward SOL signal.</div>
+      <div class="stats">
+        <div class="stat"><div class="v DOMINANT">27</div><div class="l">Weeks</div></div>
+        <div class="stat"><div class="v DOMINANT">−2.11%</div><div class="l">Fwd 1w mean</div></div>
+        <div class="stat"><div class="v DOMINANT">33%</div><div class="l">Win 1w</div></div>
+        <div class="stat"><div class="v DOMINANT">−0.29%</div><div class="l">Fwd 2w mean</div></div>
+        <div class="stat"><div class="v DOMINANT">1.23w</div><div class="l">Avg run</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:#888">Exits to: <span class="TRITONE">TRITONE 48%</span> &nbsp; <span class="MAJOR">MAJOR 22%</span> &nbsp; <span class="DOMINANT">DOM 19%</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ PANEL: Transitions ═══ -->
+<div class="panel" id="panel-markov">
+  <div style="color:#888;font-size:11px;margin-bottom:12px;letter-spacing:1px">MARKOV TRANSITION MATRIX — probability of moving from row chord to column chord</div>
+
+  <div style="overflow-x:auto">
+  <div class="matrix" style="max-width:600px">
+    <!-- header row -->
+    <div class="mcell mhdr">FROM → TO</div>
+    <div class="mcell" style="text-align:center;color:#4fc3f7;font-size:11px">MAJOR</div>
+    <div class="mcell" style="text-align:center;color:#ffb74d;font-size:11px">DOMINANT</div>
+    <div class="mcell" style="text-align:center;color:#a5d6a7;font-size:11px">SUSPENDED</div>
+    <div class="mcell" style="text-align:center;color:#ef9a9a;font-size:11px">TRITONE</div>
+    <!-- MAJOR row -->
+    <div class="mcell mhdr MAJOR">MAJOR</div>
+    <div id="m-MM" class="mcell"></div>
+    <div id="m-MD" class="mcell"></div>
+    <div id="m-MS" class="mcell"></div>
+    <div id="m-MT" class="mcell"></div>
+    <!-- DOMINANT row -->
+    <div class="mcell mhdr DOMINANT">DOMINANT</div>
+    <div id="m-DM" class="mcell"></div>
+    <div id="m-DD" class="mcell"></div>
+    <div id="m-DS" class="mcell"></div>
+    <div id="m-DT" class="mcell"></div>
+    <!-- SUSPENDED row -->
+    <div class="mcell mhdr SUSPENDED">SUSPENDED</div>
+    <div id="m-SM" class="mcell"></div>
+    <div id="m-SD" class="mcell"></div>
+    <div id="m-SS" class="mcell"></div>
+    <div id="m-ST" class="mcell"></div>
+    <!-- TRITONE row -->
+    <div class="mcell mhdr TRITONE">TRITONE</div>
+    <div id="m-TM" class="mcell"></div>
+    <div id="m-TD" class="mcell"></div>
+    <div id="m-TS" class="mcell"></div>
+    <div id="m-TT" class="mcell"></div>
+  </div>
+  </div>
+
+  <div style="margin-top:20px;color:#888;font-size:11px;margin-bottom:8px;letter-spacing:1px">FORWARD SOL RETURN BY TRANSITION</div>
+  <table>
+    <thead><tr><th>From</th><th>To</th><th>Count</th><th>Fwd 1w SOL</th><th>Win %</th><th>Signal</th></tr></thead>
+    <tbody id="trans-table"></tbody>
+  </table>
+</div>
+
+<!-- ═══ PANEL: Patterns ═══ -->
+<div class="panel" id="panel-patterns">
+  <div style="color:#888;font-size:11px;margin-bottom:12px;letter-spacing:1px">TRIGRAM PATTERNS — 3-chord sequences sorted by forward SOL win rate (min n≥4)</div>
+  <table>
+    <thead><tr><th>Sequence</th><th>Count</th><th>Fwd SOL 1w Mean</th><th>Win %</th><th>Action</th></tr></thead>
+    <tbody id="trigram-table"></tbody>
+  </table>
+
+  <div style="color:#888;font-size:11px;margin-top:20px;margin-bottom:8px;letter-spacing:1px">SUSPENDED EVENT LOG — 19 distinct events</div>
+  <table>
+    <thead><tr><th>Week</th><th>BTC ret</th><th>SOL ret</th><th>Fwd 1w</th><th>Fwd 2w</th><th>Resolution</th></tr></thead>
+    <tbody id="sus-table"></tbody>
+  </table>
+</div>
+
+<!-- ═══ PANEL: Regimes ═══ -->
+<div class="panel" id="panel-regimes">
+  <div style="color:#888;font-size:11px;margin-bottom:12px;letter-spacing:1px">CHORD DISTRIBUTION BY MARKET REGIME</div>
+
+  <div id="regime-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+
+  <div style="margin-top:20px;color:#888;font-size:11px;margin-bottom:10px;letter-spacing:1px">OPENING SEQUENCES AT REGIME TRANSITIONS</div>
+  <table>
+    <thead><tr><th>Regime</th><th>Opening chord sequence (first 5w)</th><th>SOL fwd returns</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span style="color:#ffd54f;font-weight:bold">2021 Bull</span></td>
+        <td><span class="MAJOR">MAJ</span> → <span class="SUSPENDED">SUS</span> → <span class="TRITONE">TRI</span> → <span class="TRITONE">TRI</span> → <span class="MAJOR">MAJ</span></td>
+        <td style="color:#aaa">+17.8% / +1.9% / −15.3% / −16.3% / +4.5%</td>
+      </tr>
+      <tr>
+        <td><span style="color:#ef9a9a;font-weight:bold">2022 Bear</span></td>
+        <td><span class="MAJOR">MAJ</span> → <span class="MAJOR">MAJ</span> → <span class="TRITONE">TRI</span> → <span class="MAJOR">MAJ</span> → <span class="TRITONE">TRI</span></td>
+        <td style="color:#aaa">+0.0% / +8.2% / −5.7% / +18.5% / −4.3%</td>
+      </tr>
+      <tr>
+        <td><span style="color:#80cbc4;font-weight:bold">2023 Recov</span></td>
+        <td><span class="DOMINANT">DOM</span> → <span class="MAJOR">MAJ</span> → <span class="SUSPENDED">SUS</span> → <span class="SUSPENDED">SUS</span> → <span class="TRITONE">TRI</span></td>
+        <td style="color:#aaa">−7.6% / +17.2% / <span class="SUSPENDED">+14.4% / +18.2%</span> / −4.4%</td>
+      </tr>
+      <tr>
+        <td><span style="color:#c8a0ff;font-weight:bold">2024+ Bull</span></td>
+        <td><span class="SUSPENDED">SUS</span> → <span class="SUSPENDED">SUS</span> → <span class="SUSPENDED">SUS</span> → <span class="MAJOR">MAJ</span> → <span class="MAJOR">MAJ</span></td>
+        <td style="color:#aaa"><span class="SUSPENDED">+0.7% / +2.9% / +1.0%</span> / +9.0% / +13.6%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:16px;background:#13131f;border:1px solid #2a2a3f;border-radius:8px;padding:14px 18px">
+    <div style="color:#c8a0ff;font-size:12px;font-weight:bold;margin-bottom:8px;letter-spacing:1px">⚡ LAW 12 — SUSPENDED LEADS REGIME CHANGES</div>
+    <div style="font-size:12px;color:#bbb;line-height:1.8">
+      Three of four regime transitions began with or immediately preceded a SUSPENDED chord.<br>
+      The 2024 Bull started with an unprecedented 3-week SUS run — SOL leading BTC back up.<br>
+      When you see SUSPENDED fire 2+ consecutive weeks: regime shift is in progress.<br>
+      <span style="color:#a5d6a7;font-weight:bold">SUS→SUS→SUS = highest-conviction regime-change signal in this dataset.</span>
+    </div>
+  </div>
+</div>
+
+<div id="tip"></div>
+
+<script>
+// ──────────────────────────────────────────────────────────────────────────
+//  DATA
+// ──────────────────────────────────────────────────────────────────────────
+
+const CHORDS = ["MAJOR","MAJOR","SUSPENDED","MAJOR","SUSPENDED","MAJOR","MAJOR","TRITONE","MAJOR","SUSPENDED","MAJOR","MAJOR","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","SUSPENDED","TRITONE","TRITONE","MAJOR","MAJOR","TRITONE","TRITONE","TRITONE","TRITONE","MAJOR","MAJOR","TRITONE","MAJOR","MAJOR","MAJOR","MAJOR","TRITONE","TRITONE","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","MAJOR","TRITONE","MAJOR","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","MAJOR","SUSPENDED","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","SUSPENDED","TRITONE","MAJOR","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","SUSPENDED","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","SUSPENDED","TRITONE","MAJOR","TRITONE","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","SUSPENDED","SUSPENDED","MAJOR","SUSPENDED","DOMINANT","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","DOMINANT","MAJOR","MAJOR","MAJOR","MAJOR","TRITONE","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","SUSPENDED","MAJOR","MAJOR","TRITONE","TRITONE","SUSPENDED","TRITONE","MAJOR","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","SUSPENDED","MAJOR","MAJOR","TRITONE","MAJOR","TRITONE","MAJOR","TRITONE","TRITONE","TRITONE","MAJOR","TRITONE","TRITONE","TRITONE","TRITONE","DOMINANT","MAJOR","SUSPENDED","MAJOR","MAJOR","TRITONE","TRITONE","MAJOR","TRITONE","MAJOR","MAJOR","TRITONE","MAJOR","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","SUSPENDED","SUSPENDED","SUSPENDED","MAJOR","MAJOR","DOMINANT","MAJOR","MAJOR","MAJOR","DOMINANT","MAJOR","DOMINANT","MAJOR","DOMINANT","TRITONE","DOMINANT","MAJOR","DOMINANT","TRITONE","TRITONE","DOMINANT","MAJOR","MAJOR","DOMINANT","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","MAJOR","TRITONE","TRITONE","MAJOR","MAJOR","TRITONE","TRITONE","MAJOR","TRITONE","MAJOR","TRITONE","TRITONE","MAJOR","TRITONE","TRITONE","MAJOR","TRITONE","TRITONE","TRITONE","DOMINANT","TRITONE","TRITONE","MAJOR","TRITONE","DOMINANT","TRITONE","MAJOR","MAJOR","TRITONE","TRITONE","TRITONE","MAJOR","MAJOR","TRITONE","MAJOR","MAJOR","SUSPENDED","MAJOR","MAJOR","TRITONE","TRITONE","MAJOR","MAJOR","SUSPENDED","MAJOR","TRITONE","SUSPENDED","TRITONE","SUSPENDED","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","TRITONE","SUSPENDED","TRITONE","TRITONE","TRITONE"];
+
+const SOL_P = [16.56,0.93,1.85,-15.31,25.1,-3.61,9.5,-25.79,-4.91,7.56,7.06,8.2,-3.89,-15.36,7.09,-10.21,13.85,4.3,-16.02,-2.75,17.63,-2.22,-23.72,-14.56,22.96,2.52,11.34,-1.82,-6.85,17.19,4.16,31.24,14.9,-5.86,-10.61,31.57,14.73,32.47,13.37,15.03,-27.49,-14.82,-32.39,-7.06,-22.15,-17.53,-19.72,-11.01,-12.3,14.32,-1.5,-27.98,14.76,-13.51,-6.86,-17.66,-12.73,-22.69,-2.22,-21.54,-10.11,-8.84,-1.99,10.43,3.71,9.83,-6.09,-7.73,-5.58,-16.18,-15.73,-7.49,-20.62,-1.26,-5.27,4.86,-0.01,-25.76,-13.71,-12.29,-3.88,-0.7,-0.52,-1.35,-0.29,3.71,12.66,-9.10,-3.89,-3.25,-9.12,-4.13,-0.97,-2.47,-3.04,-8.51,-1.65,0.09,3.99,-1.26,4.0,-3.23,3.69,2.04,1.88,-6.96,-7.07,14.44,-7.56,14.36,-7.63,-1.86,18.2,-14.73,-8.32,4.91,-4.69,17.2,12.71,14.07,-4.43,6.83,-5.16,-5.93,-12.97,1.5,-0.36,-3.02,-2.28,0.08,-14.04,4.12,-3.22,-8.77,1.21,-7.07,8.66,2.39,-11.68,15.14,-10.33,-4.53,-7.41,15.78,-3.01,-3.73,-3.83,-0.72,-4.09,-3.05,-11.24,-3.73,-9.77,-3.68,-1.2,0.72,2.88,-7.42,-3.81,-3.08,-1.08,2.2,10.18,-2.48,2.16,-3.12,-6.0,-3.27,-3.18,-7.23,-3.2,-2.97,1.75,0.21,-2.83,-3.22,-2.48,2.7,-4.49,-7.15,-4.51,-1.38,-2.97,-0.69,-2.88,4.38,-9.05,2.31,-0.19,0.26,-0.75,-0.64,0.09,-0.71,5.21,-0.93,-4.61,-1.44,-1.93,-0.69,-0.38,-7.12,-3.4,-3.42,-8.91,5.83,1.86,-3.0,-4.61,-4.77,-0.49,-0.52,-3.96,-1.16,-2.25,7.69,3.77,-8.58,-3.07,4.36,1.18,-2.2,-3.72,-1.47,4.21,0.72,2.04,-6.42,-1.08,-2.56,-5.01,-3.61,-7.03,2.9,4.0,-2.22,1.6,9.1,7.66,-0.91,2.19,-5.70,1.0,2.9,0.72,9.0,13.6,-2.68,-1.28,-5.77,-5.88,-3.28,-5.14,-5.5,7.16,-5.0,-1.42,-3.07,-2.31,-2.31,5.2];
+
+const BTC_P = [3.97,0.47,-3.37,3.28,-0.66,4.45,1.72,-5.52,-0.74,-4.21,3.56,2.33,-3.16,-2.17,4.71,-1.4,2.67,-12.12,-1.55,-2.85,9.85,-1.28,-2.22,-8.5,5.34,0.95,3.42,8.75,-0.98,5.37,3.14,18.89,11.14,-0.41,-0.39,3.35,2.29,15.23,5.39,10.56,-11.5,-4.34,-16.54,-5.95,-12.65,-9.48,-10.1,-3.44,-1.96,14.62,4.36,-10.35,11.39,-3.23,-7.12,-7.72,-9.93,-12.97,0.14,-12.87,-4.15,-3.11,5.39,-3.91,-2.37,7.26,-2.76,-3.21,-4.66,-6.86,-4.35,-3.73,-9.67,-0.39,-1.93,2.76,0.98,-8.7,-2.2,-3.52,-3.18,-0.6,-0.39,-0.96,-0.78,-0.31,3.7,-0.61,-0.5,-0.37,-4.71,-2.39,-0.5,-1.91,-1.94,-3.5,-1.16,0.01,2.82,-0.35,4.33,-1.12,3.1,3.27,1.72,-4.57,-0.35,14.44,-4.57,-2.86,-3.52,-0.54,-7.19,-0.19,-2.26,-1.73,-2.29,8.82,6.18,4.87,-2.56,2.4,0.02,-3.13,-8.77,-2.31,-0.97,-2.44,-1.5,-8.77,-1.92,-1.13,-2.37,-7.41,-0.61,-2.96,3.98,1.22,-3.48,4.04,-4.0,-1.55,-7.41,-1.87,-3.01,-2.09,-0.83,-0.3,-1.22,-2.98,-4.48,-1.69,-6.58,0.14,-0.51,-6.58,-3.46,-3.58,-3.0,-2.13,-0.5,3.75,-1.43,-2.58,5.98,-0.42,-2.97,-1.04,-3.56,-3.47,-1.98,-1.94,1.06,-0.01,-0.2,-1.16,-2.82,2.56,-3.51,-4.08,-1.27,-0.61,-1.24,-0.43,-0.17,4.1,-5.91,2.22,-0.01,0.85,-0.25,-2.31,0.02,-0.07,4.17,-0.7,-1.43,-0.75,-0.94,-0.37,-0.26,-2.22,-1.65,-2.66,-3.18,6.38,1.32,-2.15,-2.99,-3.13,-0.33,-1.18,-2.08,-1.02,-0.94,-2.66,-0.98,-3.44,-0.95,2.14,0.97,-2.26,-1.66,-0.78,2.1,-0.94,-0.01,-2.34,-0.79,-2.38,-3.79,-1.74,-3.71,-0.12,2.25,-0.65,0.42,-0.13,0.78,0.45,0.52,-2.67,-0.95,1.73,-0.94,-0.23,3.11,1.65,-2.68,-1.6,-3.04,-1.09,-1.69,-1.33,-1.97,1.82,-1.8,-1.75,-1.96,-1.28,2.7];
+
+const N = CHORDS.length;
+
+const COLORS = {
+  MAJOR: '#4fc3f7',
+  DOMINANT: '#ffb74d',
+  SUSPENDED: '#a5d6a7',
+  TRITONE: '#ef9a9a'
+};
+const STATES = ['MAJOR','DOMINANT','SUSPENDED','TRITONE'];
+
+// ──────────────────────────────────────────────────────────────────────────
+//  TAB SWITCHING
+// ──────────────────────────────────────────────────────────────────────────
+function show(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+//  TOOLTIP
+// ──────────────────────────────────────────────────────────────────────────
+const tip = document.getElementById('tip');
+function showTip(e, html) {
+  tip.innerHTML = html;
+  tip.style.display = 'block';
+  moveTip(e);
+}
+function moveTip(e) {
+  tip.style.left = (e.clientX+14)+'px';
+  tip.style.top  = (e.clientY-10)+'px';
+}
+function hideTip() { tip.style.display = 'none'; }
+
+// ──────────────────────────────────────────────────────────────────────────
+//  TIMELINE
+// ──────────────────────────────────────────────────────────────────────────
+function buildTimeline() {
+  const tl = document.getElementById('main-timeline');
+  const rc = document.getElementById('return-chart');
+  const maxRet = Math.max(...SOL_P.map(Math.abs));
+
+  const regimeColors = ['#ffd54f22','#ef9a9a22','#80cbc422','#c8a0ff22'];
+  const regimeBounds = [{s:0,e:51,l:'2021 Bull'},{s:52,e:103,l:'2022 Bear'},{s:104,e:155,l:'2023 Recov'},{s:156,e:N-1,l:'2024+ Bull'}];
+
+  // Regime bar
+  const rb = document.getElementById('regime-bar');
+  rb.style.overflow = 'hidden';
+  regimeBounds.forEach((r, ri) => {
+    const span = document.createElement('div');
+    span.style.cssText = `flex:${r.e-r.s+1};background:${regimeColors[ri]};height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;color:${['#ffd54f','#ef9a9a','#80cbc4','#c8a0ff'][ri]};letter-spacing:1px;`;
+    span.textContent = r.l;
+    rb.appendChild(span);
+  });
+
+  for (let i = 0; i < N; i++) {
+    const c = CHORDS[i];
+    const cell = document.createElement('div');
+    cell.className = 'tw-cell';
+    cell.style.background = COLORS[c];
+    cell.style.opacity = '0.75';
+    cell.addEventListener('mouseenter', e => {
+      const yr = 2021 + Math.floor(i/52);
+      showTip(e, `<b>Week ${i}</b> (~${yr})<br>
+        Chord: <span style="color:${COLORS[c]}">${c}</span><br>
+        BTC: <b style="color:${BTC_P[i]>=0?'#4fc3f7':'#ef9a9a'}">${BTC_P[i]>=0?'+':''}${BTC_P[i].toFixed(2)}%</b><br>
+        SOL: <b style="color:${SOL_P[i]>=0?'#a5d6a7':'#ef9a9a'}">${SOL_P[i]>=0?'+':''}${SOL_P[i].toFixed(2)}%</b><br>
+        ${i+1<N?`Next chord: <span style="color:${COLORS[CHORDS[i+1]]}">${CHORDS[i+1]}</span>`:''}
+      `);
+    });
+    cell.addEventListener('mousemove', moveTip);
+    cell.addEventListener('mouseleave', hideTip);
+    tl.appendChild(cell);
+
+    // return chart bar
+    const bar = document.createElement('div');
+    bar.style.cssText = `flex:1;min-width:3px;align-self:${SOL_P[i]>=0?'flex-end':'flex-start'};border-radius:2px;`;
+    const pct = Math.abs(SOL_P[i]) / maxRet * 50;
+    bar.style.height = pct + 'px';
+    bar.style.background = SOL_P[i] >= 0 ? '#2e7d32' : '#c62828';
+    rc.appendChild(bar);
+  }
+
+  // Recent sequence
+  const rs = document.getElementById('recent-seq');
+  for (let i = Math.max(0, N-20); i < N; i++) {
+    const pill = document.createElement('div');
+    pill.className = 'pill';
+    pill.style.cssText = `background:${COLORS[CHORDS[i]]}22;border:1px solid ${COLORS[CHORDS[i]]};color:${COLORS[CHORDS[i]]};`;
+    pill.title = `Week ${i}: BTC ${BTC_P[i]>=0?'+':''}${BTC_P[i].toFixed(1)}% / SOL ${SOL_P[i]>=0?'+':''}${SOL_P[i].toFixed(1)}%`;
+    pill.textContent = CHORDS[i].substring(0,3);
+    rs.appendChild(pill);
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+//  MARKOV MATRIX
+// ──────────────────────────────────────────────────────────────────────────
+function buildMarkov() {
+  const raw = {
+    MAJOR:    {MAJOR:40.8, DOMINANT:8.7,  SUSPENDED:12.6, TRITONE:37.9},
+    DOMINANT: {MAJOR:22.2, DOMINANT:18.5, SUSPENDED:11.1, TRITONE:48.1},
+    SUSPENDED:{MAJOR:38.5, DOMINANT:15.4, SUSPENDED:15.4, TRITONE:30.8},
+    TRITONE:  {MAJOR:43.1, DOMINANT:8.8,  SUSPENDED:5.9,  TRITONE:42.2},
+  };
+  const abbr = {MAJOR:'M',DOMINANT:'D',SUSPENDED:'S',TRITONE:'T'};
+  STATES.forEach(fr => STATES.forEach(to => {
+    const el = document.getElementById(`m-${abbr[fr]}${abbr[to]}`);
+    const val = raw[fr][to];
+    const alpha = Math.min(0.9, val/100 * 2.5);
+    el.style.background = `${COLORS[to]}${Math.round(alpha*255).toString(16).padStart(2,'0')}`;
+    el.style.color = val > 25 ? '#fff' : '#aaa';
+    el.textContent = val.toFixed(1)+'%';
+    el.title = `${fr} → ${to}: ${val.toFixed(1)}%`;
+  }));
+
+  // Transition table — key transitions with forward returns
+  const transData = [
+    {from:'SUSPENDED', to:'MAJOR',     n:10, fwd1:9.55,  win:100},
+    {from:'SUSPENDED', to:'SUSPENDED', n:4,  fwd1:19.12, win:100},
+    {from:'TRITONE',   to:'MAJOR',     n:44, fwd1:5.1,   win:59},
+    {from:'MAJOR',     to:'TRITONE',   n:39, fwd1:-3.2,  win:38},
+    {from:'SUSPENDED', to:'TRITONE',   n:8,  fwd1:-8.90, win:0},
+    {from:'SUSPENDED', to:'DOMINANT',  n:4,  fwd1:-5.97, win:0},
+    {from:'DOMINANT',  to:'TRITONE',   n:13, fwd1:-3.5,  win:38},
+    {from:'DOMINANT',  to:'MAJOR',     n:6,  fwd1:2.1,   win:50},
+    {from:'TRITONE',   to:'TRITONE',   n:43, fwd1:-1.8,  win:44},
+    {from:'MAJOR',     to:'MAJOR',     n:42, fwd1:+2.3,  win:55},
+  ];
+  const tbody = document.getElementById('trans-table');
+  transData.forEach(r => {
+    const signal = r.win >= 80 ? '🟢 BUY' : r.win <= 20 ? '🔴 AVOID' : '⚪ WATCH';
+    tbody.innerHTML += `<tr>
+      <td class="${r.from}">${r.from}</td>
+      <td class="${r.to}">${r.to}</td>
+      <td>${r.n}</td>
+      <td style="color:${r.fwd1>=0?'#a5d6a7':'#ef9a9a'};font-weight:bold">${r.fwd1>=0?'+':''}${r.fwd1.toFixed(2)}%</td>
+      <td style="color:${r.win>=60?'#a5d6a7':r.win<=40?'#ef9a9a':'#888'}">${r.win}%</td>
+      <td>${signal}</td>
+    </tr>`;
+  });
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+//  PATTERNS
+// ──────────────────────────────────────────────────────────────────────────
+function buildPatterns() {
+  const trigrams = [
+    {seq:'MAJ→TRI→MAJ', n:14, fwd:3.71,  win:79},
+    {seq:'MAJ→SUS→MAJ', n:4,  fwd:21.16, win:75},
+    {seq:'MAJ→TRI→TRI', n:21, fwd:4.10,  win:67},
+    {seq:'TRI→TRI→SUS', n:4,  fwd:3.99,  win:100},
+    {seq:'DOM→TRI→TRI', n:7,  fwd:4.77,  win:57},
+    {seq:'TRI→TRI→MAJ', n:23, fwd:0.28,  win:43},
+    {seq:'MAJ→MAJ→MAJ', n:18, fwd:1.06,  win:44},
+    {seq:'TRI→MAJ→TRI', n:19, fwd:-9.91, win:26},
+    {seq:'TRI→TRI→TRI', n:9,  fwd:-2.77, win:44},
+    {seq:'TRI→TRI→DOM', n:5,  fwd:-6.83, win:20},
+  ];
+  const tbody = document.getElementById('trigram-table');
+  trigrams.forEach(r => {
+    const parts = r.seq.split('→');
+    const fmt = parts.map(p => {
+      const m = {MAJ:'MAJOR',DOM:'DOMINANT',SUS:'SUSPENDED',TRI:'TRITONE'};
+      const full = m[p]||p;
+      return `<span class="${full}" style="font-weight:bold">${p}</span>`;
+    }).join(' <span style="color:#555">→</span> ');
+    const action = r.win >= 70 ? '🟢 BUY after' : r.win <= 30 ? '🔴 AVOID / SHORT' : '⚪ WATCH';
+    tbody.innerHTML += `<tr>
+      <td>${fmt}</td>
+      <td>${r.n}</td>
+      <td style="color:${r.fwd>=0?'#a5d6a7':'#ef9a9a'};font-weight:bold">${r.fwd>=0?'+':''}${r.fwd.toFixed(2)}%</td>
+      <td style="color:${r.win>=60?'#a5d6a7':r.win<=40?'#ef9a9a':'#888'}">${r.win}%</td>
+      <td style="font-size:11px">${action}</td>
+    </tr>`;
+  });
+
+  // SUSPENDED event log
+  const sus_events = [
+    {wk:1,  btc:-3.37,  sol:1.85,   f1:-15.31, f2:-29.11},
+    {wk:5,  btc:-0.66,  sol:25.10,  f1:15.36,  f2:79.62},
+    {wk:17, btc:-12.12, sol:4.30,   f1:27.65,  f2:22.47},
+    {wk:62, btc:-3.91,  sol:3.71,   f1:4.25,   f2:-6.83},
+    {wk:73, btc:-0.39,  sol:0.35,   f1:-1.26,  f2:-5.98},
+    {wk:86, btc:-0.61,  sol:1.21,   f1:-7.07,  f2:-25.90},
+    {wk:98, btc:-0.78,  sol:0.48,   f1:-9.10,  f2:-1.83},
+    {wk:106,btc:-0.35,  sol:14.44,  f1:18.20,  f2:12.97},
+    {wk:128,btc:-2.01,  sol:13.19,  f1:15.14,  f2:45.45},
+    {wk:133,btc:-8.77,  sol:0.08,   f1:-14.04, f2:-6.53},
+    {wk:142,btc:-7.41,  sol:15.78,  f1:-3.01,  f2:-3.54},
+    {wk:156,btc:-6.58,  sol:0.72,   f1:2.88,   f2:3.87},
+    {wk:165,btc:-3.58,  sol:0.80,   f1:-7.42,  f2:-8.20},
+    {wk:173,btc:-1.43,  sol:10.18,  f1:2.40,   f2:9.23},
+    {wk:217,btc:-2.66,  sol:7.69,   f1:3.77,   f2:10.15},
+    {wk:230,btc:-0.98,  sol:4.36,   f1:1.18,   f2:-4.88},
+    {wk:235,btc:-0.13,  sol:1.60,   f1:9.10,   f2:17.13},
+    {wk:242,btc:-0.94,  sol:2.90,   f1:7.66,   f2:11.07},
+    {wk:254,btc:-2.67,  sol:2.19,   f1:-5.70,  f2:-9.90},
+  ];
+  const stbody = document.getElementById('sus-table');
+  sus_events.forEach(r => {
+    // Determine resolution chord
+    const nextChord = r.wk+1 < N ? CHORDS[r.wk+1] : '?';
+    const resColor = COLORS[nextChord]||'#888';
+    stbody.innerHTML += `<tr>
+      <td>${r.wk}</td>
+      <td style="color:${r.btc>=0?'#4fc3f7':'#ef9a9a'}">${r.btc>=0?'+':''}${r.btc.toFixed(2)}%</td>
+      <td style="color:#a5d6a7">+${r.sol.toFixed(2)}%</td>
+      <td style="color:${r.f1>=0?'#a5d6a7':'#ef9a9a'};font-weight:bold">${r.f1>=0?'+':''}${r.f1.toFixed(2)}%</td>
+      <td style="color:${r.f2>=0?'#a5d6a7':'#ef9a9a'};font-weight:bold">${r.f2>=0?'+':''}${r.f2.toFixed(2)}%</td>
+      <td style="color:${resColor}">${nextChord}</td>
+    </tr>`;
+  });
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+//  REGIME CARDS
+// ──────────────────────────────────────────────────────────────────────────
+function buildRegimes() {
+  const regimeData = [
+    {label:'2021 Bull', color:'#ffd54f', dist:{MAJOR:25,DOMINANT:17,SUSPENDED:12,TRITONE:46}, note:'Highest DOMINANT (17%) — BTC blazing, SOL catching up'},
+    {label:'2022 Bear', color:'#ef9a9a', dist:{MAJOR:42,DOMINANT:4,SUSPENDED:8,TRITONE:46},  note:'Lowest DOMINANT (4%) — both just falling together'},
+    {label:'2023 Recov',color:'#80cbc4', dist:{MAJOR:46,DOMINANT:12,SUSPENDED:12,TRITONE:31},note:'First time MAJOR > TRITONE — recovery underway'},
+    {label:'2024+ Bull',color:'#c8a0ff', dist:{MAJOR:43,DOMINANT:10,SUSPENDED:10,TRITONE:38},note:'Opened with 3× SUS — SOL led BTC into new regime'},
+  ];
+  const rc = document.getElementById('regime-cards');
+  regimeData.forEach(r => {
+    const bars = STATES.map(s => {
+      const pct = r.dist[s]||0;
+      return `<div class="bar-wrap">
+        <div class="bar-label" style="color:${COLORS[s]}">${s.substring(0,3)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct*2.5}%;background:${COLORS[s]}88"></div></div>
+        <div class="bar-val" style="color:${COLORS[s]}">${pct}%</div>
+      </div>`;
+    }).join('');
+    rc.innerHTML += `<div class="chord-card" style="border-color:${r.color}44">
+      <h3 style="color:${r.color}">${r.label}</h3>
+      ${bars}
+      <div style="margin-top:8px;font-size:11px;color:#888;font-style:italic">${r.note}</div>
+    </div>`;
+  });
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+//  INIT
+// ──────────────────────────────────────────────────────────────────────────
+buildTimeline();
+buildMarkov();
+buildPatterns();
+buildRegimes();
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Multi-Market SUSPENDED Scan</title>
+<style>
+  :root { --bg:#0a0a0f; --panel:#12121a; --border:#1e1e2e; --green:#3ddc84; --red:#ff4d6d; --gold:#f0c040; --blue:#06b6d4; --purple:#c77dff; --text:#e0e0f0; --muted:#6b6b8a; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; font-size:14px; padding:32px; max-width:960px; margin:0 auto; }
+  h1 { font-size:20px; color:var(--purple); margin-bottom:4px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:28px; }
+  h2 { font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin:24px 0 10px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+  table { width:100%; border-collapse:collapse; margin-bottom:8px; }
+  th { text-align:left; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:0.8px; padding:7px 10px; border-bottom:1px solid var(--border); }
+  td { padding:10px 10px; border-bottom:1px solid #14141f; font-size:13px; vertical-align:middle; }
+  tr:hover td { background:#12121a; }
+  .bar-wrap { width:140px; background:#1a1a28; border-radius:3px; overflow:hidden; height:16px; }
+  .bar { height:16px; border-radius:3px; display:flex; align-items:center; padding-left:5px; font-size:10px; font-weight:700; color:#fff; }
+  .pos{color:var(--green)} .neg{color:var(--red)} .gold{color:var(--gold)} .muted{color:var(--muted)}
+  .chip { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+  .c-star  { background:#1a3020; color:var(--green); }
+  .c-good  { background:#162028; color:var(--blue); }
+  .c-ok    { background:#1e1e12; color:var(--gold); }
+  .c-noise { background:#1a1a28; color:var(--muted); }
+  .c-bad   { background:#280e14; color:var(--red); }
+  .insight { background:#0d1020; border:1px solid var(--border); border-radius:10px; padding:20px; margin:24px 0 10px; }
+  .insight h3 { color:var(--gold); font-size:14px; margin-bottom:8px; }
+  .insight p  { color:var(--muted); font-size:13px; line-height:1.7; }
+  .highlight-row td { background:#0a1a0a !important; }
+</style>
+</head>
+<body>
+
+<h1>SUSPENDED Filter — All Markets</h1>
+<p class="sub">One filter, every asset class. Base asset = BTC (crypto) or SPY (traditional). Asset holds up while base falls → SUSPENDED → does it recover together?</p>
+
+<h2>Crypto vs BTC</h2>
+<table>
+  <thead><tr><th>Asset</th><th>N</th><th>Win rate</th><th>Bar</th><th>Avg ret</th><th>Verdict</th></tr></thead>
+  <tbody id="crypto-tbl"></tbody>
+</table>
+
+<h2>Traditional Markets vs SPY</h2>
+<table>
+  <thead><tr><th>Asset</th><th>N</th><th>Win rate</th><th>Bar</th><th>Avg ret</th><th>Verdict</th><th>Why it makes sense</th></tr></thead>
+  <tbody id="trad-tbl"></tbody>
+</table>
+
+<div class="insight">
+  <h3>TLT (bonds) at 83% — the most interesting non-crypto signal</h3>
+  <p>When US Treasury bonds hold up or rise while stocks fall, the market is pricing in a "flight to safety" — but one that often resolves into a coordinated recovery, not a crash. Bonds diverging upward from stocks is the classic pre-reversal signal. 5 of 6 filtered SUSPENDED bars resolved MAJOR in the following week. Low return per trade (+1.2%) because stocks are 5–10× less volatile than SOL, but structurally the same pattern.</p>
+</div>
+
+<div class="insight">
+  <h3>EWJ (Japan) and EEM (Emerging Markets) at 83%/80%</h3>
+  <p>International equity markets holding up while the S&P falls often signals US-specific stress (dollar, Fed policy) rather than global recession risk. When Japan and EM stay bid during a US pullback, global growth expectations are intact — so the US follows them up. Same divergence mechanism as SOL×BTC, but across geographies instead of blockchains.</p>
+</div>
+
+<div class="insight">
+  <h3>GDX (gold miners) — n=15, 67%</h3>
+  <p>Most data points of any asset. Gold miners are a leveraged inflation/real rate play. When they hold up vs stocks falling, the market is pricing in a Fed pivot or inflation reacceleration — historically bullish for the broader market within a week. 67% is above random but not high-conviction on its own. Worth combining with GLD signal.</p>
+</div>
+
+<div class="insight">
+  <h3>The universal pattern and the magnitude gap</h3>
+  <p>The SUSPENDED filter detects genuine divergence between correlated assets across every market. The pattern is universal. But the returns scale with volatility: SOL averages +7.1% per filtered signal; TLT averages +1.2%; GDX averages +0.5%. The framework is a volatility amplifier — the edge is largest where beta is highest. SOL is the highest-beta liquid asset we've tested. That's why it dominates. In traditional markets, the signals are real but the P&L is modest unless you're levered or trading options.</p>
+</div>
+
+<script>
+const crypto = [
+  { sym:'SOL',  n:7,  wr:100, avg:7.1,  note:'★ Primary instrument' },
+  { sym:'ETH',  n:9,  wr:56,  avg:5.5,  note:'Closest to SOL, re-tune' },
+  { sym:'UNI',  n:11, wr:55,  avg:3.7,  note:'DeFi correlated' },
+  { sym:'MATIC',n:5,  wr:60,  avg:0.5,  note:'Small n' },
+  { sym:'LINK', n:9,  wr:56,  avg:1.5,  note:'Noise range' },
+  { sym:'ATOM', n:12, wr:50,  avg:-2.7, note:'Random' },
+  { sym:'XRP',  n:13, wr:46,  avg:0.6,  note:'Noise' },
+  { sym:'BNB',  n:13, wr:46,  avg:0.0,  note:'Noise' },
+  { sym:'AVAX', n:13, wr:46,  avg:-2.0, note:'Noise' },
+  { sym:'ADA',  n:6,  wr:0,   avg:-17.2,note:'Dying asset' },
+  { sym:'DOT',  n:8,  wr:0,   avg:-17.7,note:'Dying asset' },
+];
+
+const trad = [
+  { sym:'TLT',  n:6,  wr:83, avg:1.2,  why:'Bonds holding = risk-off resolving',    verdict:'strong' },
+  { sym:'EWJ',  n:6,  wr:83, avg:2.4,  why:'Japan bid = global stress, not crash',  verdict:'strong' },
+  { sym:'EEM',  n:5,  wr:80, avg:2.4,  why:'EM bid = USD stress, not recession',    verdict:'strong' },
+  { sym:'DBA',  n:4,  wr:75, avg:0.9,  why:'Agri holds = supply shock, not demand', verdict:'good'   },
+  { sym:'GDX',  n:15, wr:67, avg:0.5,  why:'Gold miners = inflation hedge leading', verdict:'good'   },
+  { sym:'XLV',  n:3,  wr:67, avg:1.1,  why:'Healthcare = defensive rotation',       verdict:'ok'     },
+  { sym:'SLV',  n:11, wr:64, avg:0.2,  why:'Silver follows gold with lag',          verdict:'ok'     },
+  { sym:'GLD',  n:8,  wr:63, avg:1.2,  why:'Gold = inflation/fear hedge',           verdict:'ok'     },
+  { sym:'EWZ',  n:11, wr:64, avg:0.7,  why:'Brazil = commodities proxy',            verdict:'ok'     },
+  { sym:'XLE',  n:15, wr:60, avg:0.4,  why:'Energy = supply-side inflation',        verdict:'noise'  },
+  { sym:'USO',  n:19, wr:58, avg:0.4,  why:'Oil follows XLE',                       verdict:'noise'  },
+  { sym:'IWM',  n:2,  wr:50, avg:-0.5, why:'Small cap tracks SPY too closely',      verdict:'noise'  },
+  { sym:'XLU',  n:6,  wr:33, avg:0.0,  why:'Utilities = defensive = continued fall',verdict:'bad'    },
+  { sym:'XLF',  n:4,  wr:25, avg:-0.9, why:'Banks up during equity dip = danger',   verdict:'bad'    },
+  { sym:'FM',   n:1,  wr:100,avg:4.5,  why:'Our F#4 friend — 1 trade only',         verdict:'watch'  },
+];
+
+function barColor(wr) {
+  if (wr>=80) return '#3ddc84';
+  if (wr>=60) return '#06b6d4';
+  if (wr>=45) return '#f0c040';
+  return '#ff4d6d';
+}
+function chipClass(wr, n) {
+  if (wr===100 && n>=6) return 'c-star';
+  if (wr>=75) return 'c-good';
+  if (wr>=60) return 'c-ok';
+  if (wr>=45) return 'c-noise';
+  return 'c-bad';
+}
+function retClass(v) { return v>2?'pos':v>0?'gold':v>-1?'muted':'neg'; }
+
+const ct = document.getElementById('crypto-tbl');
+crypto.forEach(d => {
+  const hl = d.sym==='SOL' ? 'highlight-row' : '';
+  ct.innerHTML += `<tr class="${hl}">
+    <td><strong>${d.sym}</strong></td>
+    <td class="muted">${d.n}</td>
+    <td class="${d.wr>=56?'pos':d.wr>=45?'muted':'neg'}">${d.wr}%</td>
+    <td><div class="bar-wrap"><div class="bar" style="width:${d.wr}%;background:${barColor(d.wr)}">${d.wr}%</div></div></td>
+    <td class="${retClass(d.avg)}">${d.avg>=0?'+':''}${d.avg}%</td>
+    <td><span class="chip ${chipClass(d.wr,d.n)}">${d.note}</span></td>
+  </tr>`;
+});
+
+const tt = document.getElementById('trad-tbl');
+trad.forEach(d => {
+  const chipCls = {strong:'c-good',good:'c-ok',ok:'c-noise',noise:'c-noise',bad:'c-bad',watch:'c-ok'}[d.verdict];
+  tt.innerHTML += `<tr>
+    <td><strong>${d.sym}</strong></td>
+    <td class="muted">${d.n}</td>
+    <td class="${d.wr>=60?'pos':d.wr>=45?'muted':'neg'}">${d.wr}%</td>
+    <td><div class="bar-wrap"><div class="bar" style="width:${d.wr}%;background:${barColor(d.wr)}">${d.wr}%</div></div></td>
+    <td class="${retClass(d.avg)}">${d.avg>=0?'+':''}${d.avg}%</td>
+    <td><span class="chip ${chipCls}">${d.verdict}</span></td>
+    <td class="muted" style="font-size:12px;">${d.why}</td>
+  </tr>`;
+});
+</script>
+</body>
+</html>

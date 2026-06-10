@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Crypto Orchestra — Arc 10</title>
+<style>
+  :root {
+    --bg: #07070e;
+    --panel: #0e0e1a;
+    --border: #1a1a2e;
+    --major:    #3ddc84;
+    --dominant: #06b6d4;
+    --suspended:#f0c040;
+    --tritone:  #ff4d6d;
+    --signal:   #c77dff;
+    --text:     #e0e0f0;
+    --muted:    #555570;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; overflow-x: hidden; }
+
+  header { text-align: center; padding: 32px 20px 18px; background: radial-gradient(ellipse at top, #1a0a2e 0%, var(--bg) 70%); }
+  header h1 { font-size: 26px; font-weight: 700; letter-spacing: 2px; color: var(--text); }
+  header p  { color: var(--muted); margin-top: 6px; font-size: 13px; }
+
+  /* ─── Chord state cards ─── */
+  .chords-row { display: flex; justify-content: center; gap: 16px; padding: 20px 32px; flex-wrap: wrap; }
+  .chord-card { background: var(--panel); border: 2px solid var(--border); border-radius: 12px; padding: 16px 24px; text-align: center; cursor: pointer; transition: all 0.2s; min-width: 130px; }
+  .chord-card:hover { transform: translateY(-2px); }
+  .chord-card.active { transform: translateY(-4px); box-shadow: 0 0 24px var(--glow); border-color: var(--glow); }
+  .chord-card .name { font-size: 15px; font-weight: 700; }
+  .chord-card .notes { font-size: 11px; margin-top: 4px; }
+  .chord-card .desc  { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .card-major     { --glow: var(--major);     color: var(--major); }
+  .card-dominant  { --glow: var(--dominant);  color: var(--dominant); }
+  .card-suspended { --glow: var(--suspended); color: var(--suspended); }
+  .card-tritone   { --glow: var(--tritone);   color: var(--tritone); }
+
+  /* ─── Waveform ─── */
+  .wave-section { padding: 0 32px 20px; }
+  .wave-wrap { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+  #wave-canvas { width: 100%; display: block; }
+
+  /* ─── Controls ─── */
+  .controls { display: flex; align-items: center; gap: 12px; padding: 0 32px 20px; flex-wrap: wrap; }
+  .btn { background: #1a1a2e; border: 1px solid var(--border); color: var(--text); padding: 9px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.15s; }
+  .btn:hover { background: #252540; border-color: #3a3a5a; }
+  .btn.primary { background: var(--signal); color: #fff; border-color: var(--signal); }
+  .btn.playing { background: var(--tritone); border-color: var(--tritone); }
+  .tempo-wrap { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+  input[type=range] { accent-color: var(--signal); width: 100px; }
+  .status-text { color: var(--muted); font-size: 12px; margin-left: auto; }
+
+  /* ─── Sequencer timeline ─── */
+  .seq-section { padding: 0 32px 20px; }
+  .seq-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  #seq-canvas { width: 100%; display: block; cursor: pointer; border-radius: 6px; }
+
+  /* ─── Current week display ─── */
+  .current-bar { display: flex; justify-content: center; gap: 20px; padding: 0 32px 20px; flex-wrap: wrap; }
+  .cw-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; text-align: center; }
+  .cw-card .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  .cw-card .val { font-size: 20px; font-weight: 700; margin-top: 4px; }
+
+  /* ─── Legend ─── */
+  .legend { display: flex; justify-content: center; gap: 20px; padding: 0 32px 24px; flex-wrap: wrap; }
+  .leg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .leg-sq { width: 12px; height: 12px; border-radius: 2px; }
+
+  /* ─── Year label track ─── */
+  .year-track { padding: 0 32px; display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⬡ CRYPTO ORCHESTRA</h1>
+  <p>BTC × SOL phase space — 2021 to 2026 — each week is a chord</p>
+</header>
+
+<!-- Chord cards (click to audition) -->
+<div class="chords-row">
+  <div class="chord-card card-major"     onclick="playChord('MAJOR')"     id="card-MAJOR">
+    <div class="name">MAJOR</div>
+    <div class="notes">C · E · G</div>
+    <div class="desc">BTC↑ SOL↑<br>Both up — resolution</div>
+  </div>
+  <div class="chord-card card-dominant"  onclick="playChord('DOMINANT')"  id="card-DOMINANT">
+    <div class="name">DOMINANT 7</div>
+    <div class="notes">C · E · G · B♭</div>
+    <div class="desc">BTC↑ SOL↓<br>BTC leads, tension</div>
+  </div>
+  <div class="chord-card card-suspended" onclick="playChord('SUSPENDED')" id="card-SUSPENDED">
+    <div class="name">SUSPENDED</div>
+    <div class="notes">C · F · G</div>
+    <div class="desc">BTC↓ SOL↑<br>The signal chord</div>
+  </div>
+  <div class="chord-card card-tritone"   onclick="playChord('TRITONE')"   id="card-TRITONE">
+    <div class="name">TRITONE</div>
+    <div class="notes">C · F♯</div>
+    <div class="desc">BTC↓ SOL↓<br>Both down — chaos</div>
+  </div>
+</div>
+
+<!-- Current week display -->
+<div class="current-bar">
+  <div class="cw-card">
+    <div class="lbl">Playing week</div>
+    <div class="val" id="cur-date" style="font-size:15px;">—</div>
+  </div>
+  <div class="cw-card">
+    <div class="lbl">BTC return</div>
+    <div class="val" id="cur-btc">—</div>
+  </div>
+  <div class="cw-card">
+    <div class="lbl">SOL return</div>
+    <div class="val" id="cur-sol">—</div>
+  </div>
+  <div class="cw-card">
+    <div class="lbl">Chord</div>
+    <div class="val" id="cur-chord">—</div>
+  </div>
+  <div class="cw-card" id="signal-badge" style="display:none;border-color:var(--signal);">
+    <div class="lbl" style="color:var(--signal);">★ SIGNAL</div>
+    <div class="val" style="color:var(--signal);font-size:13px;">Filter pass</div>
+  </div>
+</div>
+
+<!-- Waveform -->
+<div class="wave-section">
+  <div class="wave-wrap">
+    <canvas id="wave-canvas" height="80"></canvas>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <button class="btn primary" id="play-btn" onclick="toggleSeq()">▶ Play Sequence</button>
+  <button class="btn" onclick="stepBack()">◀◀</button>
+  <button class="btn" onclick="stepFwd()">▶▶</button>
+  <div class="tempo-wrap">
+    <span>Tempo:</span>
+    <input type="range" id="tempo" min="1" max="20" value="6" oninput="updateTempo(this.value)">
+    <span id="tempo-lbl">6 weeks/sec</span>
+  </div>
+  <div class="tempo-wrap" style="margin-left:12px;">
+    <span>Volume:</span>
+    <input type="range" id="vol" min="0" max="100" value="60" oninput="setVol(this.value)">
+  </div>
+  <div class="status-text" id="status-text">Click a chord to audition · Press Play to run history</div>
+</div>
+
+<!-- Sequencer timeline -->
+<div class="seq-section">
+  <div class="seq-label">Weekly chord history (2021–2026) — click anywhere to jump</div>
+  <div class="year-track" id="year-track"></div>
+  <canvas id="seq-canvas" height="52" onclick="seqClick(event)"></canvas>
+</div>
+
+<div class="legend">
+  <div class="leg"><div class="leg-sq" style="background:var(--major)"></div> MAJOR (103w)</div>
+  <div class="leg"><div class="leg-sq" style="background:var(--dominant)"></div> DOMINANT (27w)</div>
+  <div class="leg"><div class="leg-sq" style="background:var(--suspended)"></div> SUSPENDED (26w)</div>
+  <div class="leg"><div class="leg-sq" style="background:var(--tritone)"></div> TRITONE (103w)</div>
+  <div class="leg"><div class="leg-sq" style="background:var(--signal);border-radius:50%"></div> Filter signal (7 trades)</div>
+</div>
+
+<script>
+// ─── DATA (embedded) ─────────────────────────────────────────────────────────
+const WEEKS = [{"date":"2021-06-24","btc":3.97,"sol":17.76,"chord":"MAJOR","signal":false},{"date":"2021-07-01","btc":-3.37,"sol":1.85,"chord":"SUSPENDED","signal":false},{"date":"2021-07-08","btc":-3.21,"sol":-15.31,"chord":"TRITONE","signal":false},{"date":"2021-07-15","btc":4.3,"sol":8.53,"chord":"MAJOR","signal":false},{"date":"2021-07-22","btc":13.04,"sol":8.72,"chord":"MAJOR","signal":false},{"date":"2021-07-29","btc":-4.91,"sol":25.13,"chord":"SUSPENDED","signal":true},{"date":"2021-08-05","btc":1.67,"sol":39.27,"chord":"MAJOR","signal":false},{"date":"2021-08-12","btc":-0.59,"sol":55.72,"chord":"SUSPENDED","signal":false},{"date":"2021-08-19","btc":-13.91,"sol":-27.23,"chord":"TRITONE","signal":false},{"date":"2021-08-26","btc":-5.75,"sol":43.16,"chord":"SUSPENDED","signal":false},{"date":"2021-09-02","btc":3.82,"sol":3.84,"chord":"MAJOR","signal":false},{"date":"2021-09-09","btc":-11.37,"sol":-2.69,"chord":"TRITONE","signal":false},{"date":"2021-09-16","btc":-6.23,"sol":-25.63,"chord":"TRITONE","signal":false},{"date":"2021-09-23","btc":7.67,"sol":0.39,"chord":"MAJOR","signal":false},{"date":"2021-09-30","btc":2.41,"sol":7.38,"chord":"MAJOR","signal":false},{"date":"2021-10-07","btc":17.16,"sol":37.86,"chord":"MAJOR","signal":false},{"date":"2021-10-14","btc":2.9,"sol":15.29,"chord":"MAJOR","signal":false},{"date":"2021-10-21","btc":-3.08,"sol":4.3,"chord":"SUSPENDED","signal":false},{"date":"2021-10-28","btc":4.11,"sol":52.7,"chord":"MAJOR","signal":false},{"date":"2021-11-04","btc":6.66,"sol":17.06,"chord":"MAJOR","signal":false},{"date":"2021-11-11","btc":-1.87,"sol":-5.41,"chord":"TRITONE","signal":false},{"date":"2021-11-18","btc":-7.22,"sol":7.97,"chord":"SUSPENDED","signal":false},{"date":"2021-11-25","btc":-7.72,"sol":-11.02,"chord":"TRITONE","signal":false},{"date":"2021-12-02","btc":-17.0,"sol":-19.83,"chord":"TRITONE","signal":false},{"date":"2021-12-09","btc":3.07,"sol":8.31,"chord":"MAJOR","signal":false},{"date":"2021-12-16","btc":-6.08,"sol":-10.16,"chord":"TRITONE","signal":false},{"date":"2021-12-23","btc":-1.42,"sol":-12.96,"chord":"TRITONE","signal":false},{"date":"2021-12-30","btc":-2.56,"sol":-4.55,"chord":"TRITONE","signal":false},{"date":"2022-01-06","btc":-8.34,"sol":-21.21,"chord":"TRITONE","signal":false},{"date":"2022-01-13","btc":-0.2,"sol":-14.8,"chord":"TRITONE","signal":false},{"date":"2022-01-20","btc":-12.51,"sol":-21.06,"chord":"TRITONE","signal":false},{"date":"2022-01-27","btc":5.74,"sol":-0.46,"chord":"DOMINANT","signal":false},{"date":"2022-02-03","btc":1.45,"sol":6.59,"chord":"MAJOR","signal":false},{"date":"2022-02-10","btc":-7.19,"sol":-4.72,"chord":"TRITONE","signal":false},{"date":"2022-02-17","btc":-4.53,"sol":-7.26,"chord":"TRITONE","signal":false},{"date":"2022-02-24","btc":5.3,"sol":4.29,"chord":"MAJOR","signal":false},{"date":"2022-03-03","btc":2.11,"sol":5.37,"chord":"MAJOR","signal":false},{"date":"2022-03-10","btc":4.26,"sol":0.8,"chord":"MAJOR","signal":false},{"date":"2022-03-17","btc":-0.95,"sol":-4.95,"chord":"TRITONE","signal":false},{"date":"2022-03-24","btc":11.74,"sol":6.01,"chord":"MAJOR","signal":false},{"date":"2022-03-31","btc":-0.73,"sol":14.3,"chord":"SUSPENDED","signal":false},{"date":"2022-04-07","btc":-7.44,"sol":6.2,"chord":"SUSPENDED","signal":false},{"date":"2022-04-14","btc":-3.64,"sol":-12.74,"chord":"TRITONE","signal":false},{"date":"2022-04-21","btc":-10.89,"sol":-2.65,"chord":"TRITONE","signal":false},{"date":"2022-04-28","btc":-12.68,"sol":-20.46,"chord":"TRITONE","signal":false},{"date":"2022-05-05","btc":-3.7,"sol":-19.38,"chord":"TRITONE","signal":false},{"date":"2022-05-12","btc":-20.91,"sol":-31.51,"chord":"TRITONE","signal":false},{"date":"2022-05-19","btc":3.84,"sol":-2.24,"chord":"DOMINANT","signal":false},{"date":"2022-05-26","btc":2.17,"sol":-1.49,"chord":"DOMINANT","signal":false},{"date":"2022-06-02","btc":-11.95,"sol":-23.3,"chord":"TRITONE","signal":false},{"date":"2022-06-09","btc":-7.63,"sol":-11.23,"chord":"TRITONE","signal":false},{"date":"2022-06-16","btc":-26.69,"sol":-28.16,"chord":"TRITONE","signal":false},{"date":"2022-06-23","btc":8.23,"sol":10.41,"chord":"MAJOR","signal":false},{"date":"2022-06-30","btc":-2.88,"sol":-8.89,"chord":"TRITONE","signal":false},{"date":"2022-07-07","btc":3.16,"sol":-7.45,"chord":"DOMINANT","signal":false},{"date":"2022-07-14","btc":4.65,"sol":4.75,"chord":"MAJOR","signal":false},{"date":"2022-07-21","btc":9.08,"sol":5.9,"chord":"MAJOR","signal":false},{"date":"2022-07-28","btc":5.3,"sol":13.47,"chord":"MAJOR","signal":false},{"date":"2022-08-04","btc":-1.64,"sol":1.98,"chord":"SUSPENDED","signal":false},{"date":"2022-08-11","btc":-6.71,"sol":-22.33,"chord":"TRITONE","signal":false},{"date":"2022-08-18","btc":-11.34,"sol":-11.44,"chord":"TRITONE","signal":false},{"date":"2022-08-25","btc":4.1,"sol":3.35,"chord":"MAJOR","signal":false},{"date":"2022-09-01","btc":-3.96,"sol":3.68,"chord":"SUSPENDED","signal":true},{"date":"2022-09-08","btc":-3.69,"sol":-8.54,"chord":"TRITONE","signal":false},{"date":"2022-09-15","btc":7.05,"sol":2.36,"chord":"MAJOR","signal":false},{"date":"2022-09-22","btc":-2.11,"sol":-7.15,"chord":"TRITONE","signal":false},{"date":"2022-09-29","btc":4.7,"sol":3.98,"chord":"MAJOR","signal":false},{"date":"2022-10-06","btc":1.62,"sol":-0.85,"chord":"DOMINANT","signal":false},{"date":"2022-10-13","btc":3.3,"sol":8.22,"chord":"MAJOR","signal":false},{"date":"2022-10-20","btc":5.51,"sol":14.84,"chord":"MAJOR","signal":false},{"date":"2022-10-27","btc":2.86,"sol":-2.64,"chord":"DOMINANT","signal":false},{"date":"2022-11-03","btc":-3.28,"sol":-1.03,"chord":"TRITONE","signal":false},{"date":"2022-11-10","btc":-21.84,"sol":-51.18,"chord":"TRITONE","signal":false},{"date":"2022-11-17","btc":-3.17,"sol":-24.86,"chord":"TRITONE","signal":false},{"date":"2022-11-24","btc":3.35,"sol":-4.12,"chord":"DOMINANT","signal":false},{"date":"2022-12-01","btc":-1.0,"sol":2.07,"chord":"SUSPENDED","signal":false},{"date":"2022-12-08","btc":-1.01,"sol":-13.44,"chord":"TRITONE","signal":false},{"date":"2022-12-15","btc":-2.37,"sol":-13.67,"chord":"TRITONE","signal":false},{"date":"2022-12-22","btc":-3.5,"sol":-8.57,"chord":"TRITONE","signal":false},{"date":"2022-12-29","btc":1.46,"sol":-5.86,"chord":"DOMINANT","signal":false},{"date":"2023-01-05","btc":2.38,"sol":17.32,"chord":"MAJOR","signal":false},{"date":"2023-01-12","btc":23.95,"sol":28.08,"chord":"MAJOR","signal":false},{"date":"2023-01-19","btc":2.82,"sol":-7.53,"chord":"DOMINANT","signal":false},{"date":"2023-01-26","btc":11.43,"sol":5.35,"chord":"MAJOR","signal":false},{"date":"2023-02-02","btc":0.86,"sol":5.69,"chord":"MAJOR","signal":false},{"date":"2023-02-09","btc":5.39,"sol":15.9,"chord":"MAJOR","signal":false},{"date":"2023-02-16","btc":-2.36,"sol":1.23,"chord":"SUSPENDED","signal":false},{"date":"2023-02-23","btc":3.51,"sol":-3.52,"chord":"DOMINANT","signal":false},{"date":"2023-03-02","btc":5.19,"sol":6.5,"chord":"MAJOR","signal":false},{"date":"2023-03-09","btc":-10.93,"sol":-11.99,"chord":"TRITONE","signal":false},{"date":"2023-03-16","btc":22.45,"sol":7.03,"chord":"MAJOR","signal":false},{"date":"2023-03-23","btc":2.01,"sol":-0.89,"chord":"DOMINANT","signal":false},{"date":"2023-03-30","btc":6.18,"sol":1.97,"chord":"MAJOR","signal":false},{"date":"2023-04-06","btc":-3.73,"sol":-3.38,"chord":"TRITONE","signal":false},{"date":"2023-04-13","btc":9.19,"sol":7.99,"chord":"MAJOR","signal":false},{"date":"2023-04-20","btc":-11.55,"sol":-10.1,"chord":"TRITONE","signal":false},{"date":"2023-04-27","btc":3.38,"sol":-1.59,"chord":"DOMINANT","signal":false},{"date":"2023-05-04","btc":-4.21,"sol":-5.31,"chord":"TRITONE","signal":false},{"date":"2023-05-11","btc":-7.75,"sol":0.54,"chord":"SUSPENDED","signal":false},{"date":"2023-05-18","btc":-4.89,"sol":-7.47,"chord":"TRITONE","signal":false},{"date":"2023-05-25","btc":1.59,"sol":3.35,"chord":"MAJOR","signal":false},{"date":"2023-06-01","btc":3.49,"sol":4.0,"chord":"MAJOR","signal":false},{"date":"2023-06-08","btc":2.33,"sol":8.97,"chord":"MAJOR","signal":false},{"date":"2023-06-15","btc":4.42,"sol":10.95,"chord":"MAJOR","signal":false},{"date":"2023-06-22","btc":1.64,"sol":0.58,"chord":"MAJOR","signal":false},{"date":"2023-06-29","btc":4.36,"sol":11.35,"chord":"MAJOR","signal":false},{"date":"2023-07-06","btc":-5.28,"sol":14.37,"chord":"SUSPENDED","signal":false},{"date":"2023-07-13","btc":3.77,"sol":11.38,"chord":"MAJOR","signal":false},{"date":"2023-07-20","btc":-4.83,"sol":-12.23,"chord":"TRITONE","signal":false},{"date":"2023-07-27","btc":-3.85,"sol":-7.19,"chord":"TRITONE","signal":false},{"date":"2023-08-03","btc":-6.55,"sol":-5.46,"chord":"TRITONE","signal":false},{"date":"2023-08-10","btc":-5.32,"sol":-16.1,"chord":"TRITONE","signal":false},{"date":"2023-08-17","btc":-11.72,"sol":-20.99,"chord":"TRITONE","signal":false},{"date":"2023-08-24","btc":7.53,"sol":10.1,"chord":"MAJOR","signal":false},{"date":"2023-08-31","btc":-5.01,"sol":-9.63,"chord":"TRITONE","signal":false},{"date":"2023-09-07","btc":-1.64,"sol":-10.78,"chord":"TRITONE","signal":false},{"date":"2023-09-14","btc":-2.13,"sol":-8.19,"chord":"TRITONE","signal":false},{"date":"2023-09-21","btc":3.6,"sol":4.68,"chord":"MAJOR","signal":false},{"date":"2023-09-28","btc":-3.75,"sol":-0.55,"chord":"TRITONE","signal":false},{"date":"2023-10-05","btc":0.34,"sol":8.32,"chord":"MAJOR","signal":false},{"date":"2023-10-12","btc":15.01,"sol":4.52,"chord":"MAJOR","signal":false},{"date":"2023-10-19","btc":11.35,"sol":21.16,"chord":"MAJOR","signal":false},{"date":"2023-10-26","btc":14.57,"sol":11.09,"chord":"MAJOR","signal":false},{"date":"2023-11-02","btc":4.39,"sol":10.63,"chord":"MAJOR","signal":false},{"date":"2023-11-09","btc":5.96,"sol":13.35,"chord":"MAJOR","signal":false},{"date":"2023-11-16","btc":0.09,"sol":8.81,"chord":"MAJOR","signal":false},{"date":"2023-11-23","btc":3.41,"sol":14.36,"chord":"MAJOR","signal":false},{"date":"2023-11-30","btc":9.9,"sol":26.87,"chord":"MAJOR","signal":false},{"date":"2023-12-07","btc":-1.93,"sol":13.23,"chord":"SUSPENDED","signal":true},{"date":"2023-12-14","btc":3.06,"sol":3.95,"chord":"MAJOR","signal":false},{"date":"2023-12-21","btc":-5.03,"sol":26.34,"chord":"SUSPENDED","signal":false},{"date":"2023-12-28","btc":-3.36,"sol":-5.68,"chord":"TRITONE","signal":false},{"date":"2024-01-04","btc":-5.52,"sol":-15.65,"chord":"TRITONE","signal":false},{"date":"2024-01-11","btc":-1.47,"sol":0.12,"chord":"SUSPENDED","signal":false},{"date":"2024-01-18","btc":5.81,"sol":6.74,"chord":"MAJOR","signal":false},{"date":"2024-01-25","btc":-1.45,"sol":-5.13,"chord":"TRITONE","signal":false},{"date":"2024-02-01","btc":6.36,"sol":15.5,"chord":"MAJOR","signal":false},{"date":"2024-02-08","btc":10.49,"sol":18.64,"chord":"MAJOR","signal":false},{"date":"2024-02-15","btc":17.49,"sol":24.91,"chord":"MAJOR","signal":false},{"date":"2024-02-22","btc":10.49,"sol":16.01,"chord":"MAJOR","signal":false},{"date":"2024-02-29","btc":-4.36,"sol":-12.63,"chord":"TRITONE","signal":false},{"date":"2024-03-07","btc":15.05,"sol":5.04,"chord":"MAJOR","signal":false},{"date":"2024-03-14","btc":-4.27,"sol":15.83,"chord":"SUSPENDED","signal":false},{"date":"2024-03-21","btc":2.69,"sol":-1.78,"chord":"DOMINANT","signal":false},{"date":"2024-03-28","btc":10.3,"sol":12.08,"chord":"MAJOR","signal":false},{"date":"2024-04-04","btc":-5.59,"sol":-8.39,"chord":"TRITONE","signal":false},{"date":"2024-04-11","btc":-9.34,"sol":-26.46,"chord":"TRITONE","signal":false},{"date":"2024-04-18","btc":-4.12,"sol":-2.32,"chord":"TRITONE","signal":false},{"date":"2024-04-25","btc":7.67,"sol":1.52,"chord":"MAJOR","signal":false},{"date":"2024-05-02","btc":-4.46,"sol":-9.17,"chord":"TRITONE","signal":false},{"date":"2024-05-09","btc":8.94,"sol":9.82,"chord":"MAJOR","signal":false},{"date":"2024-05-16","btc":2.37,"sol":4.69,"chord":"MAJOR","signal":false},{"date":"2024-05-23","btc":-4.47,"sol":-7.64,"chord":"TRITONE","signal":false},{"date":"2024-05-30","btc":2.62,"sol":1.62,"chord":"MAJOR","signal":false},{"date":"2024-06-06","btc":1.14,"sol":-0.36,"chord":"DOMINANT","signal":false},{"date":"2024-06-13","btc":-6.44,"sol":-7.9,"chord":"TRITONE","signal":false},{"date":"2024-06-20","btc":-1.23,"sol":2.42,"chord":"SUSPENDED","signal":false},{"date":"2024-06-27","btc":1.17,"sol":-7.08,"chord":"DOMINANT","signal":false},{"date":"2024-07-04","btc":-6.45,"sol":-11.29,"chord":"TRITONE","signal":false},{"date":"2024-07-11","btc":8.82,"sol":3.29,"chord":"MAJOR","signal":false},{"date":"2024-07-18","btc":-5.98,"sol":-14.11,"chord":"TRITONE","signal":false},{"date":"2024-07-25","btc":-0.88,"sol":-6.63,"chord":"TRITONE","signal":false},{"date":"2024-08-01","btc":-5.94,"sol":-23.32,"chord":"TRITONE","signal":false},{"date":"2024-08-08","btc":7.41,"sol":4.65,"chord":"MAJOR","signal":false},{"date":"2024-08-15","btc":3.17,"sol":0.82,"chord":"MAJOR","signal":false},{"date":"2024-08-22","btc":-5.59,"sol":0.84,"chord":"SUSPENDED","signal":false},{"date":"2024-08-29","btc":0.16,"sol":-6.97,"chord":"DOMINANT","signal":false},{"date":"2024-09-05","btc":-7.5,"sol":-11.81,"chord":"TRITONE","signal":false},{"date":"2024-09-12","btc":6.94,"sol":10.16,"chord":"MAJOR","signal":false},{"date":"2024-09-19","btc":6.71,"sol":6.44,"chord":"MAJOR","signal":false},{"date":"2024-09-26","btc":-3.27,"sol":-6.9,"chord":"TRITONE","signal":false},{"date":"2024-10-03","btc":6.44,"sol":11.66,"chord":"MAJOR","signal":false},{"date":"2024-10-10","btc":10.4,"sol":11.58,"chord":"MAJOR","signal":false},{"date":"2024-10-17","btc":-1.63,"sol":10.23,"chord":"SUSPENDED","signal":true},{"date":"2024-10-24","btc":7.59,"sol":4.36,"chord":"MAJOR","signal":false},{"date":"2024-10-31","btc":10.81,"sol":16.23,"chord":"MAJOR","signal":false},{"date":"2024-11-07","btc":11.82,"sol":26.55,"chord":"MAJOR","signal":false},{"date":"2024-11-14","btc":5.72,"sol":24.45,"chord":"MAJOR","signal":false},{"date":"2024-11-21","btc":6.14,"sol":14.39,"chord":"MAJOR","signal":false},{"date":"2024-11-28","btc":4.2,"sol":3.13,"chord":"MAJOR","signal":false},{"date":"2024-12-05","btc":7.28,"sol":2.62,"chord":"MAJOR","signal":false},{"date":"2024-12-12","btc":6.13,"sol":13.0,"chord":"MAJOR","signal":false},{"date":"2024-12-19","btc":-7.26,"sol":-21.21,"chord":"TRITONE","signal":false},{"date":"2024-12-26","btc":-1.15,"sol":-3.37,"chord":"TRITONE","signal":false},{"date":"2025-01-02","btc":-3.58,"sol":-14.75,"chord":"TRITONE","signal":false},{"date":"2025-01-09","btc":-8.03,"sol":-14.47,"chord":"TRITONE","signal":false},{"date":"2025-01-16","btc":13.12,"sol":4.36,"chord":"MAJOR","signal":false},{"date":"2025-01-23","btc":-1.62,"sol":-9.48,"chord":"TRITONE","signal":false},{"date":"2025-01-30","btc":-4.09,"sol":-19.51,"chord":"TRITONE","signal":false},{"date":"2025-02-06","btc":5.24,"sol":-8.14,"chord":"DOMINANT","signal":false},{"date":"2025-02-13","btc":-4.5,"sol":-12.5,"chord":"TRITONE","signal":false},{"date":"2025-02-20","btc":-10.51,"sol":-19.73,"chord":"TRITONE","signal":false},{"date":"2025-02-27","btc":-10.23,"sol":-12.35,"chord":"TRITONE","signal":false},{"date":"2025-03-06","btc":-6.35,"sol":-11.27,"chord":"TRITONE","signal":false},{"date":"2025-03-13","btc":0.91,"sol":-1.53,"chord":"DOMINANT","signal":false},{"date":"2025-03-20","btc":-0.65,"sol":0.2,"chord":"SUSPENDED","signal":false},{"date":"2025-03-27","btc":5.45,"sol":5.97,"chord":"MAJOR","signal":false},{"date":"2025-04-03","btc":-13.51,"sol":-14.78,"chord":"TRITONE","signal":false},{"date":"2025-04-10","btc":8.8,"sol":5.46,"chord":"MAJOR","signal":false},{"date":"2025-04-17","btc":1.22,"sol":-3.41,"chord":"DOMINANT","signal":false},{"date":"2025-04-24","btc":12.49,"sol":8.49,"chord":"MAJOR","signal":false},{"date":"2025-05-01","btc":1.72,"sol":1.83,"chord":"MAJOR","signal":false},{"date":"2025-05-08","btc":6.74,"sol":7.06,"chord":"MAJOR","signal":false},{"date":"2025-05-15","btc":3.36,"sol":2.15,"chord":"MAJOR","signal":false},{"date":"2025-05-22","btc":4.56,"sol":16.13,"chord":"MAJOR","signal":false},{"date":"2025-05-29","btc":-5.31,"sol":-7.06,"chord":"TRITONE","signal":false},{"date":"2025-06-05","btc":-1.1,"sol":0.41,"chord":"SUSPENDED","signal":false},{"date":"2025-06-12","btc":1.18,"sol":-2.2,"chord":"DOMINANT","signal":false},{"date":"2025-06-19","btc":5.12,"sol":4.95,"chord":"MAJOR","signal":false},{"date":"2025-06-26","btc":1.74,"sol":-1.93,"chord":"DOMINANT","signal":false},{"date":"2025-07-03","btc":3.93,"sol":0.58,"chord":"MAJOR","signal":false},{"date":"2025-07-10","btc":-0.39,"sol":-1.64,"chord":"TRITONE","signal":false},{"date":"2025-07-17","btc":1.78,"sol":0.37,"chord":"MAJOR","signal":false},{"date":"2025-07-24","btc":1.93,"sol":5.85,"chord":"MAJOR","signal":false},{"date":"2025-07-31","btc":5.09,"sol":6.95,"chord":"MAJOR","signal":false},{"date":"2025-08-07","btc":5.4,"sol":7.2,"chord":"MAJOR","signal":false},{"date":"2025-08-14","btc":-2.72,"sol":-4.81,"chord":"TRITONE","signal":false},{"date":"2025-08-21","btc":-1.75,"sol":7.74,"chord":"SUSPENDED","signal":true},{"date":"2025-08-28","btc":1.56,"sol":1.89,"chord":"MAJOR","signal":false},{"date":"2025-09-04","btc":3.74,"sol":5.44,"chord":"MAJOR","signal":false},{"date":"2025-09-11","btc":0.37,"sol":-2.72,"chord":"DOMINANT","signal":false},{"date":"2025-09-18","btc":-0.92,"sol":-3.55,"chord":"TRITONE","signal":false},{"date":"2025-09-25","btc":4.88,"sol":2.28,"chord":"MAJOR","signal":false},{"date":"2025-10-02","btc":2.87,"sol":2.16,"chord":"MAJOR","signal":false},{"date":"2025-10-09","btc":3.95,"sol":5.76,"chord":"MAJOR","signal":false},{"date":"2025-10-16","btc":4.96,"sol":7.68,"chord":"MAJOR","signal":false},{"date":"2025-10-23","btc":5.55,"sol":0.69,"chord":"MAJOR","signal":false},{"date":"2025-10-30","btc":7.63,"sol":13.61,"chord":"MAJOR","signal":false},{"date":"2025-11-06","btc":3.21,"sol":4.44,"chord":"MAJOR","signal":false},{"date":"2025-11-13","btc":4.17,"sol":2.77,"chord":"MAJOR","signal":false},{"date":"2025-11-20","btc":-2.69,"sol":4.44,"chord":"SUSPENDED","signal":true},{"date":"2025-11-27","btc":1.38,"sol":1.56,"chord":"MAJOR","signal":false},{"date":"2025-12-04","btc":-1.51,"sol":-3.82,"chord":"TRITONE","signal":false},{"date":"2025-12-11","btc":2.45,"sol":0.8,"chord":"MAJOR","signal":false},{"date":"2025-12-18","btc":-5.2,"sol":-8.63,"chord":"TRITONE","signal":false},{"date":"2025-12-25","btc":1.33,"sol":0.18,"chord":"MAJOR","signal":false},{"date":"2026-01-01","btc":4.08,"sol":7.52,"chord":"MAJOR","signal":false},{"date":"2026-01-08","btc":1.75,"sol":1.29,"chord":"MAJOR","signal":false},{"date":"2026-01-15","btc":0.49,"sol":-2.47,"chord":"DOMINANT","signal":false},{"date":"2026-01-22","btc":-7.01,"sol":-12.61,"chord":"TRITONE","signal":false},{"date":"2026-01-29","btc":-5.98,"sol":-17.35,"chord":"TRITONE","signal":false},{"date":"2026-02-05","btc":-2.64,"sol":-9.19,"chord":"TRITONE","signal":false},{"date":"2026-02-12","btc":-1.59,"sol":2.89,"chord":"SUSPENDED","signal":true},{"date":"2026-02-19","btc":3.11,"sol":3.82,"chord":"MAJOR","signal":false},{"date":"2026-02-26","btc":2.08,"sol":1.35,"chord":"MAJOR","signal":false},{"date":"2026-03-05","btc":-1.06,"sol":-2.66,"chord":"TRITONE","signal":false},{"date":"2026-03-12","btc":4.68,"sol":4.37,"chord":"MAJOR","signal":false},{"date":"2026-03-19","btc":3.94,"sol":4.61,"chord":"MAJOR","signal":false},{"date":"2026-03-26","btc":2.1,"sol":2.99,"chord":"MAJOR","signal":false},{"date":"2026-04-02","btc":-6.68,"sol":-8.28,"chord":"TRITONE","signal":false},{"date":"2026-04-09","btc":-10.16,"sol":-19.64,"chord":"TRITONE","signal":false},{"date":"2026-04-16","btc":4.36,"sol":2.25,"chord":"MAJOR","signal":false},{"date":"2026-04-23","btc":-3.18,"sol":-4.62,"chord":"TRITONE","signal":false},{"date":"2026-04-30","btc":7.23,"sol":7.09,"chord":"MAJOR","signal":false},{"date":"2026-05-07","btc":-2.74,"sol":2.15,"chord":"SUSPENDED","signal":false},{"date":"2026-05-14","btc":-2.34,"sol":-5.7,"chord":"TRITONE","signal":false},{"date":"2026-05-21","btc":-4.14,"sol":-4.46,"chord":"TRITONE","signal":false},{"date":"2026-05-28","btc":-14.92,"sol":-14.04,"chord":"TRITONE","signal":false},{"date":"2026-06-04","btc":-0.04,"sol":-7.07,"chord":"TRITONE","signal":false}];
+
+// ─── AUDIO ENGINE ─────────────────────────────────────────────────────────────
+let actx = null;
+let masterGain = null;
+let analyser = null;
+let waveBuf = null;
+let waveTimer = null;
+
+// Frequencies (C4 = 261.63 Hz)
+const FREQS = {
+  C4: 261.63, D4: 293.66, Eb4: 311.13, E4: 329.63,
+  F4: 349.23, 'F#4': 369.99, G4: 392.00,
+  'Bb4': 466.16, B4: 493.88, C5: 523.25,
+  // Bass octave
+  C3: 130.81, G3: 196.00, E3: 164.81, F3: 174.61,
+  'F#3': 185.00, 'Bb3': 233.08
+};
+
+const CHORDS = {
+  MAJOR:     { notes: [FREQS.C3, FREQS.E3, FREQS.G3, FREQS.C4, FREQS.E4, FREQS.G4], color: '#3ddc84', waveType: 'triangle' },
+  DOMINANT:  { notes: [FREQS.C3, FREQS.E3, FREQS.G3, FREQS.C4, FREQS['Bb3'], FREQS['Bb4']], color: '#06b6d4', waveType: 'sawtooth' },
+  SUSPENDED: { notes: [FREQS.C3, FREQS.F3, FREQS.G3, FREQS.C4, FREQS.F4, FREQS.G4], color: '#f0c040', waveType: 'triangle' },
+  TRITONE:   { notes: [FREQS.C3, FREQS['F#3'], FREQS.C4, FREQS['F#4']], color: '#ff4d6d', waveType: 'sawtooth' },
+};
+
+function initAudio() {
+  if (actx) return;
+  actx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = actx.createGain();
+  masterGain.gain.value = 0.5;
+  analyser = actx.createAnalyser();
+  analyser.fftSize = 2048;
+  masterGain.connect(analyser);
+  analyser.connect(actx.destination);
+  waveBuf = new Float32Array(analyser.fftSize);
+  startWaveLoop();
+}
+
+function playChord(name, dur = 1.8) {
+  initAudio();
+  if (actx.state === 'suspended') actx.resume();
+
+  const chord = CHORDS[name];
+  const now = actx.currentTime;
+  const attack = 0.04, decay = 0.1, sustain = 0.65, release = 0.6;
+
+  chord.notes.forEach((freq, i) => {
+    const osc = actx.createOscillator();
+    const env = actx.createGain();
+    const filt = actx.createBiquadFilter();
+
+    osc.type = chord.waveType;
+    osc.frequency.value = freq;
+    // Slight detune for richness
+    osc.detune.value = (i % 3 - 1) * 4;
+
+    filt.type = 'lowpass';
+    filt.frequency.value = name === 'TRITONE' ? 800 : 2200;
+    filt.Q.value = name === 'SUSPENDED' ? 3 : 1;
+
+    env.gain.setValueAtTime(0, now);
+    env.gain.linearRampToValueAtTime(0.18, now + attack);
+    env.gain.linearRampToValueAtTime(0.18 * sustain, now + attack + decay);
+    env.gain.setValueAtTime(0.18 * sustain, now + dur - release);
+    env.gain.linearRampToValueAtTime(0, now + dur);
+
+    osc.connect(filt);
+    filt.connect(env);
+    env.connect(masterGain);
+
+    osc.start(now);
+    osc.stop(now + dur);
+  });
+
+  // Add reverb tail via a short delay for SUSPENDED
+  if (name === 'SUSPENDED' || name === 'MAJOR') {
+    const delay = actx.createDelay(0.5);
+    const dGain = actx.createGain();
+    delay.delayTime.value = 0.22;
+    dGain.gain.value = 0.15;
+    analyser.connect(delay);
+    delay.connect(dGain);
+    dGain.connect(analyser);
+    setTimeout(() => { try { analyser.disconnect(delay); } catch(e){} }, dur*1000+500);
+  }
+
+  // Update card glow
+  document.querySelectorAll('.chord-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('card-' + name);
+  if (card) card.classList.add('active');
+
+  updateCurrentDisplay(null, name);
+}
+
+// ─── WAVEFORM DISPLAY ─────────────────────────────────────────────────────────
+function startWaveLoop() {
+  const cv = document.getElementById('wave-canvas');
+  const ctx = cv.getContext('2d');
+
+  function draw() {
+    cv.width = cv.offsetWidth * window.devicePixelRatio;
+    cv.height = 80 * window.devicePixelRatio;
+    const W = cv.offsetWidth, H = 80;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    ctx.fillStyle = '#0e0e1a';
+    ctx.fillRect(0, 0, W, H);
+
+    if (!analyser) { requestAnimationFrame(draw); return; }
+    analyser.getFloatTimeDomainData(waveBuf);
+
+    // Pick color from current chord
+    const activeCard = document.querySelector('.chord-card.active');
+    const color = activeCard ? getComputedStyle(activeCard).color : '#555570';
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    const sliceW = W / waveBuf.length;
+    let x = 0;
+    for (let i = 0; i < waveBuf.length; i++) {
+      const v = waveBuf[i];
+      const y = (v * H * 0.45) + H / 2;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      x += sliceW;
+    }
+    ctx.stroke();
+
+    // Center line
+    ctx.strokeStyle = '#1a1a2e';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, H/2); ctx.lineTo(W, H/2);
+    ctx.stroke();
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ─── SEQUENCER ────────────────────────────────────────────────────────────────
+let seqIdx = 0;
+let seqPlaying = false;
+let seqTimer = null;
+let tempoMs = Math.round(1000 / 6);
+
+function drawSeq() {
+  const cv = document.getElementById('seq-canvas');
+  const ctx = cv.getContext('2d');
+  cv.width = cv.offsetWidth * window.devicePixelRatio;
+  cv.height = 52 * window.devicePixelRatio;
+  const W = cv.offsetWidth, H = 52;
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+  ctx.fillStyle = '#0e0e1a';
+  ctx.fillRect(0, 0, W, H);
+
+  const N = WEEKS.length;
+  const bw = W / N;
+  const colors = {MAJOR:'#3ddc84',DOMINANT:'#06b6d4',SUSPENDED:'#f0c040',TRITONE:'#ff4d6d'};
+
+  WEEKS.forEach((w, i) => {
+    const x = i * bw;
+    const col = colors[w.chord];
+    const h = 28;
+    const y = (H - h) / 2;
+
+    ctx.fillStyle = col;
+    ctx.globalAlpha = i === seqIdx ? 1.0 : 0.55;
+    ctx.fillRect(x + 0.5, y, Math.max(bw - 0.5, 1), h);
+
+    // Signal marker
+    if (w.signal) {
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#c77dff';
+      ctx.beginPath();
+      ctx.arc(x + bw/2, y - 4, 3.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // Current position marker
+    if (i === seqIdx) {
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x + 0.5, y, bw - 0.5, h);
+    }
+  });
+
+  ctx.globalAlpha = 1;
+}
+
+function seqClick(e) {
+  const cv = document.getElementById('seq-canvas');
+  const rect = cv.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const idx = Math.floor((x / cv.offsetWidth) * WEEKS.length);
+  seqIdx = Math.max(0, Math.min(idx, WEEKS.length-1));
+  drawSeq();
+  playWeek(seqIdx);
+}
+
+function playWeek(i) {
+  const w = WEEKS[i];
+  playChord(w.chord, tempoMs/1000 + 0.3);
+  updateCurrentDisplay(w, w.chord);
+  drawSeq();
+}
+
+function updateCurrentDisplay(w, chord) {
+  const colors = {MAJOR:'var(--major)',DOMINANT:'var(--dominant)',SUSPENDED:'var(--suspended)',TRITONE:'var(--tritone)'};
+  const el = document.getElementById('cur-chord');
+  el.textContent = chord;
+  el.style.color = colors[chord] || 'var(--text)';
+
+  if (w) {
+    document.getElementById('cur-date').textContent = w.date;
+    const btcEl = document.getElementById('cur-btc');
+    btcEl.textContent = (w.btc >= 0 ? '+' : '') + w.btc + '%';
+    btcEl.style.color = w.btc >= 0 ? 'var(--major)' : 'var(--tritone)';
+    const solEl = document.getElementById('cur-sol');
+    solEl.textContent = (w.sol >= 0 ? '+' : '') + w.sol + '%';
+    solEl.style.color = w.sol >= 0 ? 'var(--major)' : 'var(--tritone)';
+
+    const badge = document.getElementById('signal-badge');
+    badge.style.display = w.signal ? 'block' : 'none';
+  }
+
+  document.getElementById('status-text').textContent =
+    w ? `Week ${WEEKS.indexOf(w)+1} of ${WEEKS.length}` : `Playing: ${chord}`;
+}
+
+function toggleSeq() {
+  initAudio();
+  if (actx.state === 'suspended') actx.resume();
+
+  if (seqPlaying) {
+    seqPlaying = false;
+    clearTimeout(seqTimer);
+    document.getElementById('play-btn').textContent = '▶ Play Sequence';
+    document.getElementById('play-btn').classList.remove('playing');
+  } else {
+    seqPlaying = true;
+    document.getElementById('play-btn').textContent = '⏹ Stop';
+    document.getElementById('play-btn').classList.add('playing');
+    stepPlay();
+  }
+}
+
+function stepPlay() {
+  if (!seqPlaying) return;
+  if (seqIdx >= WEEKS.length) {
+    seqIdx = 0;
+    seqPlaying = false;
+    document.getElementById('play-btn').textContent = '▶ Play Sequence';
+    document.getElementById('play-btn').classList.remove('playing');
+    return;
+  }
+  playWeek(seqIdx);
+  seqIdx++;
+  seqTimer = setTimeout(stepPlay, tempoMs);
+}
+
+function stepBack() {
+  seqIdx = Math.max(0, seqIdx - 2);
+  playWeek(seqIdx);
+  seqIdx++;
+}
+
+function stepFwd() {
+  playWeek(seqIdx);
+  if (seqIdx < WEEKS.length - 1) seqIdx++;
+}
+
+function updateTempo(v) {
+  tempoMs = Math.round(1000 / v);
+  document.getElementById('tempo-lbl').textContent = v + ' weeks/sec';
+}
+
+function setVol(v) {
+  if (masterGain) masterGain.gain.value = v / 100;
+}
+
+// ─── YEAR TRACK ───────────────────────────────────────────────────────────────
+function buildYearTrack() {
+  const track = document.getElementById('year-track');
+  const years = {};
+  WEEKS.forEach((w, i) => {
+    const y = w.date.slice(0,4);
+    if (!years[y]) years[y] = i;
+  });
+  const N = WEEKS.length;
+  const pcts = Object.entries(years).map(([yr, i]) => [yr, (i/N*100).toFixed(1)+'%']);
+  track.innerHTML = pcts.map(([yr, pct]) =>
+    `<span style="position:absolute;left:${pct}">${yr}</span>`).join('');
+  track.style.position = 'relative';
+  track.style.height = '16px';
+}
+
+window.addEventListener('load', () => {
+  drawSeq();
+  buildYearTrack();
+});
+window.addEventListener('resize', () => { drawSeq(); });
+</script>
+</body>
+</html>

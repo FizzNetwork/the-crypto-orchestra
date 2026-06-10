@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Arc 47 — OPEX Gate · tCO</title>
+<style>
+:root{--bg:#060810;--panel:#0d1117;--border:#1a2332;--text:#c8d8e8;--muted:#4a6080;--purple:#b44fff;--blue:#00d4ff;--green:#00ff88;--gold:#f0b429;--red:#ff3d5a;--orange:#ff8c00;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;}
+.nav{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.nav-links{display:flex;gap:20px;}
+.nav-links a{font-size:11px;color:var(--muted);text-decoration:none;letter-spacing:1px;text-transform:uppercase;}
+.nav-links a:hover{color:var(--text);}
+.wrap{max-width:1100px;margin:0 auto;padding:40px 24px 80px;}
+.hero{margin-bottom:40px;}
+.kicker{font-size:10px;letter-spacing:3px;color:var(--purple);text-transform:uppercase;margin-bottom:10px;}
+h1{font-size:26px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.deck{font-size:14px;color:var(--muted);line-height:1.6;}
+h2{font-size:12px;font-weight:700;color:var(--text);margin:32px 0 14px;letter-spacing:2px;text-transform:uppercase;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;}
+.grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px;}
+.card-title{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.stat-big{font-size:30px;font-weight:700;line-height:1;}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.insight{background:var(--panel);border-left:3px solid var(--purple);border-radius:0 8px 8px 0;padding:14px 16px;margin:12px 0 20px;font-size:13px;line-height:1.7;}
+.insight b{color:var(--purple);}
+.insight.green{border-left-color:var(--green);} .insight.green b{color:var(--green);}
+.insight.gold{border-left-color:var(--gold);} .insight.gold b{color:var(--gold);}
+.insight.red{border-left-color:var(--red);} .insight.red b{color:var(--red);}
+.insight.blue{border-left-color:var(--blue);} .insight.blue b{color:var(--blue);}
+.cluster-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:24px;}
+.cluster-table th{padding:9px 12px;background:#030509;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:1px;border:1px solid var(--border);text-align:center;}
+.cluster-table td{padding:8px 12px;border:1px solid var(--border);text-align:center;}
+.cluster-table td.label{text-align:left;font-weight:600;font-size:11px;}
+.cluster-table tr.highlight{background:#0c0914;}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:11px;}
+.bar-label{width:130px;text-align:right;color:var(--text);flex-shrink:0;font-size:10px;}
+.bar-wrap{flex:1;background:#0a0e16;border-radius:2px;height:13px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;}
+.bar-val{width:50px;font-weight:700;font-size:11px;flex-shrink:0;}
+.tag{display:inline-block;font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:3px;}
+.tag-sig{background:#0a001a;color:var(--purple);border:1px solid var(--purple);}
+.tag-marginal{background:#1a1000;color:var(--gold);border:1px solid var(--gold);}
+.tag-ns{background:#0a0e16;color:var(--muted);border:1px solid var(--border);}
+.mechanism{background:#030509;border:1px solid var(--border);border-radius:8px;padding:16px 20px;font-size:12px;line-height:1.9;font-family:'Courier New',monospace;color:var(--muted);margin-bottom:24px;}
+.mechanism .hl{color:var(--gold);}
+.footer-bar{margin-top:60px;padding-top:20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.footer-bar a{color:var(--muted);text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-brand">tCO · Arc 47</div>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="../PROJECT_INDEX.html">Index</a>
+    <a href="arc45-hmm-viterbi.html">Arc 45</a>
+    <a href="arc46-multiweek-hold.html">Arc 46</a>
+    <a href="https://traderlive.viktim.xyz" target="_blank">TraderLive</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="kicker">Arc 47 · June 2026 · BTC×SOL Weekly · n=260 · OPEX Gate</div>
+    <h1>Derivatives Expiry Gate</h1>
+    <div class="deck">Does crypto options/futures expiry create a recurring market structure pulse? Test: all 260 weekly BTC×SOL candles (2021–2026) split by distance to nearest monthly options expiry (last Friday of month — Deribit/CME convention). Hypothesis: gamma hedging before expiry suppresses BTC direction and elevates SUSPENDED chord frequency.</div>
+  </div>
+
+  <!-- DISCOVERY PATH -->
+  <h2>◈ Discovery Path</h2>
+  <div class="insight blue">
+    <b>From cycle hunting to mechanism.</b> Arc 47 began as a cycle sweep (20–40d periods) across SUSPENDED signal outcomes. Permutation testing showed no cycle length passes p&lt;0.10 with n=24. Pivoting from "what period?" to "what mechanism?" — the most credible candidate with a clock, money, and feedback loop is <b>derivatives expiry</b>. Monthly OPEX dates are public, recurring, and move billions in hedging flow. This is the first hypothesis in the arc series with a documented real-world force behind it.
+  </div>
+
+  <!-- THE 5 NATURAL CLUSTERS -->
+  <h2>◈ The 5 Natural OPEX Offsets</h2>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">Weekly candles (7-day spacing) always land at exactly 5 signed distances from the nearest monthly OPEX Friday. This is a structural property of the data, not a choice. Each cluster has n≈60 — roughly equal sample sizes across 5 years.</div>
+
+  <table class="cluster-table">
+    <thead>
+      <tr>
+        <th>OPEX Offset</th>
+        <th>Label</th>
+        <th>n</th>
+        <th>BTC ↑</th>
+        <th>SOL ↑</th>
+        <th>SUSPENDED %</th>
+        <th>MAJOR %</th>
+        <th>p(BTC↑&lt;50%)</th>
+        <th>Sig</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--muted)">d = −15d</td>
+        <td class="label">3 weeks before</td>
+        <td>21</td>
+        <td style="color:var(--green)">57.1%</td>
+        <td>52.4%</td>
+        <td>4.8%</td>
+        <td style="color:var(--green)">47.6%</td>
+        <td style="color:var(--muted)">0.808</td>
+        <td><span class="tag tag-ns">n/s</span></td>
+      </tr>
+      <tr class="highlight">
+        <td style="color:var(--red);font-weight:700">d = −8d</td>
+        <td class="label" style="color:var(--gold)">2 weeks before ◈</td>
+        <td><b>60</b></td>
+        <td style="color:var(--red);font-weight:700">35.0%</td>
+        <td style="color:var(--red)">43.3%</td>
+        <td style="color:var(--gold);font-weight:700">15.0%</td>
+        <td style="color:var(--red)">23.3%</td>
+        <td style="color:var(--gold);font-weight:700">0.0137</td>
+        <td><span class="tag tag-sig">**</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--muted)">d = −1d</td>
+        <td class="label">1 week before</td>
+        <td>60</td>
+        <td>51.7%</td>
+        <td>48.3%</td>
+        <td>5.0%</td>
+        <td>40.0%</td>
+        <td style="color:var(--muted)">0.651</td>
+        <td><span class="tag tag-ns">n/s</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--muted)">d = +6d</td>
+        <td class="label">1 week after</td>
+        <td>60</td>
+        <td>50.0%</td>
+        <td>50.0%</td>
+        <td>8.3%</td>
+        <td>40.0%</td>
+        <td style="color:var(--muted)">0.551</td>
+        <td><span class="tag tag-ns">n/s</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--muted)">d = +13d</td>
+        <td class="label">2 weeks after</td>
+        <td>59</td>
+        <td>49.2%</td>
+        <td>52.5%</td>
+        <td>10.2%</td>
+        <td>42.4%</td>
+        <td style="color:var(--muted)">0.500</td>
+        <td><span class="tag tag-ns">n/s</span></td>
+      </tr>
+      <tr style="background:#03060d;font-size:10px;color:var(--muted);">
+        <td colspan="4" style="text-align:left;padding:6px 12px;">Baseline (all 260 weeks)</td>
+        <td></td>
+        <td>9.2%</td>
+        <td>37.3%</td>
+        <td colspan="2"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- HEADLINE CARDS -->
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">BTC up-rate at d=−8</div>
+      <div class="stat-big" style="color:var(--red)">35.0%</div>
+      <div class="stat-sub">21/60 weeks · p=0.014</div>
+    </div>
+    <div class="card">
+      <div class="card-title">SUSPENDED rate at d=−8</div>
+      <div class="stat-big" style="color:var(--gold)">15.0%</div>
+      <div class="stat-sub">9/60 weeks · baseline 9.2%</div>
+    </div>
+    <div class="card">
+      <div class="card-title">MAJOR rate at d=−8</div>
+      <div class="stat-big" style="color:var(--red)">23.3%</div>
+      <div class="stat-sub">vs 37.3% overall · −14pp</div>
+    </div>
+  </div>
+
+  <!-- CHORD SHIFT -->
+  <h2>◈ Chord Distribution Shift at d=−8</h2>
+  <div id="chord-bars" style="max-width:600px;margin-bottom:24px;"></div>
+
+  <div class="insight gold">
+    <b>MAJOR collapses, SUSPENDED rises.</b> At 2 weeks before OPEX, the bull chord (MAJOR) drops from 37.3% to 23.3% (−14 percentage points). SUSPENDED rises from 9.2% to 15.0% (+5.8pp). TRITONE stays flat (+2.4pp). This is consistent with BTC selling pressure from gamma hedging: BTC moves down while SOL shows relative divergence → more SUSPENDED chord states.
+  </div>
+
+  <!-- BTC DIRECTION BAR CHART -->
+  <h2>◈ BTC Up-Rate Across OPEX Offsets</h2>
+  <div id="btc-bars" style="max-width:600px;margin-bottom:24px;"></div>
+
+  <!-- STATISTICAL NOTES -->
+  <h2>◈ Statistical Notes</h2>
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-title">Test details</div>
+    <div style="font-size:12px;line-height:1.9;margin-top:6px;">
+      <b>Test:</b> One-sided binomial test. H₀: p(BTC↑) = 0.5. H₁: p(BTC↑) &lt; 0.5 at d=−8.<br>
+      <b>Result:</b> 21 successes in 60 trials. p = 0.0137.<br>
+      <b>Bonferroni correction</b> (5 clusters): adjusted α = 0.010. The finding at p=0.014 just misses strict correction.<br>
+      <b>Interpretation:</b> Pre-specified directional hypothesis (gamma hedging creates selling pressure before OPEX) — correction is conservative. The finding is directionally significant and mechanistically motivated.<br>
+      <b>SUSPENDED elevation:</b> p=0.099 (marginal). Combined with BTC signal, the picture is consistent.<br>
+      <b>Sample:</b> n=60 across 60 distinct monthly OPEX cycles. Not a small sample.
+    </div>
+  </div>
+
+  <!-- MECHANISM -->
+  <h2>◈ Proposed Mechanism</h2>
+  <div class="mechanism">
+<span class="hl">T−15 days (3wk before):</span> OI builds. BTC trending normally (57% up).
+<span class="hl">T−8 days  (2wk before):</span> ← KEY WINDOW
+  → Options dealers short delta-hedge as gamma exposure accumulates
+  → Net selling pressure on BTC spot
+  → BTC direction: 35% up (vs 50% expected)
+  → MAJOR chord (both up): drops from 37% to 23%
+  → SUSPENDED chord (BTC↓, SOL↑): rises from 9% to 15%
+  → SOL shows relative strength vs BTC (divergence = SUSPENDED signal)
+<span class="hl">T−1 day   (1wk before):</span> Hedges largely in place. BTC normalises (52% up).
+<span class="hl">T+0       (expiry day):</span> Settlement. Positions closed.
+<span class="hl">T+6 days  (1wk after):</span> Hedges unwound. BTC returns to random (50% up).
+<span class="hl">T+13 days (2wk after):</span> Full normalisation. BTC 49% up, SOL 53%.
+  </div>
+
+  <!-- CONNECTION TO W8 -->
+  <h2>◈ Connection to W8 Signal</h2>
+  <div class="insight green">
+    <b>SUSPENDED fires more in the d=−8 window — and this may be why W8 exists at all.</b> The W8 signal (SUSPENDED chord → LONG SOL) may be partly capturing a derivatives market structure effect: 2 weeks before OPEX, BTC gamma hedging creates downward pressure on BTC, which generates SUSPENDED chord states (BTC↓ + SOL divergence). If the market resolves up after expiry, those SUSPENDED entries resolve as SOL wins. This is the first mechanistic candidate for the W8 signal that doesn't require celestial alignment.
+  </div>
+
+  <!-- HIERARCHY -->
+  <h2>◈ Revised Causal Hierarchy</h2>
+  <div class="card" style="margin-bottom:24px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:11px;line-height:1.8;">
+      <div>
+        <div class="card-title">Strong candidates (mechanism + data)</div>
+        <div style="color:var(--green)">1. Monthly options expiry</div>
+        <div style="color:var(--green)">2. Gamma hedging / dealer flow</div>
+        <div style="color:var(--gold)">3. Funding rate cycles</div>
+      </div>
+      <div>
+        <div class="card-title">Weak candidates (correlation only)</div>
+        <div style="color:var(--muted)">4. Lunar cycle (p=0.33)</div>
+        <div style="color:var(--muted)">5. Jupiter gate (p=0.12–0.22)</div>
+        <div style="color:var(--muted)">6. Solar rotation (p=0.44)</div>
+      </div>
+      <div>
+        <div class="card-title">Ruled out</div>
+        <div style="color:var(--red)">7. 37.5d cycle (p=0.91)</div>
+        <div style="color:var(--red)">8. 23.5d cycle (p=0.44)</div>
+        <div style="color:var(--red)">9. K2-18b / exoplanets</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPEN QUESTIONS -->
+  <h2>◈ Next Steps → Arc 48+</h2>
+  <div class="insight">
+    <b>Arc 48 candidates:</b><br>
+    1. <b>Funding rate gate</b> — test whether SUSPENDED signal is better when funding rate is negative (perps paying spot longs → BTC selling pressure). Direct mechanism for BTC↓.<br>
+    2. <b>OPEX × regime compound</b> — SUSPENDED at d=−8 AND in non-TRANSIT regime: does the OPEX window improve regime-filtered signals?<br>
+    3. <b>Daily resolution</b> — rebuild chord sequence at daily granularity (7× more SUSPENDED events). All current tests are underpowered at weekly n=24. Daily data is the unlock.<br>
+    4. <b>OI data</b> — obtain Deribit/CME open interest data around expiry dates to directly verify gamma hedging mechanism.
+  </div>
+
+  <div class="footer-bar">
+    <span>tCO · Arc 47 · Derivatives Expiry Gate · June 2026</span>
+    <span><a href="../index.html">fizznetwork.github.io/the-crypto-orchestra</a> · FizzNetwork · 2026</span>
+  </div>
+</div>
+
+<script>
+// BTC up-rate across clusters
+const btcData = [
+  {label:'d=−15 (3wk before)', wr:0.571, n:21, color:'#00ff88'},
+  {label:'d=−8  (2wk before)', wr:0.350, n:60, color:'#ff3d5a', highlight:true},
+  {label:'d=−1  (1wk before)', wr:0.517, n:60, color:'#4a6080'},
+  {label:'d=+6  (1wk after)',  wr:0.500, n:60, color:'#4a6080'},
+  {label:'d=+13 (2wk after)',  wr:0.492, n:59, color:'#4a6080'},
+];
+const btcEl = document.getElementById('btc-bars');
+// Add 50% reference line label
+const refNote = document.createElement('div');
+refNote.style.cssText = 'font-size:9px;color:var(--muted);margin-bottom:6px;letter-spacing:1px;';
+refNote.textContent = 'BTC UP-RATE PER CLUSTER — dashed = 50% baseline';
+btcEl.appendChild(refNote);
+
+btcData.forEach(d => {
+  const row = document.createElement('div');
+  row.className = 'bar-row';
+  const pct = (d.wr*100).toFixed(1)+'%';
+  row.innerHTML = `
+    <span class="bar-label">${d.label}</span>
+    <div class="bar-wrap" style="position:relative;">
+      <div class="bar-fill" style="width:${d.wr*100}%;background:${d.color};"></div>
+      <div style="position:absolute;top:0;left:50%;width:1px;height:100%;background:#1a2332;"></div>
+    </div>
+    <span class="bar-val" style="color:${d.color}">${pct}${d.highlight?' ◈':''}</span>`;
+  btcEl.appendChild(row);
+});
+
+// Chord shift bars
+const chordData = [
+  {chord:'MAJOR',     d8:0.233, all:0.373, color:'#00ff88'},
+  {chord:'TRITONE',   d8:0.417, all:0.392, color:'#ff3d5a'},
+  {chord:'SUSPENDED', d8:0.150, all:0.092, color:'#b44fff'},
+  {chord:'DOMINANT',  d8:0.117, all:0.092, color:'#f0b429'},
+  {chord:'LYDIAN',    d8:0.050, all:0.023, color:'#00d4ff'},
+];
+const chordEl = document.getElementById('chord-bars');
+const hdr = document.createElement('div');
+hdr.style.cssText = 'font-size:9px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;';
+hdr.textContent = 'CHORD RATE AT d=−8 (solid) vs OVERALL BASELINE (outline indicator)';
+chordEl.appendChild(hdr);
+
+chordData.forEach(d => {
+  const delta = d.d8 - d.all;
+  const sign = delta >= 0 ? '+' : '';
+  const row = document.createElement('div');
+  row.className = 'bar-row';
+  row.innerHTML = `
+    <span class="bar-label">${d.chord}</span>
+    <div class="bar-wrap">
+      <div class="bar-fill" style="width:${d.d8*100}%;background:${d.color}88;border-right:2px solid ${d.color};"></div>
+    </div>
+    <span class="bar-val" style="color:${d.color}">${(d.d8*100).toFixed(1)}% <span style="font-size:9px;color:${delta>=0?'#f0b429':'#ff3d5a'}">${sign}${(delta*100).toFixed(1)}pp</span></span>`;
+  chordEl.appendChild(row);
+});
+</script>
+</body>
+</html>

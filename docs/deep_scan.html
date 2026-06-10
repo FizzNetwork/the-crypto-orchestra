@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Deep Scan — All Configs</title>
+<style>
+  :root{--bg:#0a0a0f;--panel:#12121a;--border:#1e1e2e;--green:#3ddc84;--red:#ff4d6d;--gold:#f0c040;--blue:#06b6d4;--purple:#c77dff;--orange:#ff9f1c;--text:#e0e0f0;--muted:#6b6b8a}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;padding:0}
+  nav{display:flex;gap:4px;padding:14px 28px;background:var(--panel);border-bottom:1px solid var(--border);flex-wrap:wrap}
+  nav button{background:none;border:1px solid transparent;color:var(--muted);padding:7px 16px;border-radius:6px;cursor:pointer;font-size:13px;transition:all 0.15s}
+  nav button:hover{color:var(--text);border-color:var(--border)}
+  nav button.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+  header{background:linear-gradient(135deg,#0d0a1a,#0a1020);padding:24px 28px 16px;border-bottom:1px solid var(--border)}
+  header h1{font-size:20px;color:var(--purple);font-weight:700}
+  header p{color:var(--muted);font-size:12px;margin-top:4px}
+  .tab{display:none;padding:24px 28px 40px}
+  .tab.active{display:block}
+  table{width:100%;border-collapse:collapse;margin-bottom:20px}
+  th{text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;padding:7px 10px;border-bottom:2px solid var(--border)}
+  td{padding:10px 10px;border-bottom:1px solid #14141f;font-size:13px;vertical-align:middle}
+  tr:hover td{background:#101018}
+  .bar-wrap{width:120px;background:#1a1a28;border-radius:3px;overflow:hidden;height:16px}
+  .bar{height:16px;border-radius:3px;display:flex;align-items:center;padding-left:5px;font-size:10px;font-weight:700;color:#fff}
+  .pos{color:var(--green)}.neg{color:var(--red)}.gold{color:var(--gold)}.muted{color:var(--muted)}.blue{color:var(--blue)}.purple{color:var(--purple)}
+  .chip{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+  .c-star{background:#1a3020;color:var(--green)}
+  .c-good{background:#102028;color:var(--blue)}
+  .c-ok{background:#1e1a10;color:var(--gold)}
+  .c-noise{background:#1a1a28;color:var(--muted)}
+  .c-bad{background:#280e14;color:var(--red)}
+  .c-inv{background:#1a1028;color:var(--purple)}
+  .hl td{background:#0a120a!important}
+  .hl2 td{background:#0a0a18!important}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px}
+  .card h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
+  .card .big{font-size:32px;font-weight:700}
+  .card p{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6}
+  .section{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+  .finding{background:#0d1020;border-left:3px solid var(--purple);border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:12px}
+  .finding h4{color:var(--gold);font-size:13px;margin-bottom:6px}
+  .finding p{color:var(--muted);font-size:12px;line-height:1.7}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Deep Scan — Reversed Configs · Cross Pairs · High-Beta Stocks</h1>
+  <p>Testing every configuration of the SUSPENDED framework to find where the edge lives</p>
+</header>
+
+<nav>
+  <button class="active" onclick="show(0)">Summary</button>
+  <button onclick="show(1)">Reversed (DOMINANT)</button>
+  <button onclick="show(2)">Cross Pairs</button>
+  <button onclick="show(3)">High-Beta Stocks</button>
+  <button onclick="show(4)">Key Laws</button>
+</nav>
+
+<!-- TAB 0: Summary -->
+<div class="tab active" id="t0">
+  <div class="grid2">
+    <div class="card" style="border-color:var(--green)">
+      <h3>New best stock signal</h3>
+      <div class="big pos">AMD 77%</div>
+      <p>n=13, avg +2.2% per trade<br>SPY down, AMD holds → both recover</p>
+    </div>
+    <div class="card" style="border-color:var(--blue)">
+      <h3>NVDA close second</h3>
+      <div class="big blue">NVDA 73%</div>
+      <p>n=11, avg +2.2% per trade<br>Same pattern as AMD — semis as SOL equivalent</p>
+    </div>
+    <div class="card">
+      <h3>Reversal result</h3>
+      <div class="big gold">Does NOT invert</div>
+      <p>DOMINANT chord (base↑ alt↓) → 44–50% on TRITONE prediction. Framework is asymmetric — upward divergence is informative, downward is not.</p>
+    </div>
+    <div class="card">
+      <h3>Cross pairs result</h3>
+      <div class="big" style="color:var(--red)">Mostly noise</div>
+      <p>ETH/SOL, SOL/DOT, ETH/XRP → 33–50%. You need a dominant market leader as the base. Peer-to-peer pairs don't produce the signal.</p>
+    </div>
+  </div>
+
+  <div class="section">What we now know</div>
+
+  <div class="finding">
+    <h4>The asymmetry law: divergence up signals recovery, divergence down signals nothing</h4>
+    <p>When a high-beta asset holds up while its base falls (SUSPENDED), that's a genuine recovery signal. But when the base rises while the alt falls (DOMINANT), the next move is random — the base simply drags the alt up in the following week. The market doesn't telegraph drops the same way it telegraphs recoveries. Recoveries are "coordinated" events that build from divergence. Drops are reflexive and don't show pre-signals in the chord framework.</p>
+  </div>
+
+  <div class="finding">
+    <h4>Hierarchy law: the signal requires a dominant leader as the base</h4>
+    <p>BTC/SOL works because BTC is the crypto market anchor. SPY/AMD works because SPY is the equity anchor. ETH/SOL, SOL/DOT — peer relationships — don't produce clean signals because neither has clear causal primacy. Transfer entropy flows from BTC to everything else. The signal lives in leader→follower pairs, not lateral pairs.</p>
+  </div>
+
+  <div class="finding">
+    <h4>AMD and NVDA are the "SOL of equities"</h4>
+    <p>The highest-beta semiconductor stocks diverge from SPY in the same way SOL diverges from BTC. When SPY falls and AMD/NVDA hold — especially after 3+ down weeks — the recovery is reliable (77%, 73%). The causal mechanism is identical: semis lead the broad market in recoveries because they price in forward earnings and AI/capex cycles ahead of the index.</p>
+  </div>
+
+  <div class="finding">
+    <h4>MSTR DOMINANT (61%) — one anomaly worth watching</h4>
+    <p>When MSTR pumps while SPY falls (DOMINANT chord), the market tends to fall together the following week 61% of the time. MSTR is effectively leveraged BTC exposure in stock form. When it disconnects upward from equity markets, it's often pricing in a crypto move that the broader market hasn't agreed with yet — and that disagreement resolves bearishly. Possible SHORT setup, needs more validation (n=18).</p>
+  </div>
+</div>
+
+<!-- TAB 1: Reversed configs -->
+<div class="tab" id="t1">
+  <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">Testing DOMINANT chord as a bearish signal: base up, alt down → does it predict TRITONE (both fall)?</p>
+
+  <table>
+    <thead><tr><th>Pair</th><th>N filtered</th><th>Predicted TRITONE %</th><th>Bar</th><th>Avg gain if shorted</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td>BTC↑ / SOL↓</td><td>6</td><td class="muted">50%</td><td><div class="bar-wrap"><div class="bar" style="width:50%;background:#f0c040">50%</div></div></td><td class="neg">-4.2%</td><td><span class="chip c-noise">Random — don't short</span></td></tr>
+      <tr><td>ETH↑ / SOL↓</td><td>9</td><td class="muted">44%</td><td><div class="bar-wrap"><div class="bar" style="width:44%;background:#ff4d6d">44%</div></div></td><td class="neg">-5.9%</td><td><span class="chip c-noise">Random — don't short</span></td></tr>
+      <tr><td>SPY↑ / MSTR↓</td><td>18</td><td class="gold">61%</td><td><div class="bar-wrap"><div class="bar" style="width:61%;background:#06b6d4">61%</div></div></td><td class="pos">+1.1%</td><td><span class="chip c-inv">Watch — MSTR anomaly</span></td></tr>
+      <tr><td>SPY↑ / NVDA↓</td><td>11</td><td class="muted">55%</td><td><div class="bar-wrap"><div class="bar" style="width:55%;background:#f0c040">55%</div></div></td><td class="pos">+0.9%</td><td><span class="chip c-noise">Weak, marginal</span></td></tr>
+      <tr><td>SPY↑ / AMD↓</td><td>16</td><td class="muted">44%</td><td><div class="bar-wrap"><div class="bar" style="width:44%;background:#ff4d6d">44%</div></div></td><td class="neg">-0.4%</td><td><span class="chip c-noise">Noise</span></td></tr>
+      <tr><td>SPY↑ / TSLA↓</td><td>19</td><td class="muted">47%</td><td><div class="bar-wrap"><div class="bar" style="width:47%;background:#ff4d6d">47%</div></div></td><td class="neg">-0.2%</td><td><span class="chip c-noise">Noise</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="finding">
+    <h4>The framework does NOT symmetrically invert</h4>
+    <p>DOMINANT (base up, alt down) does not predict TRITONE with any reliability. Most results cluster at 44–50% — random. This tells us the signal is fundamentally about recovery detection, not crash prediction. Recoveries leave fingerprints (one asset leads early). Crashes are more reflexive and don't show up in divergence patterns beforehand.</p>
+  </div>
+  <div class="finding">
+    <h4>Why the avg return is negative for BTC/SOL reversed</h4>
+    <p>When BTC is up and SOL is lagging (DOMINANT), the following week SOL catches up and both go up (MAJOR). So trying to short DOMINANT actually loses money — BTC's upward leadership drags SOL along. This is the transfer entropy direction: BTC leads, SOL follows. DOMINANT is actually a mild delayed-bullish signal for SOL, not bearish.</p>
+  </div>
+</div>
+
+<!-- TAB 2: Cross Pairs -->
+<div class="tab" id="t2">
+  <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">Testing non-BTC/SPY bases. Do peer-to-peer pairs produce the signal?</p>
+
+  <table>
+    <thead><tr><th>Pair (base / alt)</th><th>N</th><th>Win rate</th><th>Bar</th><th>Avg ret</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><strong>BTC / SOL</strong> (reference)</td><td>7</td><td class="pos">100%</td><td><div class="bar-wrap"><div class="bar" style="width:100%;background:#3ddc84">100%</div></div></td><td class="pos">+7.1%</td><td><span class="chip c-star">★ Primary</span></td></tr>
+      <tr><td>BTC / ETH</td><td>9</td><td class="muted">56%</td><td><div class="bar-wrap"><div class="bar" style="width:56%;background:#f0c040">56%</div></div></td><td class="pos">+2.7%</td><td><span class="chip c-ok">Decent, re-tune</span></td></tr>
+      <tr><td>ETH / SOL</td><td>9</td><td class="muted">44%</td><td><div class="bar-wrap"><div class="bar" style="width:44%;background:#ff4d6d">44%</div></div></td><td class="pos">+1.0%</td><td><span class="chip c-noise">Noise — ETH not dominant vs SOL</span></td></tr>
+      <tr><td>SOL / ETH</td><td>8</td><td class="muted">50%</td><td><div class="bar-wrap"><div class="bar" style="width:50%;background:#f0c040">50%</div></div></td><td class="pos">+3.9%</td><td><span class="chip c-noise">Coin flip</span></td></tr>
+      <tr><td>SOL / DOT</td><td>9</td><td class="neg">33%</td><td><div class="bar-wrap"><div class="bar" style="width:33%;background:#ff4d6d">33%</div></div></td><td class="neg">-0.5%</td><td><span class="chip c-bad">Harmful — DOT keeps falling</span></td></tr>
+      <tr><td>ETH / XRP</td><td>11</td><td class="neg">36%</td><td><div class="bar-wrap"><div class="bar" style="width:36%;background:#ff4d6d">36%</div></div></td><td class="neg">-1.7%</td><td><span class="chip c-bad">Harmful — XRP is not ETH-follower</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="finding">
+    <h4>Peer pairs fail because there's no causal hierarchy</h4>
+    <p>ETH/SOL: when ETH falls and SOL holds, there's no reason SOL would then lead a joint recovery — they're equals. XRP vs ETH: XRP has its own macro drivers (legal, institutional) unrelated to ETH. DOT is a distressed asset relative to SOL. The signal requires a dominant market leader (BTC or SPY) whose movements causally propagate to the alt. Without that hierarchy, you just have noise.</p>
+  </div>
+</div>
+
+<!-- TAB 3: High-Beta Stocks -->
+<div class="tab" id="t3">
+  <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">SPY as base. High-beta / momentum stocks as alts. SUSPENDED = SPY falls, stock holds.</p>
+
+  <div class="section">SUSPENDED (SPY↓, stock↑ → predicting joint recovery)</div>
+  <table>
+    <thead><tr><th>Stock</th><th>N</th><th>Win rate</th><th>Bar</th><th>Avg ret</th><th>Verdict</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr class="hl2"><td><strong>AMD</strong></td><td>13</td><td class="pos">77%</td><td><div class="bar-wrap"><div class="bar" style="width:77%;background:#3ddc84">77%</div></div></td><td class="pos">+2.2%</td><td><span class="chip c-good">★ Best stock signal</span></td><td class="muted" style="font-size:12px">Semis lead equity recoveries</td></tr>
+      <tr class="hl2"><td><strong>NVDA</strong></td><td>11</td><td class="pos">73%</td><td><div class="bar-wrap"><div class="bar" style="width:73%;background:#3ddc84">73%</div></div></td><td class="pos">+2.2%</td><td><span class="chip c-good">Strong</span></td><td class="muted" style="font-size:12px">AI capex proxy, leads SPY</td></tr>
+      <tr><td>META</td><td>9</td><td class="pos">67%</td><td><div class="bar-wrap"><div class="bar" style="width:67%;background:#06b6d4">67%</div></div></td><td class="pos">+1.6%</td><td><span class="chip c-ok">Decent</span></td><td class="muted" style="font-size:12px">Ad revenue proxy</td></tr>
+      <tr><td>MSTR</td><td>14</td><td class="muted">57%</td><td><div class="bar-wrap"><div class="bar" style="width:57%;background:#f0c040">57%</div></div></td><td class="pos">+1.3%</td><td><span class="chip c-noise">Moderate</span></td><td class="muted" style="font-size:12px">BTC proxy — noisy</td></tr>
+      <tr><td>TSLA</td><td>12</td><td class="muted">50%</td><td><div class="bar-wrap"><div class="bar" style="width:50%;background:#f0c040">50%</div></div></td><td class="pos">+0.5%</td><td><span class="chip c-noise">Noise</span></td><td class="muted" style="font-size:12px">Musk-driven, idiosyncratic</td></tr>
+      <tr><td>AAPL</td><td>6</td><td class="muted">50%</td><td><div class="bar-wrap"><div class="bar" style="width:50%;background:#f0c040">50%</div></div></td><td class="muted">0.0%</td><td><span class="chip c-noise">Noise</span></td><td class="muted" style="font-size:12px">AAPL tracks SPY too closely</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section">DOMINANT reversed (SPY↑, stock↓ → predicting joint fall)</div>
+  <table>
+    <thead><tr><th>Stock</th><th>N</th><th>TRITONE predicted %</th><th>Bar</th><th>Avg if shorted</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr class="hl2"><td><strong>MSTR</strong></td><td>18</td><td class="gold">61%</td><td><div class="bar-wrap"><div class="bar" style="width:61%;background:#06b6d4">61%</div></div></td><td class="pos">+1.1%</td><td><span class="chip c-inv">Watch — needs more data</span></td></tr>
+      <tr><td>NVDA</td><td>11</td><td class="muted">55%</td><td><div class="bar-wrap"><div class="bar" style="width:55%;background:#f0c040">55%</div></div></td><td class="pos">+0.9%</td><td><span class="chip c-noise">Marginal</span></td></tr>
+      <tr><td>META</td><td>17</td><td class="muted">53%</td><td><div class="bar-wrap"><div class="bar" style="width:53%;background:#f0c040">53%</div></div></td><td class="pos">+0.2%</td><td><span class="chip c-noise">Noise</span></td></tr>
+      <tr><td>AMD</td><td>16</td><td class="muted">44%</td><td><div class="bar-wrap"><div class="bar" style="width:44%;background:#ff4d6d">44%</div></div></td><td class="neg">-0.4%</td><td><span class="chip c-noise">Noise — AMD catches up</span></td></tr>
+      <tr><td>TSLA</td><td>19</td><td class="muted">47%</td><td><div class="bar-wrap"><div class="bar" style="width:47%;background:#ff4d6d">47%</div></div></td><td class="neg">-0.2%</td><td><span class="chip c-noise">Noise</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- TAB 4: Laws -->
+<div class="tab" id="t4">
+  <div class="section">Laws discovered across all configs</div>
+
+  <div class="finding">
+    <h4>Law 25 — The Hierarchy Law</h4>
+    <p>The SUSPENDED signal only works when the base asset is the dominant market leader with causal primacy. BTC leads crypto. SPY leads equities. Peer pairs (ETH/SOL, SOL/DOT) produce noise or worse. The signal lives in leader → follower relationships, detectable via transfer entropy direction.</p>
+  </div>
+  <div class="finding">
+    <h4>Law 26 — The Asymmetry Law</h4>
+    <p>The framework does not invert. Upward divergence (SUSPENDED = alt strong during base weakness) reliably predicts recovery. Downward divergence (DOMINANT = alt weak during base strength) does NOT reliably predict falls. Recoveries are coordinated events with early movers. Crashes are reflexive and don't telegraph via the chord system.</p>
+  </div>
+  <div class="finding">
+    <h4>Law 27 — The Beta Amplification Law</h4>
+    <p>Signal quality and return magnitude scale with the alt asset's beta to the base. SOL (highest beta crypto) → 100%, +7.1%. AMD/NVDA (highest beta stocks) → 73-77%, +2.2%. Low-beta alts (AAPL, XLU) → noise. The edge is a volatility amplifier: the same causal structure produces bigger P&L where beta is higher.</p>
+  </div>
+  <div class="finding">
+    <h4>Law 28 — The Dying Asset Law</h4>
+    <p>For assets in secular decline (ADA, DOT, XLF as sector), SUSPENDED resolves to TRITONE more often than MAJOR. The SUSPENDED signal assumes the alt asset has recovery potential when the base recovers. Dying assets don't — they continue falling regardless of what BTC or SPY does. The filter should include a trend health check (e.g. price vs 52-week high) before entering.</p>
+  </div>
+  <div class="finding">
+    <h4>Law 29 — The MSTR Anomaly</h4>
+    <p>MSTR behaves like a high-beta crypto instrument embedded in equities. Its SUSPENDED signal vs SPY is moderate (57%) but its DOMINANT signal partially inverts (61% TRITONE). When MSTR pumps while SPY falls, it's pricing in a crypto narrative that the equity market rejects within a week. This is the only asset tested where the reversal shows any signal above 60% with meaningful n.</p>
+  </div>
+
+  <div class="section">Full Signal Hierarchy (updated)</div>
+  <table>
+    <thead><tr><th>Rank</th><th>Pair</th><th>Win rate</th><th>N</th><th>Avg ret</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>1</td><td><strong>BTC / SOL — SUSPENDED</strong></td><td class="pos">100%</td><td>7</td><td class="pos">+7.1%</td><td><span class="chip c-star">Primary edge</span></td></tr>
+      <tr><td>2</td><td>SPY / AMD — SUSPENDED</td><td class="pos">77%</td><td>13</td><td class="pos">+2.2%</td><td><span class="chip c-good">Best stock signal</span></td></tr>
+      <tr><td>3</td><td>SPY / NVDA — SUSPENDED</td><td class="pos">73%</td><td>11</td><td class="pos">+2.2%</td><td><span class="chip c-good">Strong</span></td></tr>
+      <tr><td>4</td><td>SPY / TLT — SUSPENDED</td><td class="pos">83%</td><td>6</td><td class="pos">+1.2%</td><td><span class="chip c-ok">Bonds — low n</span></td></tr>
+      <tr><td>5</td><td>SPY / EWJ — SUSPENDED</td><td class="pos">83%</td><td>6</td><td class="pos">+2.4%</td><td><span class="chip c-ok">Japan — low n</span></td></tr>
+      <tr><td>6</td><td>SPY / META — SUSPENDED</td><td class="pos">67%</td><td>9</td><td class="pos">+1.6%</td><td><span class="chip c-ok">Decent</span></td></tr>
+      <tr><td>7</td><td>SPY / MSTR — DOMINANT</td><td class="gold">61%</td><td>18</td><td class="pos">+1.1%</td><td><span class="chip c-inv">Only valid reversal</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+function show(i){
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',i===j));
+  document.querySelectorAll('nav button').forEach((b,j)=>b.classList.toggle('active',i===j));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Arc 17 — Multi-Market Monitor | 4D Phase Space</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0f; color: #e0e0f0; font-family: 'Courier New', monospace; padding: 20px; min-height: 100vh; }
+
+  .arc-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; }
+  .arc-num { font-size: 0.65rem; color: #3a3a5a; letter-spacing: 3px; text-transform: uppercase; }
+  h1 { color: #7c6fff; font-size: 1.3rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+  .subtitle { color: #555; font-size: 0.75rem; letter-spacing: 1px; }
+  .date-stamp { font-size: 0.65rem; color: #2a2a4a; }
+
+  /* Alert Banner */
+  #alert-banner { display: none; background: linear-gradient(135deg, #1a1a08, #2a2800); border: 2px solid #ffd166; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; text-align: center; }
+  #alert-banner.active { display: block; animation: pulse-border 2s infinite; }
+  @keyframes pulse-border { 0%,100%{border-color:#ffd166} 50%{border-color:#ffaa00} }
+  #alert-banner .alert-title { font-size: 1.1rem; color: #ffd166; font-weight: bold; letter-spacing: 2px; margin-bottom: 6px; }
+  #alert-banner .alert-body { font-size: 0.75rem; color: #c0b060; }
+  #alert-count { font-size: 2rem; color: #ffd166; font-weight: bold; }
+
+  /* Market grid */
+  .market-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+
+  .market-card { background: #12121e; border: 1px solid #1e1e36; border-radius: 8px; padding: 16px; transition: border-color 0.3s; position: relative; overflow: hidden; }
+  .market-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: #2a2a4a; transition: background 0.3s; }
+  .market-card.suspended::before { background: #ffd166; }
+  .market-card.suspended { border-color: #4a3a00; }
+  .market-card.major::before { background: #66b2ff; }
+  .market-card.dominant::before { background: #ff9966; }
+  .market-card.tritone::before { background: #ff6b6b; }
+  .market-card.unknown::before { background: #3a3a5a; }
+
+  .mkt-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .mkt-names { }
+  .mkt-pair { font-size: 1rem; font-weight: bold; color: #e0e0f0; }
+  .mkt-desc { font-size: 0.65rem; color: #555; margin-top: 2px; }
+  .chord-badge { padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; font-weight: bold; }
+  .chord-SUSPENDED { background: #2a2200; color: #ffd166; border: 1px solid #4a3a00; }
+  .chord-MAJOR { background: #0a1a2a; color: #66b2ff; border: 1px solid #1a3a5a; }
+  .chord-DOMINANT { background: #2a1a0a; color: #ff9966; border: 1px solid #4a2a0a; }
+  .chord-TRITONE { background: #1a0a0a; color: #ff6b6b; border: 1px solid #3a1a1a; }
+  .chord-UNKNOWN { background: #1a1a1a; color: #555; border: 1px solid #2a2a2a; }
+
+  .win-row { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; }
+  .win-label { font-size: 0.65rem; color: #555; width: 60px; flex-shrink: 0; }
+  .win-bar-track { flex: 1; height: 6px; background: #1a1a2e; border-radius: 2px; overflow: hidden; }
+  .win-bar-fill { height: 100%; border-radius: 2px; }
+  .win-val { font-size: 0.75rem; font-weight: bold; width: 38px; text-align: right; }
+
+  .mkt-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 10px; }
+  .mkt-stat { background: #0d0d1a; border-radius: 4px; padding: 6px 8px; }
+  .mkt-stat-label { font-size: 0.55rem; color: #444; text-transform: uppercase; letter-spacing: 1px; }
+  .mkt-stat-val { font-size: 0.8rem; font-weight: bold; margin-top: 2px; }
+
+  .signal-indicator { margin-top: 10px; padding: 6px 10px; border-radius: 4px; font-size: 0.68rem; text-align: center; letter-spacing: 1px; }
+  .signal-indicator.ACTIVE { background: #1a1a00; border: 1px solid #ffd166; color: #ffd166; }
+  .signal-indicator.WATCH { background: #0a1a0a; border: 1px solid #3a6a3a; color: #6bbb6b; }
+  .signal-indicator.INACTIVE { background: #0e0e12; border: 1px solid #1e1e26; color: #3a3a5a; }
+
+  /* Input panel */
+  .input-panel { background: #0e0e1a; border: 1px solid #2a2a4a; border-radius: 8px; padding: 18px; margin-bottom: 20px; }
+  .input-panel h2 { font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: #7c6fff; margin-bottom: 14px; }
+  .input-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 12px; }
+  .input-group label { display: block; font-size: 0.6rem; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .input-group input { width: 100%; background: #12121e; border: 1px solid #2a2a4a; border-radius: 4px; padding: 6px 8px; color: #e0e0f0; font-family: inherit; font-size: 0.75rem; outline: none; transition: border-color 0.2s; }
+  .input-group input:focus { border-color: #7c6fff; }
+  .input-group input.changed { border-color: #ffd166; }
+  .btn { background: #1a1a3a; border: 1px solid #3a3a6a; color: #9999ee; padding: 8px 18px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 0.72rem; letter-spacing: 1px; transition: all 0.2s; text-transform: uppercase; }
+  .btn:hover { background: #2a2a4a; border-color: #5a5a9a; color: #bbbbff; }
+  .btn.primary { background: #1a1a36; border-color: #7c6fff; color: #7c6fff; }
+  .btn.primary:hover { background: #2a2a46; }
+  .input-note { font-size: 0.65rem; color: #3a3a5a; margin-top: 8px; }
+
+  /* Reference table */
+  .ref-section { background: #12121e; border: 1px solid #1e1e36; border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+  .ref-section h2 { font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: #555; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+  th { color: #555; font-size: 0.62rem; letter-spacing: 1px; text-transform: uppercase; padding: 6px 10px; text-align: left; border-bottom: 1px solid #1e1e36; }
+  td { padding: 8px 10px; border-bottom: 1px solid #0f0f1e; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #16162a; }
+  .rank-badge { display: inline-block; width: 20px; height: 20px; border-radius: 50%; text-align: center; line-height: 20px; font-size: 0.6rem; font-weight: bold; }
+  .rank-1 { background: #2a2200; color: #ffd166; border: 1px solid #4a3a00; }
+  .rank-2 { background: #1a2200; color: #88cc44; border: 1px solid #2a4a00; }
+  .rank-3 { background: #1a1a2a; color: #6688cc; border: 1px solid #2a2a4a; }
+
+  .wr-cell { font-weight: bold; }
+  .wr-100 { color: #ffe566; }
+  .wr-80 { color: #6bffc8; }
+  .wr-70 { color: #88bbff; }
+  .wr-50 { color: #888; }
+
+  /* Multi-SUSPENDED section */
+  .multi-susp { background: #0e0e08; border: 2px solid #3a3a10; border-radius: 8px; padding: 18px; margin-bottom: 20px; }
+  .multi-susp h2 { font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: #ffd166; margin-bottom: 14px; }
+  .prob-row { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
+  .prob-n { width: 120px; font-size: 0.72rem; color: #888; }
+  .prob-bar-track { flex: 1; height: 12px; background: #1a1a0e; border-radius: 2px; overflow: hidden; }
+  .prob-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #ffd166, #ffaa00); }
+  .prob-val { width: 60px; text-align: right; font-size: 0.72rem; color: #ffd166; font-weight: bold; }
+  .prob-note { width: 200px; font-size: 0.65rem; color: #555; }
+
+  .insight-box { background: #0e0e1a; border: 1px solid #2a2a4a; border-radius: 6px; padding: 12px 14px; margin-top: 12px; }
+  .insight-box .label { font-size: 0.6rem; color: #7c6fff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+  .insight-box p { font-size: 0.73rem; color: #c0c0d8; line-height: 1.7; }
+
+  .law-footer { background: #12121e; border: 1px solid #1e1e36; border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .law-badge { display: inline-block; background: #1a1a36; border: 1px solid #3a3a66; color: #9999ee; padding: 2px 8px; border-radius: 3px; font-size: 0.63rem; }
+
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .dot-suspended { background: #ffd166; box-shadow: 0 0 6px #ffd166; }
+  .dot-major { background: #66b2ff; }
+  .dot-dominant { background: #ff9966; }
+  .dot-tritone { background: #ff6b6b; }
+  .dot-unknown { background: #3a3a5a; }
+</style>
+</head>
+<body>
+
+<div class="arc-header">
+  <div>
+    <div class="arc-num">Arc 17 · Live Multi-Market Monitor</div>
+    <h1>Multi-Market Chord Monitor</h1>
+    <div class="subtitle">SOL/BTC · AMD/SPY · NVDA/SPY · TLT/SPY · EWJ/SPY · EEM/SPY</div>
+  </div>
+  <div class="date-stamp" id="last-update">Enter current prices below</div>
+</div>
+
+<!-- Alert banner -->
+<div id="alert-banner">
+  <div class="alert-title">⚡ MULTI-SUSPENDED SIGNAL</div>
+  <div id="alert-count">0</div>
+  <div class="alert-body" id="alert-body">markets simultaneously in SUSPENDED chord</div>
+</div>
+
+<!-- Market cards -->
+<div class="market-grid" id="market-grid">
+  <!-- Populated by JS -->
+</div>
+
+<!-- Live input panel -->
+<div class="input-panel">
+  <h2>📥 Weekly Price Input — Enter Monday Close</h2>
+  <div style="font-size:0.65rem;color:#555;margin-bottom:12px">Enter this week's closing price and previous week's closing price for each asset. Chord state is computed automatically.</div>
+  <div class="input-grid">
+    <div class="input-group">
+      <label>BTC (prev)</label>
+      <input type="number" id="in_btc_prev" placeholder="e.g. 68000" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>BTC (curr)</label>
+      <input type="number" id="in_btc_curr" placeholder="e.g. 65000" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>SOL (prev)</label>
+      <input type="number" id="in_sol_prev" placeholder="e.g. 160" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>SOL (curr)</label>
+      <input type="number" id="in_sol_curr" placeholder="e.g. 172" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>SOL RS4w %</label>
+      <input type="number" id="in_sol_rs4w" placeholder="vs BTC, e.g. -5.2" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>Consec neg BTC</label>
+      <input type="number" id="in_consec_btc" placeholder="0–5" min="0" max="10">
+    </div>
+  </div>
+  <div class="input-grid">
+    <div class="input-group">
+      <label>SPY (prev)</label>
+      <input type="number" id="in_spy_prev" placeholder="e.g. 525" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>SPY (curr)</label>
+      <input type="number" id="in_spy_curr" placeholder="e.g. 510" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>AMD (curr)</label>
+      <input type="number" id="in_amd_curr" placeholder="e.g. 165" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>AMD (prev)</label>
+      <input type="number" id="in_amd_prev" placeholder="e.g. 160" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>NVDA (curr)</label>
+      <input type="number" id="in_nvda_curr" placeholder="e.g. 900" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>NVDA (prev)</label>
+      <input type="number" id="in_nvda_prev" placeholder="e.g. 880" step="0.01">
+    </div>
+  </div>
+  <div class="input-grid">
+    <div class="input-group">
+      <label>TLT (curr)</label>
+      <input type="number" id="in_tlt_curr" placeholder="e.g. 94" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>TLT (prev)</label>
+      <input type="number" id="in_tlt_prev" placeholder="e.g. 92" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>EWJ (curr)</label>
+      <input type="number" id="in_ewj_curr" placeholder="e.g. 72" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>EWJ (prev)</label>
+      <input type="number" id="in_ewj_prev" placeholder="e.g. 70" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>EEM (curr)</label>
+      <input type="number" id="in_eem_curr" placeholder="e.g. 45" step="0.01">
+    </div>
+    <div class="input-group">
+      <label>EEM (prev)</label>
+      <input type="number" id="in_eem_prev" placeholder="e.g. 43" step="0.01">
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;margin-top:4px">
+    <button class="btn primary" onclick="computeChords()">▶ Compute Chord States</button>
+    <button class="btn" onclick="loadDemo()">Load Demo Data</button>
+    <button class="btn" onclick="resetAll()">Clear</button>
+    <span class="input-note">SOL RS4w: (SOL 4w return − BTC 4w return). Negative = SOL underperformed BTC recently = divergence building.</span>
+  </div>
+</div>
+
+<!-- Multi-SUSPENDED probability table -->
+<div class="multi-susp">
+  <h2>Multi-Market SUSPENDED Probability &amp; Expected Edge</h2>
+  <div style="font-size:0.7rem;color:#888;margin-bottom:14px">Historical frequency of N markets in SUSPENDED chord simultaneously. Based on observed signal rates per market.</div>
+
+  <div class="prob-row">
+    <div class="prob-n"><span class="status-dot dot-suspended"></span>1 market</div>
+    <div class="prob-bar-track"><div class="prob-bar-fill" style="width:65%"></div></div>
+    <div class="prob-val">~1–2/yr</div>
+    <div class="prob-note">Individual signal, use filter rule</div>
+  </div>
+  <div class="prob-row">
+    <div class="prob-n"><span class="status-dot dot-suspended"></span><span class="status-dot dot-suspended"></span>2 markets</div>
+    <div class="prob-bar-track"><div class="prob-bar-fill" style="width:35%"></div></div>
+    <div class="prob-val">~0–1/yr</div>
+    <div class="prob-note">Elevated conviction — watch both</div>
+  </div>
+  <div class="prob-row">
+    <div class="prob-n"><span class="status-dot dot-suspended"></span>×3+ markets</div>
+    <div class="prob-bar-track"><div class="prob-bar-fill" style="width:10%"></div></div>
+    <div class="prob-val">Rare</div>
+    <div class="prob-note">Maximum conviction — all-in scenario</div>
+  </div>
+
+  <div class="insight-box">
+    <div class="label">Law 27 — Beta Amplification</div>
+    <p>Expected alpha scales with the alt asset's beta to its base. SOL (highest beta) → +7.1% avg per SUSPENDED filter. AMD/NVDA → +2.2%. TLT/EWJ/EEM → +1.2–2.4%.
+    When multiple markets fire simultaneously, the signals are structurally independent (different asset classes, different correlations) — this is genuine diversified confirmation, not echo.</p>
+  </div>
+</div>
+
+<!-- Historical reference table -->
+<div class="ref-section">
+  <h2>Historical SUSPENDED Signal Performance by Market</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Pair</th>
+        <th>Asset Class</th>
+        <th>Win Rate (SUSPENDED)</th>
+        <th>n</th>
+        <th>Avg Alt +1w</th>
+        <th>Filter Logic</th>
+        <th>Interpretation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="rank-badge rank-1">★</span></td>
+        <td><strong>BTC / SOL</strong></td>
+        <td>Crypto</td>
+        <td class="wr-cell wr-100">100%</td>
+        <td>7 (filtered)</td>
+        <td style="color:#ffd166">+8.6%</td>
+        <td>SOL &gt;3% AND RS4w &lt;20% <em>or</em> BTC consec neg ≥3</td>
+        <td>SOL is crypto beta — highest edge</td>
+      </tr>
+      <tr>
+        <td><span class="rank-badge rank-2">2</span></td>
+        <td><strong>SPY / TLT</strong></td>
+        <td>Bonds</td>
+        <td class="wr-cell wr-80">83%</td>
+        <td>6</td>
+        <td style="color:#6bffc8">+1.2%</td>
+        <td>SPY ↓ week AND TLT ↑ week</td>
+        <td>Bonds holding = risk-off resolving</td>
+      </tr>
+      <tr>
+        <td><span class="rank-badge rank-2">2</span></td>
+        <td><strong>SPY / EWJ</strong></td>
+        <td>Int'l Equity</td>
+        <td class="wr-cell wr-80">83%</td>
+        <td>6</td>
+        <td style="color:#6bffc8">+2.4%</td>
+        <td>SPY ↓ week AND EWJ ↑ week</td>
+        <td>Japan bid = global stress, not crash</td>
+      </tr>
+      <tr>
+        <td><span class="rank-badge rank-3">4</span></td>
+        <td><strong>SPY / EEM</strong></td>
+        <td>EM Equity</td>
+        <td class="wr-cell wr-80">80%</td>
+        <td>5</td>
+        <td style="color:#6bffc8">+2.4%</td>
+        <td>SPY ↓ week AND EEM ↑ week</td>
+        <td>EM bid = USD stress, not recession</td>
+      </tr>
+      <tr>
+        <td><span class="rank-badge rank-3">5</span></td>
+        <td><strong>SPY / AMD</strong></td>
+        <td>Semis/Equity</td>
+        <td class="wr-cell wr-70">77%</td>
+        <td>13</td>
+        <td style="color:#88bbff">+2.2%</td>
+        <td>SPY ↓ week AND AMD ↑ week</td>
+        <td>AMD = "SOL of equities" — high beta semis</td>
+      </tr>
+      <tr>
+        <td><span class="rank-badge rank-3">6</span></td>
+        <td><strong>SPY / NVDA</strong></td>
+        <td>Semis/Equity</td>
+        <td class="wr-cell wr-70">73%</td>
+        <td>11</td>
+        <td style="color:#88bbff">+2.2%</td>
+        <td>SPY ↓ week AND NVDA ↑ week</td>
+        <td>Same as AMD — second-best stock signal</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="insight-box" style="margin-top:14px">
+    <div class="label">Pattern — Universal Chord Law</div>
+    <p>The SUSPENDED chord pattern is market-agnostic. Any correlated pair where [base] falls and [high-beta alt] holds or rises exhibits the same mean-reversion edge.
+    Win rate inversely correlates with how tightly coupled the assets are: SOL/BTC (crypto, very tight) = 100%, AMD/SPY (semis vs broad equity, less tight) = 77%.
+    The tighter the normal correlation, the more informative the divergence.</p>
+  </div>
+</div>
+
+<div class="law-footer">
+  <div style="font-size:0.65rem;color:#555;letter-spacing:1px;text-transform:uppercase;margin-right:4px">Laws:</div>
+  <span class="law-badge">Law 24 — SOL Specific Edge (100%)</span>
+  <span class="law-badge">Law 27 — Beta Amplification</span>
+  <span class="law-badge">Law 28 — Dying Asset Disqualification</span>
+  <span class="law-badge">Law 32 (candidate) — Multi-Market Convergence</span>
+  <div style="flex:1"></div>
+  <div style="font-size:0.65rem;color:#3a3a5a">4D Phase Space Orchestra · Arc 17</div>
+</div>
+
+<script>
+// Market definitions
+const MARKETS = [
+  {
+    id: 'btc_sol',
+    pair: 'BTC / SOL',
+    desc: 'Crypto — primary signal',
+    base: 'BTC', alt: 'SOL',
+    win_rate: 100, win_rate_unfilt: 65, n_filtered: 7, n_all: 22,
+    avg_ret: 8.6,
+    filter_logic: 'SOL >3% AND RS4w <20% OR BTC consec neg ≥3',
+    why: 'Highest beta crypto — maximum edge',
+    color: '#ffd166',
+    prevKey: 'btc_prev', currKey: 'btc_curr',
+    altPrevKey: 'sol_prev', altCurrKey: 'sol_curr',
+    hasFilter: true
+  },
+  {
+    id: 'spy_amd',
+    pair: 'SPY / AMD',
+    desc: 'Semis equity — best stock signal',
+    base: 'SPY', alt: 'AMD',
+    win_rate: 77, n_filtered: 13, n_all: 13,
+    avg_ret: 2.2,
+    filter_logic: 'SPY ↓ week AND AMD ↑ week',
+    why: 'AMD = SOL of equities, highest beta semis',
+    color: '#88bbff',
+    prevKey: 'spy_prev', currKey: 'spy_curr',
+    altPrevKey: 'amd_prev', altCurrKey: 'amd_curr',
+    hasFilter: false
+  },
+  {
+    id: 'spy_nvda',
+    pair: 'SPY / NVDA',
+    desc: 'Semis equity — AI leverage play',
+    base: 'SPY', alt: 'NVDA',
+    win_rate: 73, n_filtered: 11, n_all: 11,
+    avg_ret: 2.2,
+    filter_logic: 'SPY ↓ week AND NVDA ↑ week',
+    why: 'NVDA second-best stock signal after AMD',
+    color: '#88bbff',
+    prevKey: 'spy_prev', currKey: 'spy_curr',
+    altPrevKey: 'nvda_prev', altCurrKey: 'nvda_curr',
+    hasFilter: false
+  },
+  {
+    id: 'spy_tlt',
+    pair: 'SPY / TLT',
+    desc: 'Macro bonds — risk-off radar',
+    base: 'SPY', alt: 'TLT',
+    win_rate: 83, n_filtered: 6, n_all: 6,
+    avg_ret: 1.2,
+    filter_logic: 'SPY ↓ week AND TLT ↑ week',
+    why: 'Bonds holding = risk-off resolving, not crash',
+    color: '#6bffc8',
+    prevKey: 'spy_prev', currKey: 'spy_curr',
+    altPrevKey: 'tlt_prev', altCurrKey: 'tlt_curr',
+    hasFilter: false
+  },
+  {
+    id: 'spy_ewj',
+    pair: 'SPY / EWJ',
+    desc: 'Japan equity — global stress gauge',
+    base: 'SPY', alt: 'EWJ',
+    win_rate: 83, n_filtered: 6, n_all: 6,
+    avg_ret: 2.4,
+    filter_logic: 'SPY ↓ week AND EWJ ↑ week',
+    why: 'Japan bid = global stress, not systemic crash',
+    color: '#6bffc8',
+    prevKey: 'spy_prev', currKey: 'spy_curr',
+    altPrevKey: 'ewj_prev', altCurrKey: 'ewj_curr',
+    hasFilter: false
+  },
+  {
+    id: 'spy_eem',
+    pair: 'SPY / EEM',
+    desc: 'EM equity — dollar stress gauge',
+    base: 'SPY', alt: 'EEM',
+    win_rate: 80, n_filtered: 5, n_all: 5,
+    avg_ret: 2.4,
+    filter_logic: 'SPY ↓ week AND EEM ↑ week',
+    why: 'EM bid = USD stress, not global recession',
+    color: '#6bffc8',
+    prevKey: 'spy_prev', currKey: 'spy_curr',
+    altPrevKey: 'eem_prev', altCurrKey: 'eem_curr',
+    hasFilter: false
+  }
+];
+
+// State
+let chordStates = {};
+MARKETS.forEach(m => { chordStates[m.id] = 'UNKNOWN'; });
+
+function getVal(id) {
+  const el = document.getElementById('in_' + id);
+  return el ? parseFloat(el.value) : NaN;
+}
+
+function calcChord(basePrev, baseCurr, altPrev, altCurr) {
+  if (isNaN(basePrev) || isNaN(baseCurr) || isNaN(altPrev) || isNaN(altCurr)) return 'UNKNOWN';
+  const baseUp = baseCurr > basePrev;
+  const altUp  = altCurr  > altPrev;
+  if (baseUp && altUp)   return 'MAJOR';
+  if (baseUp && !altUp)  return 'DOMINANT';
+  if (!baseUp && altUp)  return 'SUSPENDED';
+  return 'TRITONE';
+}
+
+function checkBtcSolFilter(solRet, solRs4w, consecBtc) {
+  if (isNaN(solRet) || isNaN(solRs4w) || isNaN(consecBtc)) return null;
+  const gate1 = (solRet > 3.0) && (solRs4w < 20.0);
+  const gate2 = (consecBtc >= 3);
+  if (gate2) return { pass: true, reason: `Gate 2: BTC negative ${consecBtc} consecutive weeks` };
+  if (gate1) return { pass: true, reason: `Gate 1: SOL +${solRet.toFixed(1)}% AND RS4w ${solRs4w > 0 ? '+' : ''}${solRs4w.toFixed(1)}%` };
+  return { pass: false, reason: 'Filter not triggered' };
+}
+
+function computeChords() {
+  const btcPrev = getVal('btc_prev'), btcCurr = getVal('btc_curr');
+  const solPrev = getVal('sol_prev'), solCurr = getVal('sol_curr');
+  const solRs4w = getVal('sol_rs4w'), consecBtc = getVal('consec_btc');
+  const spyPrev = getVal('spy_prev'), spyCurr = getVal('spy_curr');
+  const amdPrev = getVal('amd_prev'), amdCurr = getVal('amd_curr');
+  const nvdaPrev = getVal('nvda_prev'), nvdaCurr = getVal('nvda_curr');
+  const tltPrev = getVal('tlt_prev'), tltCurr = getVal('tlt_curr');
+  const ewjPrev = getVal('ewj_prev'), ewjCurr = getVal('ewj_curr');
+  const eemPrev = getVal('eem_prev'), eemCurr = getVal('eem_curr');
+
+  // SOL weekly ret for filter check
+  const solRet = !isNaN(solPrev) && solPrev > 0 ? (solCurr - solPrev) / solPrev * 100 : NaN;
+
+  chordStates['btc_sol'] = calcChord(btcPrev, btcCurr, solPrev, solCurr);
+  chordStates['spy_amd']  = calcChord(spyPrev, spyCurr, amdPrev, amdCurr);
+  chordStates['spy_nvda'] = calcChord(spyPrev, spyCurr, nvdaPrev, nvdaCurr);
+  chordStates['spy_tlt']  = calcChord(spyPrev, spyCurr, tltPrev, tltCurr);
+  chordStates['spy_ewj']  = calcChord(spyPrev, spyCurr, ewjPrev, ewjCurr);
+  chordStates['spy_eem']  = calcChord(spyPrev, spyCurr, eemPrev, eemCurr);
+
+  // BTC/SOL filter check
+  const filterResult = checkBtcSolFilter(solRet, solRs4w, consecBtc);
+
+  document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  renderGrid(filterResult, solRet);
+  updateAlert();
+}
+
+function renderGrid(filterResult, solRet) {
+  const grid = document.getElementById('market-grid');
+  grid.innerHTML = '';
+
+  MARKETS.forEach(m => {
+    const chord = chordStates[m.id];
+    const isSusp = chord === 'SUSPENDED';
+    const isActive = isSusp && (!m.hasFilter || (filterResult && filterResult.pass));
+
+    // Win rate bar color
+    const wrColor = m.win_rate >= 90 ? '#ffd166' : m.win_rate >= 80 ? '#6bffc8' : '#88bbff';
+
+    let signalHtml = '';
+    if (chord === 'UNKNOWN') {
+      signalHtml = `<div class="signal-indicator INACTIVE">— enter prices —</div>`;
+    } else if (m.hasFilter) {
+      if (!isSusp) {
+        signalHtml = `<div class="signal-indicator INACTIVE">CHORD: ${chord} — not SUSPENDED</div>`;
+      } else if (filterResult && filterResult.pass) {
+        signalHtml = `<div class="signal-indicator ACTIVE">⚡ SIGNAL: ${filterResult.reason}</div>`;
+      } else if (filterResult) {
+        signalHtml = `<div class="signal-indicator WATCH">⚠ SUSPENDED — filter not met yet<br><small>${filterResult.reason}</small></div>`;
+      } else {
+        signalHtml = `<div class="signal-indicator WATCH">⚠ SUSPENDED — enter RS4w + consec BTC</div>`;
+      }
+    } else {
+      if (isSusp) {
+        signalHtml = `<div class="signal-indicator ACTIVE">⚡ SUSPENDED — ${m.win_rate}% historical win</div>`;
+      } else {
+        signalHtml = `<div class="signal-indicator INACTIVE">CHORD: ${chord}</div>`;
+      }
+    }
+
+    const card = document.createElement('div');
+    card.className = `market-card ${chord.toLowerCase()}`;
+    card.innerHTML = `
+      <div class="mkt-header">
+        <div class="mkt-names">
+          <div class="mkt-pair">${m.pair}</div>
+          <div class="mkt-desc">${m.desc}</div>
+        </div>
+        <div class="chord-badge chord-${chord}">${chord}</div>
+      </div>
+      <div class="win-row">
+        <div class="win-label">Win rate</div>
+        <div class="win-bar-track"><div class="win-bar-fill" style="width:${m.win_rate}%;background:${wrColor}"></div></div>
+        <div class="win-val" style="color:${wrColor}">${m.win_rate}%</div>
+      </div>
+      <div class="mkt-stats">
+        <div class="mkt-stat">
+          <div class="mkt-stat-label">Signals</div>
+          <div class="mkt-stat-val" style="color:#888">n=${m.n_filtered}</div>
+        </div>
+        <div class="mkt-stat">
+          <div class="mkt-stat-label">Avg +1w</div>
+          <div class="mkt-stat-val" style="color:#6bffc8">+${m.avg_ret}%</div>
+        </div>
+        <div class="mkt-stat">
+          <div class="mkt-stat-label">Filter</div>
+          <div class="mkt-stat-val" style="color:${m.hasFilter?'#ffd166':'#666'}">${m.hasFilter?'YES':'CHORD'}</div>
+        </div>
+      </div>
+      ${signalHtml}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function updateAlert() {
+  const suspMarkets = MARKETS.filter(m => chordStates[m.id] === 'SUSPENDED');
+  const banner = document.getElementById('alert-banner');
+  const count = document.getElementById('alert-count');
+  const body = document.getElementById('alert-body');
+
+  if (suspMarkets.length >= 2) {
+    banner.classList.add('active');
+    count.textContent = suspMarkets.length;
+    body.textContent = `markets in SUSPENDED simultaneously: ${suspMarkets.map(m=>m.pair).join(', ')}`;
+  } else {
+    banner.classList.remove('active');
+  }
+}
+
+function loadDemo() {
+  // Demo: SUSPENDED for BTC/SOL and SPY/TLT — multi-signal scenario
+  const vals = {
+    btc_prev: 68000, btc_curr: 64000,  // BTC down
+    sol_prev: 155,   sol_curr: 162,    // SOL up
+    sol_rs4w: -8.2,  consec_btc: 2,
+    spy_prev: 528,   spy_curr: 512,    // SPY down
+    amd_prev: 164,   amd_curr: 161,    // AMD down too
+    nvda_prev: 895,  nvda_curr: 888,   // NVDA down too
+    tlt_prev: 92,    tlt_curr: 95,     // TLT up (SUSPENDED)
+    ewj_prev: 71,    ewj_curr: 70,     // EWJ flat/down
+    eem_prev: 44,    eem_curr: 46,     // EEM up (SUSPENDED)
+  };
+  Object.entries(vals).forEach(([k,v]) => {
+    const el = document.getElementById('in_' + k);
+    if (el) el.value = v;
+  });
+  computeChords();
+}
+
+function resetAll() {
+  document.querySelectorAll('.input-group input').forEach(el => el.value = '');
+  MARKETS.forEach(m => { chordStates[m.id] = 'UNKNOWN'; });
+  document.getElementById('alert-banner').classList.remove('active');
+  document.getElementById('last-update').textContent = 'Enter current prices below';
+  renderGrid(null, NaN);
+}
+
+// Initial render (all unknown)
+renderGrid(null, NaN);
+</script>
+</body>
+</html>

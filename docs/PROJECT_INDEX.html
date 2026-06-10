@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Crypto Orchestra (tCO) — Project Index</title>
+<style>
+:root{
+  --bg:#060810;--panel:#0d0d1a;--border:#181828;
+  --green:#3ddc84;--red:#ff4d6d;--gold:#f0c040;
+  --blue:#06b6d4;--purple:#c77dff;--orange:#ff9f40;
+  --text:#dde0f5;--muted:#5a5a7a;--dim:#38384a;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 24px;}
+
+/* Header */
+.hero{border-bottom:1px solid var(--border);padding-bottom:28px;margin-bottom:32px;}
+.hero-title{font-size:28px;font-weight:700;letter-spacing:1px;color:var(--purple);margin-bottom:6px;}
+.hero-sub{color:var(--muted);font-size:14px;line-height:1.6;}
+.hero-stats{display:flex;gap:24px;margin-top:20px;flex-wrap:wrap;}
+.hstat{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px 18px;text-align:center;}
+.hstat-val{font-size:22px;font-weight:700;}
+.hstat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+
+/* Nav */
+.nav{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;}
+.nav-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all 0.15s;}
+.nav-btn:hover,.nav-btn.active{background:var(--purple);color:#fff;border-color:var(--purple);}
+
+/* Section headings */
+.section-head{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin:32px 0 14px;border-bottom:1px solid var(--border);padding-bottom:8px;}
+
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin-bottom:24px;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;transition:border-color 0.2s;position:relative;}
+.card:hover{border-color:var(--purple);}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.arc-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;}
+.ab-complete{background:#1a2820;color:var(--green);}
+.ab-key{background:#1a1830;color:var(--purple);}
+.ab-data{background:#1a1a28;color:var(--muted);}
+.ab-audio{background:#201418;color:var(--orange);}
+.ab-script{background:#1a2028;color:var(--blue);}
+.card-title{font-size:14px;font-weight:600;color:var(--text);}
+.card-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.card-findings{background:#0a0a14;border-radius:6px;padding:10px;margin-bottom:12px;}
+.card-findings ul{padding-left:14px;}
+.card-findings li{font-size:11px;color:var(--muted);margin-bottom:4px;line-height:1.5;}
+.card-findings li strong{color:var(--text);}
+.card-foot{display:flex;align-items:center;justify-content:space-between;}
+.open-btn{display:inline-block;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--blue);font-size:12px;text-decoration:none;transition:all 0.15s;}
+.open-btn:hover{background:var(--blue);color:#000;border-color:var(--blue);}
+.file-name{font-size:10px;color:var(--dim);font-family:monospace;}
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
+.s-live{background:var(--green);}
+.s-data{background:var(--muted);}
+
+/* Laws table */
+.laws-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+.law-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px;}
+.law-num{font-size:10px;color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.law-title{font-size:13px;font-weight:600;margin-bottom:4px;}
+.law-body{font-size:11px;color:var(--muted);line-height:1.6;}
+.law-evidence{font-size:10px;color:var(--green);margin-top:5px;}
+
+/* Signal summary */
+.signal-box{background:var(--panel);border:1px solid var(--green);border-radius:10px;padding:20px;margin-bottom:24px;}
+.signal-box h3{color:var(--green);font-size:14px;margin-bottom:12px;}
+.sig-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:12px;}
+.sig-stat{text-align:center;}
+.sig-val{font-size:24px;font-weight:700;color:var(--green);}
+.sig-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+.filter-rule{background:#0a140a;border:1px solid #1a3020;border-radius:8px;padding:12px;font-family:monospace;font-size:12px;color:var(--green);line-height:1.8;}
+.filter-comment{color:var(--muted);}
+
+/* Timeline */
+.timeline{position:relative;padding-left:20px;margin-bottom:24px;}
+.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--border);}
+.tl-item{position:relative;margin-bottom:20px;}
+.tl-item::before{content:'';position:absolute;left:-24px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--purple);border:2px solid var(--bg);}
+.tl-date{font-size:10px;color:var(--muted);margin-bottom:3px;}
+.tl-title{font-size:13px;font-weight:600;margin-bottom:3px;}
+.tl-body{font-size:12px;color:var(--muted);}
+
+/* Responsive */
+@media(max-width:700px){.cards{grid-template-columns:1fr;}.laws-grid{grid-template-columns:1fr;}.sig-row{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-title">◈ THE CRYPTO ORCHESTRA <span style="font-size:14px;color:var(--muted);font-weight:400;letter-spacing:0">tCO</span></div>
+  <div class="hero-sub">The relationship between assets, music, and math.<br>
+  Harmonic indicators (Synthonies) · 9-state chord system · 7/7 signal · Live at <a href="https://traderlive.viktim.xyz" target="_blank" style="color:var(--blue);text-decoration:none;">traderlive.viktim.xyz</a><br>
+  Solo research · Jun 2026 · 42 arcs documented below</div>
+  <div class="hero-stats">
+    <div class="hstat"><div class="hstat-val" style="color:var(--purple)">3</div><div class="hstat-lbl">Synthonies</div></div>
+    <div class="hstat"><div class="hstat-val" style="color:var(--green)">100%</div><div class="hstat-lbl">Win Rate (n=7)</div></div>
+    <div class="hstat"><div class="hstat-val" style="color:var(--gold)">+7.1%</div><div class="hstat-lbl">Avg Trade SOL</div></div>
+    <div class="hstat"><div class="hstat-val" style="color:var(--blue)">9.37</div><div class="hstat-lbl">Sharpe</div></div>
+    <div class="hstat"><div class="hstat-val" style="color:var(--orange)">9</div><div class="hstat-lbl">Chord States</div></div>
+    <div class="hstat"><div class="hstat-val" style="color:var(--text)">259w</div><div class="hstat-lbl">Data History</div></div>
+  </div>
+</div>
+
+<!-- SYNTHONIES TABLE -->
+<div style="background:var(--panel);border:1px solid var(--purple);border-radius:10px;padding:20px;margin-bottom:28px;">
+  <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--purple);margin-bottom:14px;">Synthonies — Active Indicators</div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.7;">A <strong style="color:var(--text)">Synthony</strong> is a harmonic indicator built on the relationship between two assets. The name compresses <em>synthesis</em> + <em>harmony</em> + <em>symphony</em>. Each Synthony maps two assets' candle directions onto a 9-state chord matrix and outputs a named chord state in real time.</div>
+  <table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <thead>
+      <tr style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;">
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border);">ID</td>
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border);">Pair</td>
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border);">Anchor</td>
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border);">Oscillator</td>
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border);">Signal Chord</td>
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border);">Filter</td>
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border);">Record</td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:8px 10px;color:var(--purple);font-weight:700;">S1</td>
+        <td style="padding:8px 10px;">BTC × SOL</td>
+        <td style="padding:8px 10px;color:var(--gold);">BTC</td>
+        <td style="padding:8px 10px;color:var(--blue);">SOL</td>
+        <td style="padding:8px 10px;color:var(--purple);">SUSPENDED</td>
+        <td style="padding:8px 10px;color:var(--muted);">Jupiter 340.9° ±60°</td>
+        <td style="padding:8px 10px;color:var(--green);font-weight:700;">7/7 ✓</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:8px 10px;color:var(--blue);font-weight:700;">S2</td>
+        <td style="padding:8px 10px;">SPY × NVDA</td>
+        <td style="padding:8px 10px;color:var(--gold);">SPY</td>
+        <td style="padding:8px 10px;color:var(--blue);">NVDA</td>
+        <td style="padding:8px 10px;color:var(--purple);">SUSPENDED</td>
+        <td style="padding:8px 10px;color:var(--muted);">None</td>
+        <td style="padding:8px 10px;color:var(--muted);">Live</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;color:var(--orange);font-weight:700;">S3</td>
+        <td style="padding:8px 10px;">SPY × AMC</td>
+        <td style="padding:8px 10px;color:var(--gold);">SPY</td>
+        <td style="padding:8px 10px;color:var(--orange);">AMC</td>
+        <td style="padding:8px 10px;color:var(--purple);">SUSPENDED</td>
+        <td style="padding:8px 10px;color:var(--muted);">None</td>
+        <td style="padding:8px 10px;color:var(--muted);">Live</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:12px;font-size:10px;color:var(--muted);">Future candidates: Gold×DXY · ETH×BTC · VIX×SPY · BTC×ETH</div>
+</div>
+
+<!-- SIGNAL SUMMARY -->
+<div class="signal-box">
+  <h3>⚡ S1 Primary Signal — BTC×SOL Synthony · SUSPENDED Filter (Live-Ready)</h3>
+  <div class="sig-row">
+    <div class="sig-stat"><div class="sig-val">100%</div><div class="sig-lbl">Win Rate (7/7)</div></div>
+    <div class="sig-stat"><div class="sig-val">+7.1%</div><div class="sig-lbl">Mean Next-Week SOL</div></div>
+    <div class="sig-stat"><div class="sig-val">9.37</div><div class="sig-lbl">Sharpe Ratio</div></div>
+  </div>
+  <div class="filter-rule">
+<span class="filter-comment"># Fire when EITHER gate passes:</span>
+Gate 1: SOL_ret_this_week &gt; 3.0%  AND  SOL_RS_4w &lt; 20.0%
+Gate 2: BTC_consecutive_negative_weeks &gt;= 3
+
+<span class="filter-comment"># Context: chord must be SUSPENDED (BTC&lt;0, SOL&gt;0)</span>
+<span class="filter-comment"># Phase: fires at ~0° Hilbert phase (spread zero-crossing upward)</span>
+<span class="filter-comment"># Script: signal_check.py — run every Monday morning</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active" onclick="filterCards('all')">All Builds</button>
+  <button class="nav-btn" onclick="filterCards('synthony')" style="border-color:var(--purple);color:var(--purple)">Synthonies</button>
+  <button class="nav-btn" onclick="filterCards('dashboard')">Dashboards</button>
+  <button class="nav-btn" onclick="filterCards('signal')">Signal System</button>
+  <button class="nav-btn" onclick="filterCards('audio')">Audio</button>
+  <button class="nav-btn" onclick="filterCards('data')">Data / Scripts</button>
+</div>
+
+<!-- PHASE 0: FOUNDATION -->
+<div class="section-head">Phase 0 — Foundation &amp; Geometry</div>
+<div class="cards" id="cards-phase0">
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 0</span>
+      <span class="card-title">SOL Geometric Analysis</span>
+    </div>
+    <div class="card-desc">Multi-timeframe OHLCV analysis. Geometric + mathematical candle structure. First dataset.</div>
+    <div class="card-findings"><ul>
+      <li><strong>15m / 1h / 4h</strong> OHLCV loaded and parsed</li>
+      <li>Candle geometry: ratio distributions, wick asymmetry</li>
+      <li>Entry point for all subsequent analysis</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="SOL_Geometric_Analysis.html" target="_blank">Open ↗</a>
+      <span class="file-name">SOL_Geometric_Analysis.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 1</span>
+      <span class="card-title">SOL Lifecycle Laws</span>
+    </div>
+    <div class="card-desc">Full SOL lifecycle (daily + weekly). Statistical laws across the full price history.</div>
+    <div class="card-findings"><ul>
+      <li><strong>29 laws</strong> covering cycle length, drawdown depth, recovery shape</li>
+      <li>Bear-to-bull recovery structure documented</li>
+      <li>Basis for regime classification in later work</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="SOL_Lifecycle_Laws.html" target="_blank">Open ↗</a>
+      <span class="file-name">SOL_Lifecycle_Laws.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 1b</span>
+      <span class="card-title">SOL Signal Isolation</span>
+    </div>
+    <div class="card-desc">Regress SOL on BTC. Extract and analyse residuals (SOL-specific movement).</div>
+    <div class="card-findings"><ul>
+      <li><strong>R²=0.42</strong> — SOL 42% explained by BTC</li>
+      <li>Residuals carry genuine independent signal</li>
+      <li>Transfer entropy: BTC→SOL dominates (not bidirectional)</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="SOL_Signal_Isolation.html" target="_blank">Open ↗</a>
+      <span class="file-name">SOL_Signal_Isolation.html</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- PHASE 1: TRANSFER ENTROPY -->
+<div class="section-head">Phase 1 — Transfer Entropy &amp; Lead-Lag</div>
+<div class="cards" id="cards-phase1">
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 3</span>
+      <span class="card-title">Transfer Entropy Dashboard</span>
+    </div>
+    <div class="card-desc">Directional information flow BTC→SOL and SOL→BTC across rolling windows.</div>
+    <div class="card-findings"><ul>
+      <li><strong>BTC→SOL TE consistently higher</strong> — BTC is the driver</li>
+      <li>Regime switches visible in rolling TE</li>
+      <li>Confirmed causal hierarchy: SOL is the instrument, BTC is the clock</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="transfer_entropy_dashboard.html" target="_blank">Open ↗</a>
+      <span class="file-name">transfer_entropy_dashboard.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 3b</span>
+      <span class="card-title">BTC/SOL Lead-Lag Analysis</span>
+    </div>
+    <div class="card-desc">Cross-correlation and Granger causality at multiple lags.</div>
+    <div class="card-findings"><ul>
+      <li><strong>BTC leads SOL by 1 week</strong> in most regimes</li>
+      <li>SOL auto-correlation peaks at <strong>τ=5w</strong> (= embedding TAU)</li>
+      <li>Spread auto-correlation peaks at <strong>τ=4w</strong> (= lunar period)</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="btc_sol_leadlag.html" target="_blank">Open ↗</a>
+      <span class="file-name">btc_sol_leadlag.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 4</span>
+      <span class="card-title">Phase Space Edge</span>
+    </div>
+    <div class="card-desc">Takens delay embedding of BTC returns. k-NN backtest in 4D phase space.</div>
+    <div class="card-findings"><ul>
+      <li><strong>TAU=5w, dim=4</strong> — optimal embedding confirmed</li>
+      <li>Poincaré crossings (d0 neg→pos) = momentum flips</li>
+      <li>Phase space neighbors predict direction better than price alone</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="phase_space_edge.html" target="_blank">Open ↗</a>
+      <span class="file-name">phase_space_edge.html</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- PHASE 2: CHORD FRAMEWORK -->
+<div class="section-head">Phase 2 — Chord Framework &amp; Orchestra</div>
+<div class="cards" id="cards-phase2">
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 2</span>
+      <span class="card-title">Chord Progression History</span>
+    </div>
+    <div class="card-desc">259 weeks mapped to 4 chord states. Timeline, transition matrix, regime analysis.</div>
+    <div class="card-findings"><ul>
+      <li><strong>4 states:</strong> MAJOR(++), DOMINANT(+-), SUSPENDED(-+), TRITONE(--)</li>
+      <li>SUS→MAJOR win rate: <strong>+9.6% avg SOL</strong></li>
+      <li>Law 12: SUSPENDED leads regime changes (3 of 4 regime starts)</li>
+      <li>SUS-SUS-SUS = highest-conviction regime-change signal</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="chord_progression.html" target="_blank">Open ↗</a>
+      <span class="file-name">chord_progression.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 5</span>
+      <span class="card-title">Multi-TF Entry Precision</span>
+    </div>
+    <div class="card-desc">Weekly chord signal refined with intra-week (daily/hourly) timing.</div>
+    <div class="card-findings"><ul>
+      <li>Daily chord confirmation improves entry by ~1.5%</li>
+      <li>Best entry: SUSPENDED on weekly + MAJOR on daily</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="multitf_score.html" target="_blank">Open ↗</a>
+      <span class="file-name">multitf_score.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="audio">
+    <div class="card-header">
+      <span class="arc-badge ab-audio">Arc 10a</span>
+      <span class="card-title">Crypto Hymn Score</span>
+    </div>
+    <div class="card-desc">Piano roll + rhythm view of Poincaré crossings as musical notation. 12 instruments.</div>
+    <div class="card-findings"><ul>
+      <li>All 11 chains occupy a <strong>4-semitone band (B3–D#4)</strong></li>
+      <li>LTC = kick drum (CV=0.41, most regular)</li>
+      <li>DOGE = jazz snare (CV=0.60, most loose)</li>
+      <li>USDT = organ pedal (CV=2278 — noise floor)</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="crypto_hymn_score.html" target="_blank">Open ↗</a>
+      <span class="file-name">crypto_hymn_score.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="audio">
+    <div class="card-header">
+      <span class="arc-badge ab-audio">Arc 10b</span>
+      <span class="card-title">Crypto Orchestra (Playable)</span>
+    </div>
+    <div class="card-desc">Web Audio API sequencer. 259 weeks of chord history. Play, scrub, tempo control.</div>
+    <div class="card-findings"><ul>
+      <li>MAJOR: C major triangle wave (C3+E3+G3)</li>
+      <li>SUSPENDED: Sus4 filtered triangle + reverb ← <em>the signal chord</em></li>
+      <li>TRITONE: Raw sawtooth dissonance</li>
+      <li>Purple dot markers for 7 filter signals on timeline</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="orchestra.html" target="_blank">▶ Play ↗</a>
+      <span class="file-name">orchestra.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 6</span>
+      <span class="card-title">Extended Orchestra</span>
+    </div>
+    <div class="card-desc">10 instruments: BTC, SOL + Gold, S&amp;P, VIX, Crude, Silver, Bonds, 2 more. Cross-asset convergence.</div>
+    <div class="card-findings"><ul>
+      <li><strong>4-5 macro asset convergence</strong> = true multi-factor alignment</li>
+      <li>Gold/SPY/VIX triple convergence: 100% 1w win rate</li>
+      <li>Macro assets genuinely independent (r=0.04–0.17)</li>
+      <li>Missing notes E4–B4 require uncorrelated assets</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="extended_orchestra.html" target="_blank">Open ↗</a>
+      <span class="file-name">extended_orchestra.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 6b</span>
+      <span class="card-title">Missing Notes Hunt</span>
+    </div>
+    <div class="card-desc">Search for assets that fill the empty semitones (E4–B4). FM=F#4 confirmed.</div>
+    <div class="card-findings"><ul>
+      <li><strong>FM = F#4</strong> — fills the tritone gap</li>
+      <li>Lunar harmonic theory established from note spacing</li>
+      <li>Notes map to a Lydian Dominant scale structure</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="missing_notes.html" target="_blank">Open ↗</a>
+      <span class="file-name">missing_notes.html</span>
+    </div>
+  </div>
+
+</div>
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 4b</span>
+      <span class="card-title">Phase Space Edge — Backtest &amp; Convergence</span>
+    </div>
+    <div class="card-desc">Combined k-NN phase space backtest with convergence event analysis. Walk-forward scaffold.</div>
+    <div class="card-findings"><ul>
+      <li>Phase space backtest harness — k-NN nearest-neighbour returns</li>
+      <li>Convergence events: 3+ chains crossing same week = 46–54% (noise)</li>
+      <li>Established null finding for crypto convergence — motivates macro extension</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="combined_dashboard_scaffold.html" target="_blank">Open ↗</a>
+      <span class="file-name">combined_dashboard_scaffold.html</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- PHASE 3: SIGNAL SYSTEM -->
+<div class="section-head">Phase 3 — Signal System &amp; Backtesting</div>
+<div class="cards" id="cards-phase3">
+
+  <div class="card" data-cat="dashboard signal">
+    <div class="card-header">
+      <span class="arc-badge ab-key">Arc 7</span>
+      <span class="card-title">Formal Backtest + Lunar Phase</span>
+    </div>
+    <div class="card-desc">Walk-forward backtest of chord-based signal. Lunar phase correlation analysis.</div>
+    <div class="card-findings"><ul>
+      <li>Raw SUSPENDED: 52% win rate (noise without filter)</li>
+      <li>Lunar new moon aligns with SUSPENDED events above chance</li>
+      <li>Walk-forward validates out-of-sample edge</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="backtest_dashboard.html" target="_blank">Open ↗</a>
+      <span class="file-name">backtest_dashboard.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard signal synthony">
+    <div class="card-header">
+      <span class="arc-badge ab-key">Arc 8 ★</span>
+      <span class="card-title">S1 — SUSPENDED Resolution Predictor</span>
+    </div>
+    <div class="card-desc">Feature engineering + filter rule discovery. 100% win rate achieved.</div>
+    <div class="card-findings"><ul>
+      <li><strong>100% win rate, n=7, avg +7.1%, Sharpe 9.37</strong></li>
+      <li>Key feature: SOL 4-week RS (negative RS = genuine divergence)</li>
+      <li>Bear regime: 78% MAJOR rate vs bull 33% (counterintuitive)</li>
+      <li>Filter: SOL>3% AND RS4w&lt;20% OR consec_neg_btc≥3</li>
+      <li>Compound return over all 7 trades: <strong>+160%</strong></li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="arc8_predictor.html" target="_blank">Open ↗</a>
+      <span class="file-name">arc8_predictor.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="signal script">
+    <div class="card-header">
+      <span class="arc-badge ab-script">Arc 9</span>
+      <span class="card-title">Live Signal Script</span>
+    </div>
+    <div class="card-desc">Deploy-ready Python script. Fetches live data, applies filter, prints signal status.</div>
+    <div class="card-findings"><ul>
+      <li>Run every Monday morning before market open</li>
+      <li>Fetches BTC + SOL weekly from Yahoo Finance</li>
+      <li>Computes: chord state, RS4w, consec_neg, filter pass/fail</li>
+      <li>Output: GREEN (enter SOL) / SKIP with reason</li>
+    </ul></div>
+    <div class="card-foot">
+      <span style="font-size:12px;color:var(--blue);">python signal_check.py</span>
+      <span class="file-name">signal_check.py</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- PHASE 4: WIDER SCAN -->
+<div class="section-head">Phase 4 — Wider Scan &amp; Laws</div>
+<div class="cards" id="cards-phase4">
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 11</span>
+      <span class="card-title">Crypto Pairs Wider Scan</span>
+    </div>
+    <div class="card-desc">Same SUSPENDED filter tested on all major crypto pairs vs BTC.</div>
+    <div class="card-findings"><ul>
+      <li><strong>SOL: 100%</strong> — edge is SOL-specific</li>
+      <li>ETH: 56% (closest runner-up, needs re-tuning)</li>
+      <li>ADA: 0%, DOT: 0% — <em>dying asset law confirmed</em></li>
+      <li>Others (XRP, BNB, AVAX): ~46% = noise</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="wider_scan.html" target="_blank">Open ↗</a>
+      <span class="file-name">wider_scan.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 12</span>
+      <span class="card-title">Multi-Market Scan (SPY base)</span>
+    </div>
+    <div class="card-desc">SUSPENDED filter across traditional market ETFs with SPY as base.</div>
+    <div class="card-findings"><ul>
+      <li><strong>TLT 83%</strong> — bonds holding = risk-off resolving</li>
+      <li><strong>EWJ 83%</strong> — Japan bid = global stress not crash</li>
+      <li><strong>EEM 80%</strong> — EM bid = USD stress not recession</li>
+      <li>XLF 25% — actively harmful (banks up during dip = danger)</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="multi_market_scan.html" target="_blank">Open ↗</a>
+      <span class="file-name">multi_market_scan.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 13</span>
+      <span class="card-title">Deep Scan — Reversed + Stocks</span>
+    </div>
+    <div class="card-desc">Reversed chord configs, cross-pairs, high-beta stocks (NVDA, AMD, MSTR, TSLA).</div>
+    <div class="card-findings"><ul>
+      <li><strong>AMD SUSPENDED vs SPY: 77%, n=13</strong> — best stock signal</li>
+      <li><strong>NVDA: 73%, n=11</strong></li>
+      <li>DOMINANT reversed does NOT invert (44–50% on TRITONE)</li>
+      <li>Cross-pairs (ETH/SOL, SOL/DOT): all noise (33–50%)</li>
+      <li>Laws 25–29 documented: hierarchy law, asymmetry law, beta law</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="deep_scan.html" target="_blank">Open ↗</a>
+      <span class="file-name">deep_scan.html</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- PHASE 5b: EQUITIES SYNTHONIES -->
+<div class="section-head">Phase 5b — Equities Synthonies (S2 · S3)</div>
+<div class="cards">
+
+  <div class="card" data-cat="dashboard synthony">
+    <div class="card-header">
+      <span class="arc-badge ab-key" style="background:#001a20;color:#00bcd4;">Arc 42 · S2</span>
+      <span class="card-title">SPY × NVDA Synthony</span>
+    </div>
+    <div class="card-desc">SPY as anchor, NVDA as high-beta oscillator. Same 9-state chord framework. SUSPENDED = NVDA showing relative strength vs falling SPY.</div>
+    <div class="card-findings"><ul>
+      <li><strong>SPY = BTC analog</strong> — broad-market anchor, institutional baseline</li>
+      <li><strong>NVDA = SOL analog</strong> — high-beta, sentiment amplifier</li>
+      <li>SUSPENDED gate: SPY↓ NVDA↑ = NVDA entry signal</li>
+      <li>No Jupiter filter — equities Synthonies run gate-open on chord alone</li>
+      <li>Live on ◎ STOCKS tab at traderlive.viktim.xyz</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="https://traderlive.viktim.xyz" target="_blank">Live ↗</a>
+      <span class="file-name">W9_SPY_NVDA wallet · $150 start</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard synthony">
+    <div class="card-header">
+      <span class="arc-badge ab-key" style="background:#001a1a;color:#4db6ac;">Arc 42 · S3</span>
+      <span class="card-title">SPY × AMC Synthony</span>
+    </div>
+    <div class="card-desc">SPY as anchor, AMC as high-beta meme oscillator. Maximum beta amplification. SUSPENDED = AMC diverging upward against falling broad market.</div>
+    <div class="card-findings"><ul>
+      <li><strong>AMC = extreme beta</strong> — highest amplification, sharpest signal spikes</li>
+      <li>SUSPENDED chord in AMC Synthony = meme divergence signal</li>
+      <li>Same chord logic, higher volatility profile</li>
+      <li>Live on ◎ STOCKS tab at traderlive.viktim.xyz</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="https://traderlive.viktim.xyz" target="_blank">Live ↗</a>
+      <span class="file-name">W10_SPY_AMC wallet · $150 start</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- PHASE 5: ADVANCED THEORY -->
+<div class="section-head">Phase 5 — Advanced Theory</div>
+<div class="cards" id="cards-phase5">
+
+  <div class="card" data-cat="dashboard">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 14</span>
+      <span class="card-title">4D Back-Map Analysis</span>
+    </div>
+    <div class="card-desc">Test: is BTC a 1D projection of a 4D lunar orbit? FFT analysis, R² testing.</div>
+    <div class="card-findings"><ul>
+      <li>BTC alone: R²=0.5% (no lunar orbit)</li>
+      <li>BTC/SOL spread: R²=2.4% — spread autocorr=4w = lunar period</li>
+      <li><strong>Reformulated:</strong> the orbit IS the BTC/SOL relationship — chord framework is the back-map</li>
+      <li>SOL autocorr=5w = TAU; Spread autocorr=4w = lunar</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="backmap.html" target="_blank">Open ↗</a>
+      <span class="file-name">backmap.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard signal">
+    <div class="card-header">
+      <span class="arc-badge ab-key">Arc 15 ★</span>
+      <span class="card-title">Phase Estimator (0–360°)</span>
+    </div>
+    <div class="card-desc">Hilbert transform on bandpass-filtered SOL−BTC spread. Continuous orbit phase tracker.</div>
+    <div class="card-findings"><ul>
+      <li><strong>Key finding:</strong> 6/7 filter signals fire at phase ≈ 0° (corrected from 270°)</li>
+      <li>0° = spread zero-crossing upward = SOL just starting to lead</li>
+      <li>Phase ≈ 0° is a <em>necessary but not sufficient</em> condition for the filter</li>
+      <li>Current position: <strong>89.9°</strong> (TRITONE, no signal)</li>
+      <li>Phase as continuous pre-screener for the discrete filter rule</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="phase_estimator.html" target="_blank">Open ↗</a>
+      <span class="file-name">phase_estimator.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard signal">
+    <div class="card-header">
+      <span class="arc-badge ab-complete">Arc 16</span>
+      <span class="card-title">Convergence Backtest</span>
+    </div>
+    <div class="card-desc">Does multi-asset convergence amplify the SUSPENDED edge? Full backtest: crypto convergence (null result) vs macro convergence (independent, untestable in sandbox).</div>
+    <div class="card-findings"><ul>
+      <li><strong>Crypto convergence: NULL</strong> — 4/7 filter signals in conv weeks = 57% = exact baseline. BTC coupling makes all crypto convergence noise.</li>
+      <li><strong>Macro convergence: INDEPENDENT</strong> — top-4 macro conv weeks (wk 90,107,122,180) have zero overlap with 7 SUSPENDED filter dates. Different market states.</li>
+      <li><strong>Combination signal (Law 32 candidate)</strong> — when BOTH fire simultaneously: expect ≤1×/year, highest conviction scenario. Requires live macro data via signal_check.py.</li>
+      <li>SUSPENDED + conv avg +4.4% vs SUSPENDED + no-conv avg 0.0% — but effect is base rate, not convergence signal.</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="convergence_backtest.html" target="_blank">Open ↗</a>
+      <span class="file-name">convergence_backtest.html</span>
+    </div>
+  </div>
+
+  <div class="card" data-cat="dashboard signal">
+    <div class="card-header">
+      <span class="arc-badge ab-key">Arc 17 ★</span>
+      <span class="card-title">Live Multi-Market Monitor</span>
+    </div>
+    <div class="card-desc">Interactive monitor for all 6 tested markets simultaneously. Enter Monday closing prices → chord states auto-computed → multi-SUSPENDED alert fires when 2+ markets trigger.</div>
+    <div class="card-findings"><ul>
+      <li><strong>Markets:</strong> BTC/SOL (100% w/ filter), SPY/TLT (83%), SPY/EWJ (83%), SPY/EEM (80%), SPY/AMD (77%), SPY/NVDA (73%)</li>
+      <li>Multi-SUSPENDED alert banner when ≥2 markets in SUSPENDED simultaneously</li>
+      <li>Full historical win rate bars, avg return per market, filter logic for BTC/SOL</li>
+      <li>Demo data button shows 3-market SUSPENDED scenario</li>
+    </ul></div>
+    <div class="card-foot">
+      <a class="open-btn" href="multi_market_monitor.html" target="_blank">Open ↗</a>
+      <span class="file-name">multi_market_monitor.html</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- LAWS -->
+<div class="section-head">Core Laws Discovered (Selected)</div>
+<div class="laws-grid">
+
+  <div class="law-card">
+    <div class="law-num">Law 1 — Hierarchy</div>
+    <div class="law-title">Dominant leader required as base</div>
+    <div class="law-body">The signal requires a dominant market leader as base. BTC for crypto, SPY for equities. Without a genuine base asset, the chord framework degrades to noise.</div>
+    <div class="law-evidence">Evidence: Cross-pairs (ETH/SOL, SOL/DOT) all 33–50%</div>
+  </div>
+
+  <div class="law-card">
+    <div class="law-num">Law 2 — Asymmetry</div>
+    <div class="law-title">SUSPENDED is informative; DOMINANT is not</div>
+    <div class="law-body">Upward divergence (alt holds while base falls) is genuinely predictive. Downward divergence (alt falls while base rises) does NOT invert — it's structurally different information.</div>
+    <div class="law-evidence">Evidence: DOMINANT reversed gives 44–50% TRITONE prediction</div>
+  </div>
+
+  <div class="law-card">
+    <div class="law-num">Law 3 — Beta Amplification</div>
+    <div class="law-title">Edge scales with alt asset's beta to base</div>
+    <div class="law-body">SOL (highest beta) → +7.1% avg. TLT (low beta) → +1.2% avg. The chord framework is a volatility amplifier — position size and asset selection should account for beta.</div>
+    <div class="law-evidence">Evidence: Across all 25+ assets tested</div>
+  </div>
+
+  <div class="law-card">
+    <div class="law-num">Law 4 — Dying Asset</div>
+    <div class="law-title">Secular decline assets resolve SUSPENDED → TRITONE</div>
+    <div class="law-body">Assets in structural downtrend (ADA, DOT) use SUSPENDED as a brief pause before continued collapse. SUSPENDED is only a recovery signal for assets with an active bid.</div>
+    <div class="law-evidence">Evidence: ADA 0%, DOT 0%, avg −17%</div>
+  </div>
+
+  <div class="law-card">
+    <div class="law-num">Law 5 — Bear Regime Edge</div>
+    <div class="law-title">SUSPENDED in bear regime is more predictive than in bull</div>
+    <div class="law-body">Counter-intuitively, SOL price below 20-week SMA gives 78% MAJOR rate vs 33% in bull. When SOL is already cheap, a genuine divergence is more likely to resolve upward.</div>
+    <div class="law-evidence">Evidence: Arc 8 feature importance analysis</div>
+  </div>
+
+  <div class="law-card">
+    <div class="law-num">Law 6 — Phase Zero</div>
+    <div class="law-title">Filter fires at orbit phase ≈ 0° (zero crossing)</div>
+    <div class="law-body">The Hilbert phase of the bandpass-filtered SOL−BTC spread at filter signal times is ≈ 0° (6/7 cases within ±38°). The signal catches the exact moment SOL begins leading BTC, before the divergence is obvious in price.</div>
+    <div class="law-evidence">Evidence: Arc 15 phase estimator analysis</div>
+  </div>
+
+  <div class="law-card">
+    <div class="law-num">Law 7 — Orbit Identity</div>
+    <div class="law-title">The BTC/SOL relationship IS the 4D orbit</div>
+    <div class="law-body">Bitcoin alone is not a 1D projection of a lunar orbit (R²=0.5%). But the SOL−BTC spread autocorrelates at τ=4w (lunar period) and SOL alone at τ=5w (=TAU). The chord framework is already the back-map.</div>
+    <div class="law-evidence">Evidence: Arc 14 back-map analysis</div>
+  </div>
+
+  <div class="law-card">
+    <div class="law-num">Law 8 — Macro Convergence</div>
+    <div class="law-title">3+ macro assets crossing simultaneously = highest conviction</div>
+    <div class="law-body">Macro assets are genuinely independent (r=0.04–0.17). When 4–5 cross in the same week as BTC weekly crossing, it is a true multi-factor global risk-on signal. 4–6 such events per year.</div>
+    <div class="law-evidence">Evidence: Extended orchestra convergence analysis</div>
+  </div>
+
+  <div class="law-card">
+    <div class="law-num">Law 32 (candidate) — Macro Convergence Amplifier</div>
+    <div class="law-title">Crypto convergence is noise; macro convergence is signal</div>
+    <div class="law-body">Crypto 3+ chain convergence happens in 57% of all weeks (same as SUSPENDED filter overlap) — BTC coupling makes it uninformative. Macro assets (Gold, SPY, VIX, Crude, Bonds) are genuinely independent and their convergence events are structurally different from SUSPENDED filter events (zero historical overlap). The SUSPENDED filter + macro convergence simultaneously would be a max-conviction combo. Expected frequency: ≤1×/year. Requires live macro data to validate prospectively.</div>
+    <div class="law-evidence">Evidence: Arc 16 convergence backtest — n=7 filter signals, 4/7=57% crypto overlap = exact baseline</div>
+  </div>
+
+</div>
+
+<!-- AUDIO FILES -->
+<div class="section-head">Audio Exports</div>
+<div class="cards" id="cards-audio">
+  <div class="card" data-cat="audio">
+    <div class="card-header">
+      <span class="arc-badge ab-audio">Audio</span>
+      <span class="card-title">Tokenomics Orchestra</span>
+    </div>
+    <div class="card-desc">Full orchestra render — all chains as instruments. MP3 + WAV + MIDI.</div>
+    <div class="card-foot">
+      <audio controls style="width:100%;margin-top:4px;" src="tokenomics_orchestra.mp3"></audio>
+    </div>
+  </div>
+  <div class="card" data-cat="audio">
+    <div class="card-header">
+      <span class="arc-badge ab-audio">Audio</span>
+      <span class="card-title">Chain Lifecycle Renders</span>
+    </div>
+    <div class="card-desc">BTC, SOL, LTC, DOGE, XRP, AVAX — each chain's price history as audio.</div>
+    <div class="card-foot" style="flex-wrap:wrap;gap:6px;">
+      <audio controls style="width:100%;margin-top:4px;" src="chain_BTC_lifecycle.mp3"></audio>
+      <audio controls style="width:100%;margin-top:4px;" src="chain_SOL_lifecycle.mp3"></audio>
+    </div>
+  </div>
+</div>
+
+<!-- DATA FILES -->
+<div class="section-head">Data Files &amp; Scripts</div>
+<div class="cards" id="cards-data">
+
+  <div class="card" data-cat="data">
+    <div class="card-header"><span class="arc-badge ab-data">Data</span><span class="card-title">chord_sequence.json</span></div>
+    <div class="card-desc">259 weeks: date, BTC%, SOL%, chord state, filter signal boolean.</div>
+    <div class="card-foot"><span class="file-name">chord_sequence.json · 22KB</span></div>
+  </div>
+
+  <div class="card" data-cat="data">
+    <div class="card-header"><span class="arc-badge ab-data">Data</span><span class="card-title">filter_params.json</span></div>
+    <div class="card-desc">Filter parameters: thresholds, backtest stats, win rate, Sharpe, compound return.</div>
+    <div class="card-foot"><span class="file-name">filter_params.json · 0.3KB</span></div>
+  </div>
+
+  <div class="card" data-cat="data">
+    <div class="card-header"><span class="arc-badge ab-data">Data</span><span class="card-title">phase_complete.json</span></div>
+    <div class="card-desc">259 weeks with Hilbert phase (0–360°), amplitude, signal depth, chord, filter flag.</div>
+    <div class="card-foot"><span class="file-name">phase_complete.json · 53KB</span></div>
+  </div>
+
+  <div class="card" data-cat="data">
+    <div class="card-header"><span class="arc-badge ab-data">Data</span><span class="card-title">suspended_features.json</span></div>
+    <div class="card-desc">All 26 SUSPENDED bars with features: SOL%, RS4w, consec_neg_btc, exit chord, return.</div>
+    <div class="card-foot"><span class="file-name">suspended_features.json · 7KB</span></div>
+  </div>
+
+  <div class="card" data-cat="data script">
+    <div class="card-header"><span class="arc-badge ab-script">Script</span><span class="card-title">signal_check.py</span></div>
+    <div class="card-desc">Live Monday signal script. Run weekly. Fetches Yahoo Finance, applies filter, prints status.</div>
+    <div class="card-foot"><span class="file-name">signal_check.py · 11KB</span></div>
+  </div>
+
+  <div class="card" data-cat="data">
+    <div class="card-header"><span class="arc-badge ab-data">Docs</span><span class="card-title">crypto_orchestra_runbook.md</span></div>
+    <div class="card-desc">Operational runbook: how to run, interpret, and act on all signals.</div>
+    <div class="card-foot"><span class="file-name">crypto_orchestra_runbook.md · 7KB</span></div>
+  </div>
+
+</div>
+
+<!-- CURRENT STATUS -->
+<div class="section-head">Current Status — Jun 2026 · tCO v1.0</div>
+<div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:40px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div>
+      <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Signal Position</div>
+      <div style="font-size:18px;font-weight:700;color:var(--red);">NO SIGNAL</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">Chord: TRITONE (BTC−, SOL−)<br>Phase: 89.9° — spread past peak, fading<br>Last data: 2026-06-04</div>
+    </div>
+    <div>
+      <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Last Signal</div>
+      <div style="font-size:18px;font-weight:700;color:var(--green);">2026-02-12</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">Phase: 322.2° (≈0° entry zone)<br>Result: +7.7% SOL next week<br>7/7 signals resolved MAJOR</div>
+    </div>
+  </div>
+  <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);">
+    <strong style="color:var(--gold);">Next signal criteria:</strong> Look for SUSPENDED chord (BTC&lt;0 weekly, SOL&gt;0 weekly) + SOL&gt;3% + RS4w&lt;20%, OR 3 consecutive negative BTC weeks. Monitor phase approaching 0° with amplitude &gt; 3.
+  </div>
+</div>
+
+  <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+    <div style="font-size:11px;color:var(--muted);">
+      <strong style="color:var(--purple)">The Crypto Orchestra (tCO)</strong> · Synthonies v1.0 · 3 active Synthonies · <a href="https://traderlive.viktim.xyz" target="_blank" style="color:var(--blue);text-decoration:none;">traderlive.viktim.xyz ↗</a>
+    </div>
+    <div style="font-size:11px;color:var(--muted);">
+      <a href="https://github.com/FizzNetwork/the-crypto-orchestra" target="_blank" style="color:var(--muted);text-decoration:none;">github.com/FizzNetwork/the-crypto-orchestra ↗</a>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+function filterCards(cat){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.card').forEach(c=>{
+    if(cat==='all') c.style.display='';
+    else c.style.display=c.dataset.cat&&c.dataset.cat.includes(cat)?'':'none';
+  });
+}
+</script>
+</body>
+</html>
