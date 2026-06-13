@@ -703,6 +703,26 @@ function TabStocks({ nvdaChord, amcChord, stockKlines }) {
   )
 }
 
+// ── TAB HARMONIC STATION ──
+function TabHarmonicStation() {
+  return (
+    <div style={{width:'100%',height:'calc(100vh - 120px)',display:'flex',flexDirection:'column',overflow:'hidden'}}>
+      <iframe
+        src="/harmonic_station.html"
+        style={{
+          flex:1,
+          border:'none',
+          width:'100%',
+          height:'100%',
+          background:'#0a0a12',
+        }}
+        title="Harmonic Signal Station"
+        allow="autoplay"
+      />
+    </div>
+  )
+}
+
 // ── TAB PHASE ──
 const CHORD_COLORS = {
   MAJOR:      '#00ff88',
@@ -1141,6 +1161,7 @@ export default function TraderLive() {
     { id:'signals',    label:'⊕ SIGNALS' },
     { id:'macro',      label:'⊞ MACRO' },
     { id:'phase',      label:'◈ PHASE SIGNAL' },
+    { id:'harmonic',   label:'⟁ HARMONIC STATION' },
     { id:'stocks',     label:'◎ STOCKS' },
   ]
 
@@ -1224,6 +1245,7 @@ export default function TraderLive() {
         {tab==='signals'    && <TabSignals    data={data}/>}
         {tab==='macro'      && <TabMacro      data={data} resid={resid}/>}
         {tab==='phase'      && <TabPhase      chordState={chordState} soundOn={soundOn} setSoundOn={setSoundOn} audioCtxRef={audioCtxRef} activeTFs={activeTFs} setActiveTFs={setActiveTFs} flashTFs={flashTFs} primaryTF={primaryTF}/>}
+        {tab==='harmonic'   && <TabHarmonicStation/>}
         {tab==='stocks'     && <TabStocks     nvdaChord={nvdaChord} amcChord={amcChord} stockKlines={stockKlines}/>}
       </div>
 

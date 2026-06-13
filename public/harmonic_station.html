@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Harmonic Signal Station · HC6</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#04040e;color:#ccc;font-family:'Segoe UI',Arial,sans-serif;overflow-x:hidden;min-height:100vh;}
+#hdr{display:grid;grid-template-columns:1fr auto auto auto auto;align-items:center;gap:14px;
+  padding:9px 20px;background:rgba(2,2,12,0.99);border-bottom:1px solid #0ff2;position:sticky;top:0;z-index:100;}
+#hdr-title h1{font-size:11px;letter-spacing:4px;color:#0ff;text-transform:uppercase;margin-bottom:1px;}
+#hdr-title .phil{font-size:8px;color:#2a2a3a;letter-spacing:1px;line-height:1.5;}
+#cd-box{text-align:center;min-width:80px;}
+#cd-box .lbl{font-size:8px;letter-spacing:2px;color:#333;text-transform:uppercase;}
+#cd-val{font-size:24px;font-weight:700;color:#ff0;line-height:1;}
+#tf-box{display:flex;flex-direction:column;gap:4px;align-items:center;}
+#tf-box .lbl{font-size:8px;letter-spacing:2px;color:#333;text-transform:uppercase;}
+#tf-btns{display:flex;gap:3px;}
+.tf-btn{padding:4px 9px;background:#080818;border:1px solid #1a1a2a;color:#444;border-radius:4px;
+  cursor:pointer;font-size:10px;letter-spacing:1px;font-weight:700;transition:all 0.15s;}
+.tf-btn:hover{border-color:#555;color:#aaa;}
+.tf-btn.active{background:#0ff;color:#000;border-color:#0ff;}
+#dxy-box{text-align:center;}
+#dxy-box .lbl{font-size:8px;letter-spacing:2px;color:#333;text-transform:uppercase;margin-bottom:2px;}
+#ctrl-box{display:flex;flex-direction:column;gap:4px;align-items:flex-end;}
+#snd-btn{padding:7px 15px;border:1px solid #222;background:#0d0d0d;color:#555;border-radius:6px;
+  cursor:pointer;font-weight:700;font-size:10px;letter-spacing:1px;transition:all 0.2s;}
+#snd-btn.on{background:#0ff;color:#000;border-color:#0ff;}
+#snd-vol{display:flex;align-items:center;gap:6px;font-size:9px;color:#333;}
+#snd-vol input{width:60px;accent-color:#0ff;}
+#refresh-btn{background:transparent;border:1px solid #1a1a1a;color:#333;padding:3px 9px;
+  border-radius:4px;cursor:pointer;font-size:9px;}
+#refresh-btn:hover{border-color:#0ff;color:#0ff;}
+#last-upd{font-size:8px;color:#202020;}
+#snd-status{font-size:8px;color:#0ff5;height:12px;min-width:160px;text-align:right;}
+#main{display:grid;grid-template-columns:1fr 340px;gap:10px;padding:10px 20px;height:490px;}
+#eye-wrap{position:relative;background:#03030d;border:1px solid #0ff1;border-radius:12px;overflow:hidden;}
+#eye-canvas{width:100%;height:100%;cursor:default;}
+#eye-hint{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);
+  font-size:8px;color:#0ff2;letter-spacing:2px;pointer-events:none;white-space:nowrap;}
+#tf-overlay{position:absolute;top:7px;right:10px;font-size:18px;font-weight:700;
+  color:#0ff15;letter-spacing:2px;pointer-events:none;}
+#eye-legend{position:absolute;top:7px;left:9px;display:flex;flex-direction:column;gap:2px;}
+.leg-item{font-size:8px;display:flex;align-items:center;gap:4px;color:#444;}
+.leg-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+#r-col{display:flex;flex-direction:column;gap:9px;}
+#fp-wrap{flex:1;background:#03030d;border:1px solid #ffd70015;border-radius:12px;position:relative;overflow:hidden;}
+#fp-lbl{position:absolute;top:6px;left:9px;font-size:8px;color:#ffd70033;letter-spacing:2px;}
+#fp-svg{width:100%;height:100%;}
+#hc-panel{background:#03030d;border:1px solid #f0f1;border-radius:12px;padding:11px;}
+#hc-panel h3{font-size:8px;letter-spacing:3px;color:#f0f;margin-bottom:7px;text-transform:uppercase;}
+.phase-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:9px;}
+.ph-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:#1a1a1a;}
+#flow-legend{position:absolute;bottom:20px;left:9px;display:flex;flex-direction:column;gap:2px;}
+.fl-item{font-size:8px;display:flex;align-items:center;gap:5px;color:#333;}
+.fl-line{width:16px;height:2px;border-radius:1px;}
+#node-panel{position:fixed;right:-360px;top:55px;width:340px;
+  background:rgba(3,3,18,0.99);border:1px solid #333;border-right:none;
+  border-radius:12px 0 0 12px;padding:16px;z-index:300;
+  transition:right 0.25s cubic-bezier(0.4,0,0.2,1);box-shadow:-4px 0 24px rgba(0,0,0,0.8);}
+#node-panel.open{right:0;}
+#node-panel .np-sec{font-size:8px;letter-spacing:3px;text-transform:uppercase;opacity:0.5;margin-bottom:4px;}
+#node-panel .np-tick{font-size:24px;font-weight:700;margin-bottom:1px;}
+#node-panel .np-name{font-size:10px;color:#555;margin-bottom:10px;}
+.np-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11px;}
+.np-row .lbl{color:#333;font-size:9px;}.np-val{font-size:13px;font-weight:600;}
+#np-bar-wrap{height:3px;background:#0a0a0a;border-radius:2px;margin:7px 0 4px;overflow:hidden;}
+#np-bar{height:100%;border-radius:2px;transition:width 0.4s;width:0%;}
+#np-bar-pct{font-size:9px;color:#444;margin-bottom:9px;}
+#np-play-btn{width:100%;padding:8px;background:transparent;border-radius:6px;
+  cursor:pointer;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:all 0.2s;}
+#np-play-btn:hover{filter:brightness(1.4);}
+#np-role{font-size:9px;color:#555;padding:7px;background:#07071a;border-radius:5px;margin-bottom:9px;line-height:1.5;}
+#np-close{position:absolute;top:11px;right:11px;background:#0d0d0d;border:1px solid #1a1a1a;
+  color:#444;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:9px;}
+#np-close:hover{color:#aaa;}
+.div{height:1px;background:#0a0a0a;margin:6px 0;}
+#orch{padding:0 20px 10px;}
+.orch-grid{display:grid;gap:8px;margin-bottom:8px;}
+.orch-4{grid-template-columns:repeat(4,1fr);}
+.orch-6{grid-template-columns:repeat(6,1fr);}
+.s-block{background:#030313;border-radius:8px;padding:9px;border-top:2px solid;}
+.s-block.prc{border-color:#ffffff44;}.s-block.str{border-color:#ffd70044;}
+.s-block.wwd{border-color:#00ffff44;}.s-block.brs{border-color:#ff8c0044;}
+.s-block.ctn{border-color:#9977dd44;}
+.s-hdr{font-size:7px;letter-spacing:3px;text-transform:uppercase;opacity:0.4;margin-bottom:7px;}
+.s-block.prc .s-hdr{color:#fff;}.s-block.str .s-hdr{color:#ffd700;}
+.s-block.wwd .s-hdr{color:#0ff;}.s-block.brs .s-hdr{color:#ff8c00;}
+.s-block.ctn .s-hdr{color:#9977dd;}
+.inst{padding:6px;background:rgba(0,0,0,0.3);border-radius:4px;margin-bottom:4px;
+  cursor:pointer;transition:background 0.1s;border:1px solid transparent;}
+.inst:last-child{margin-bottom:0;}
+.inst:hover{background:rgba(255,255,255,0.02);border-color:#ffffff09;}
+.inst.selected{border-color:currentColor;background:rgba(255,255,255,0.03);}
+.irow1{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;}
+.i-lbl{font-size:11px;font-weight:700;}.i-price{font-size:11px;}
+.irow2{display:flex;justify-content:space-between;}
+.i-chg{font-size:9px;}.i-chg.pos{color:#00cc44;}.i-chg.neg{color:#ff3344;}.i-chg.flat{color:#333;}
+.i-k{font-size:8px;color:#222;}
+.i-bar-wrap{height:2px;background:#080808;border-radius:1px;margin-top:2px;overflow:hidden;}
+.i-bar{height:100%;border-radius:1px;transition:width 0.5s;}
+.inst input[type=number]{background:#000;border:1px solid #111;color:#666;padding:2px 4px;
+  border-radius:3px;font-size:9px;width:100%;margin-top:3px;font-family:inherit;}
+.inst input:focus{outline:none;border-color:#0ff3;}
+#mem-wrap{padding:0 20px 18px;}
+#mem-wrap h3{font-size:7px;letter-spacing:3px;color:#ffd700;margin-bottom:9px;text-transform:uppercase;}
+#mem-row{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;}
+.mem-card{background:#030313;border:1px solid #ffd70015;border-radius:7px;padding:9px;
+  cursor:pointer;text-align:center;transition:all 0.15s;}
+.mem-card:hover{border-color:#ffd70044;background:#09091e;}
+.mem-card.live{border-color:#f0f3;box-shadow:0 0 16px rgba(255,0,255,0.06);}
+.mc-id{font-size:14px;font-weight:700;color:#ffd700;}
+.mc-date{font-size:8px;color:#333;margin:2px 0;}
+.mc-regime{font-size:8px;padding:2px 5px;border-radius:3px;display:inline-block;margin:2px 0;}
+.mc-regime.bull{background:rgba(0,180,60,0.08);color:#00aa44;}
+.mc-regime.live{background:rgba(255,0,255,0.08);color:#f0f;}
+.mc-k{font-size:9px;color:#444;}
+#mem-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:400;
+  align-items:center;justify-content:center;}
+#mem-ov.show{display:flex;}
+#mem-box{background:#05051e;border:1px solid #ffd700;border-radius:12px;padding:22px;
+  min-width:300px;max-width:440px;position:relative;}
+#mem-box h4{color:#ffd700;margin-bottom:11px;font-size:14px;}
+#mem-box table{width:100%;border-collapse:collapse;font-size:10px;}
+#mem-box td{padding:4px 6px;border-bottom:1px solid #0a0a0a;}
+#mem-box td:first-child{color:#333;}
+.ov-close{position:absolute;top:11px;right:11px;background:#0d0d0d;border:1px solid #1a1a1a;
+  color:#444;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:9px;}
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <div id="hdr-title">
+    <h1>Harmonic Signal Station · HC6</h1>
+    <div class="phil">1(3)↓Coherence↓1UP · Unity → Distinction → Relationship → Movement → Coherence / Dissonance → Structure → New Distinctions</div>
+  </div>
+  <div id="cd-box">
+    <div class="lbl">HC6 Fires</div>
+    <div id="cd-val">—</div>
+    <div style="font-size:8px;color:#333">Jun 18 2026</div>
+  </div>
+  <div id="tf-box">
+    <div class="lbl">Timeframe</div>
+    <div id="tf-btns">
+      <button class="tf-btn" onclick="setTF('1H',this)">1H</button>
+      <button class="tf-btn" onclick="setTF('4H',this)">4H</button>
+      <button class="tf-btn active" onclick="setTF('1D',this)">1D</button>
+      <button class="tf-btn" onclick="setTF('1W',this)">1W</button>
+    </div>
+  </div>
+  <div id="dxy-box">
+    <div class="lbl">DXY Pressure</div>
+    <svg id="dxy-svg" width="96" height="58" viewBox="0 0 96 58">
+      <path d="M7,53 A40,40 0 0,1 89,53" fill="none" stroke="#0a0a18" stroke-width="7" stroke-linecap="round"/>
+      <path id="dxy-arc" d="M7,53 A40,40 0 0,1 89,53" fill="none" stroke="#0ff" stroke-width="7"
+        stroke-linecap="round" stroke-dasharray="140" stroke-dashoffset="70"/>
+      <text id="dxy-label" x="48" y="50" text-anchor="middle" font-size="11" fill="#0ff" font-weight="700">—</text>
+    </svg>
+    <div style="font-size:7px;color:#222;text-align:center">99.5 run · 100.5 abort</div>
+  </div>
+  <div id="ctrl-box">
+    <button id="snd-btn" onclick="toggleSound()">♪ Sound OFF</button>
+    <div id="snd-vol">Vol <input type="range" id="vol-slider" min="0" max="100" value="75" oninput="setVol(this.value)"/></div>
+    <div id="snd-status">—</div>
+    <button id="refresh-btn" onclick="fetchAll()">↻ Refresh</button>
+    <div id="last-upd">—</div>
+  </div>
+</div>
+
+<div id="node-panel">
+  <button id="np-close" onclick="closeNodePanel()">✕</button>
+  <div id="np-sec" class="np-sec">—</div>
+  <div id="np-tick" class="np-tick">—</div>
+  <div id="np-name" class="np-name">—</div>
+  <div id="np-role" class="np-role">—</div>
+  <div class="np-row"><span class="lbl">Price</span><span id="np-price" class="np-val">—</span></div>
+  <div class="np-row"><span class="lbl">24h Change</span><span id="np-chg" class="np-val">—</span></div>
+  <div class="np-row"><span class="lbl">K Constant</span><span id="np-k" class="np-val">—</span></div>
+  <div class="np-row"><span class="lbl">Frequency · Note</span><span id="np-freq" class="np-val">—</span></div>
+  <div class="np-row"><span class="lbl">HC Week</span><span id="np-week" class="np-val">—</span></div>
+  <div class="div"></div>
+  <div style="font-size:8px;color:#222;margin-bottom:3px">DISCHARGE → K-TARGET</div>
+  <div id="np-bar-wrap"><div id="np-bar"></div></div>
+  <div id="np-bar-pct">—</div>
+  <button id="np-play-btn" onclick="playSelected()">♪ Play Tone</button>
+  <div style="font-size:8px;color:#1a1a1a;margin-top:7px">Right-click card → set baseline · system tracks K-target</div>
+</div>
+
+<div id="main">
+  <div id="eye-wrap">
+    <canvas id="eye-canvas"></canvas>
+    <div id="eye-legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#fff4"></div>Percussion (inner · fast orbit)</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ffd70044"></div>Strings</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#0ff4"></div>Woodwinds</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ff8c0044"></div>Brass</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#9977dd44"></div>Continuo (outer · slow)</div>
+    </div>
+    <div id="flow-legend">
+      <div class="fl-item"><div class="fl-line" style="background:#00cc44"></div>Both +ve</div>
+      <div class="fl-item"><div class="fl-line" style="background:#ff3344"></div>Both −ve</div>
+      <div class="fl-item"><div class="fl-line" style="background:#ff8800"></div>Diverging</div>
+      <div class="fl-item"><div class="fl-line" style="background:#3388ff"></div>Neutral</div>
+    </div>
+    <div id="tf-overlay">1D</div>
+    <div id="eye-hint">click node · right-click to set baseline · HC6 centre for archive</div>
+  </div>
+  <div id="r-col">
+    <div id="fp-wrap">
+      <div id="fp-lbl">Harmonic Fingerprint</div>
+      <svg id="fp-svg" viewBox="0 0 360 360"></svg>
+    </div>
+    <div id="hc-panel">
+      <h3>HC6 Phase Status</h3>
+      <div class="phase-row"><div class="ph-dot" id="pd-dxy"></div><span id="ps-dxy">DXY: enter value →</span></div>
+      <div class="phase-row"><div class="ph-dot" id="pd-btcd"></div><span id="ps-btcd">BTC.D: enter value →</span></div>
+      <div class="phase-row"><div class="ph-dot" id="pd-usdtd"></div><span id="ps-usdtd">USDT.D: enter value →</span></div>
+      <div class="div"></div>
+      <div style="font-size:8px;color:#1a1a1a">τ recharge: <span style="color:#2a2a2a">168d from Feb 26 2025</span></div>
+      <div style="font-size:8px;color:#1a1a1a;margin-top:3px">Sound triggers: <span style="color:#2a2a2a">24h Δ threshold + discharge arcs</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="orch">
+  <div class="orch-grid orch-4">
+    <div class="s-block prc">
+      <div class="s-hdr">Percussion — Conductors</div>
+      <div id="c-dxy" class="inst" onclick="selectInst('dxy')" oncontextmenu="setBaseline('dxy',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#fff">DXY</span><span class="i-price" id="p-dxy">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-dxy">Key signal</span><span class="i-k">Conductor</span></div>
+        <input type="number" step="0.001" placeholder="e.g. 99.845" oninput="setManual('dxy',this.value)"/>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-dxy" style="background:#fff"></div></div>
+      </div>
+      <div id="c-usdtd" class="inst" onclick="selectInst('usdtd')" oncontextmenu="setBaseline('usdtd',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#ccc">USDT.D</span><span class="i-price" id="p-usdtd">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-usdtd">Pressure</span><span class="i-k">Tempo</span></div>
+        <input type="number" step="0.01" placeholder="%" oninput="setManual('usdtd',this.value)"/>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-usdtd" style="background:#ccc"></div></div>
+      </div>
+      <div id="c-btcd" class="inst" onclick="selectInst('btcd')" oncontextmenu="setBaseline('btcd',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#888">BTC.D</span><span class="i-price" id="p-btcd">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-btcd">r=−0.979</span><span class="i-k">Speed mod</span></div>
+        <input type="number" step="0.01" placeholder="%" oninput="setManual('btcd',this.value)"/>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-btcd" style="background:#888"></div></div>
+      </div>
+      <div id="c-vix" class="inst" onclick="selectInst('vix')" oncontextmenu="setBaseline('vix',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#ff6666">VIX</span><span class="i-price" id="p-vix">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-vix">Tension</span><span class="i-k">Resolve↓</span></div>
+        <input type="number" step="0.1" placeholder="VIX" oninput="setManual('vix',this.value)"/>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-vix" style="background:#ff6666"></div></div>
+      </div>
+    </div>
+    <div class="s-block str">
+      <div class="s-hdr">Strings — Foundation Chord</div>
+      <div id="c-btc" class="inst" onclick="selectInst('btc')" oncontextmenu="setBaseline('btc',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#ffd700">BTC</span><span class="i-price" id="p-btc">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-btc">—</span><span class="i-k">K=2.618 (φ²) · Wk2</span></div>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-btc" style="background:#ffd700"></div></div>
+      </div>
+      <div id="c-eth" class="inst" onclick="selectInst('eth')" oncontextmenu="setBaseline('eth',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#ffd700">ETH</span><span class="i-price" id="p-eth">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-eth">—</span><span class="i-k">K=2.0 · Wk2</span></div>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-eth" style="background:#ffd700"></div></div>
+      </div>
+      <div id="c-bnb" class="inst" onclick="selectInst('bnb')" oncontextmenu="setBaseline('bnb',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#ffd700">BNB</span><span class="i-price" id="p-bnb">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-bnb">—</span><span class="i-k">K=2.0 · Wk2</span></div>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-bnb" style="background:#ffd700"></div></div>
+      </div>
+    </div>
+    <div class="s-block wwd">
+      <div class="s-hdr">Woodwinds — Lead Melody</div>
+      <div id="c-sol" class="inst" onclick="selectInst('sol')" oncontextmenu="setBaseline('sol',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#0ff">SOL</span><span class="i-price" id="p-sol">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-sol">—</span><span class="i-k">K=3.8 · Wk1 🎵</span></div>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-sol" style="background:#0ff"></div></div>
+      </div>
+      <div id="c-avax" class="inst" onclick="selectInst('avax')" oncontextmenu="setBaseline('avax',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#0ff">AVAX</span><span class="i-price" id="p-avax">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-avax">—</span><span class="i-k">K=3.0 · Wk1</span></div>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-avax" style="background:#0ff"></div></div>
+      </div>
+      <div id="c-matic" class="inst" onclick="selectInst('matic')" oncontextmenu="setBaseline('matic',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#0ff">MATIC</span><span class="i-price" id="p-matic">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-matic">—</span><span class="i-k">K=3.5 · Wk2</span></div>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-matic" style="background:#0ff"></div></div>
+      </div>
+      <div id="c-link" class="inst" onclick="selectInst('link')" oncontextmenu="setBaseline('link',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#0ff">LINK</span><span class="i-price" id="p-link">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-link">—</span><span class="i-k">K=3.0 · Wk2</span></div>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-link" style="background:#0ff"></div></div>
+      </div>
+    </div>
+    <div class="s-block brs">
+      <div class="s-hdr">Brass — Power / Delay</div>
+      <div id="c-xrp" class="inst" onclick="selectInst('xrp')" oncontextmenu="setBaseline('xrp',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#ff8c00">XRP</span><span class="i-price" id="p-xrp">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-xrp">—</span><span class="i-k">K=4.0 · Wk3</span></div>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-xrp" style="background:#ff8c00"></div></div>
+      </div>
+      <div id="c-ada" class="inst" onclick="selectInst('ada')" oncontextmenu="setBaseline('ada',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#ff8c00">ADA</span><span class="i-price" id="p-ada">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-ada">—</span><span class="i-k">K=2.5 · Wk3</span></div>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-ada" style="background:#ff8c00"></div></div>
+      </div>
+      <div id="c-dot" class="inst" onclick="selectInst('dot')" oncontextmenu="setBaseline('dot',event)">
+        <div class="irow1"><span class="i-lbl" style="color:#ff8c00">DOT</span><span class="i-price" id="p-dot">—</span></div>
+        <div class="irow2"><span class="i-chg flat" id="ch-dot">—</span><span class="i-k">K=2.5 · Wk4</span></div>
+        <div class="i-bar-wrap"><div class="i-bar" id="b-dot" style="background:#ff8c00"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="orch-grid">
+    <div class="s-block ctn" style="grid-column:1/-1">
+      <div class="s-hdr">Continuo — Macro Ground / Regime Bass</div>
+      <div class="orch-grid orch-6">
+        <div id="c-gold" class="inst" onclick="selectInst('gold')" oncontextmenu="setBaseline('gold',event)">
+          <div class="irow1"><span class="i-lbl" style="color:#9977dd">GOLD</span><span class="i-price" id="p-gold">—</span></div>
+          <div class="irow2"><span class="i-chg flat" id="ch-gold">—</span><span class="i-k">K=1.3 · Wk3</span></div>
+          <input type="number" step="1" placeholder="XAU/USD" oninput="setManual('gold',this.value)"/>
+          <div class="i-bar-wrap"><div class="i-bar" id="b-gold" style="background:#9977dd"></div></div>
+        </div>
+        <div id="c-silver" class="inst" onclick="selectInst('silver')" oncontextmenu="setBaseline('silver',event)">
+          <div class="irow1"><span class="i-lbl" style="color:#9977dd">SILVER</span><span class="i-price" id="p-silver">—</span></div>
+          <div class="irow2"><span class="i-chg flat" id="ch-silver">—</span><span class="i-k">K=1.8 · Wk3</span></div>
+          <input type="number" step="0.1" placeholder="XAG/USD" oninput="setManual('silver',this.value)"/>
+          <div class="i-bar-wrap"><div class="i-bar" id="b-silver" style="background:#9977dd"></div></div>
+        </div>
+        <div id="c-qqq" class="inst" onclick="selectInst('qqq')" oncontextmenu="setBaseline('qqq',event)">
+          <div class="irow1"><span class="i-lbl" style="color:#9977dd">QQQ</span><span class="i-price" id="p-qqq">—</span></div>
+          <div class="irow2"><span class="i-chg flat" id="ch-qqq">—</span><span class="i-k">K=1.2 · Wk4</span></div>
+          <input type="number" step="0.1" placeholder="QQQ" oninput="setManual('qqq',this.value)"/>
+          <div class="i-bar-wrap"><div class="i-bar" id="b-qqq" style="background:#9977dd"></div></div>
+        </div>
+        <div id="c-spy" class="inst" onclick="selectInst('spy')" oncontextmenu="setBaseline('spy',event)">
+          <div class="irow1"><span class="i-lbl" style="color:#9977dd">SPY</span><span class="i-price" id="p-spy">—</span></div>
+          <div class="irow2"><span class="i-chg flat" id="ch-spy">—</span><span class="i-k">K=1.1 · Wk4</span></div>
+          <input type="number" step="0.1" placeholder="SPY" oninput="setManual('spy',this.value)"/>
+          <div class="i-bar-wrap"><div class="i-bar" id="b-spy" style="background:#9977dd"></div></div>
+        </div>
+        <div id="c-tlt" class="inst" onclick="selectInst('tlt')" oncontextmenu="setBaseline('tlt',event)">
+          <div class="irow1"><span class="i-lbl" style="color:#9977dd">TLT</span><span class="i-price" id="p-tlt">—</span></div>
+          <div class="irow2"><span class="i-chg flat" id="ch-tlt">—</span><span class="i-k">Bonds</span></div>
+          <input type="number" step="0.1" placeholder="TLT" oninput="setManual('tlt',this.value)"/>
+          <div class="i-bar-wrap"><div class="i-bar" id="b-tlt" style="background:#9977dd"></div></div>
+        </div>
+        <div id="c-hyg" class="inst" onclick="selectInst('hyg')" oncontextmenu="setBaseline('hyg',event)">
+          <div class="irow1"><span class="i-lbl" style="color:#9977dd">HYG</span><span class="i-price" id="p-hyg">—</span></div>
+          <div class="irow2"><span class="i-chg flat" id="ch-hyg">—</span><span class="i-k">Risk appetite</span></div>
+          <input type="number" step="0.1" placeholder="HYG" oninput="setManual('hyg',this.value)"/>
+          <div class="i-bar-wrap"><div class="i-bar" id="b-hyg" style="background:#9977dd"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="mem-wrap">
+  <h3>Memory Stack — HC Event Archive</h3>
+  <div id="mem-row"></div>
+</div>
+
+<div id="mem-ov" onclick="if(event.target===this)closeMem()">
+  <div id="mem-box">
+    <button class="ov-close" onclick="closeMem()">✕</button>
+    <h4 id="md-title">—</h4>
+    <table id="md-table"></table>
+  </div>
+</div>
+
+<script>
+// ─── WHAT MAKES THIS MODEL SOUND ─────────────────────────────
+//
+// TraderLive fires on candle print.
+// This model fires on COHERENCE DETECTION — the HC model's equivalent.
+// Every 60s price refresh = the "candle". The sound IS the data.
+//
+//  The 1UP ladder — each step has a distinct sound:
+//
+//  UNITY        → silence (flat market, nothing to say)
+//  DISTINCTION  → one asset crosses ±0.28% → single bell-tone
+//  RELATIONSHIP → two assets active → staggered interval (160ms gap)
+//  MOVEMENT     → 3–4 assets active, no clear direction yet → cluster
+//  COHERENCE    → 3+ assets aligned, same direction
+//                 → ascending chord, bass→treble (C major rising)
+//                 → this is the HC convergence building
+//  DISSONANCE   → 3+ assets but split +/- → descending cluster
+//                 → treble→bass (inverted order = tension)
+//                 → softer gain — tension, not alarm
+//  STRUCTURE    → baselines set + K-arcs active + coherence present
+//                 → the K-framework is carrying the price
+//  NEW DISTINCT → outlier instrument (highest K × move) replays as lead voice
+//                 → SOL leads Wk1, XRP leads Wk3, etc.
+//  1UP FIRE     → 5+ aligned + DXY < 99.5 → φ-ratio chord (C4·C4φ·C4φ²)
+//
+//  TF = note duration only (1H=0.7s · 4H=1.8s · 1D=4.0s · 1W=8.5s)
+//  Gain = |24h Δ| / 10 + discharge progress (data-proportional volume)
+//  Note order = bass-first for coherence, treble-first for dissonance
+//
+// ─────────────────────────────────────────────────────────────
+
+const HC6_DATE = new Date('2026-06-18T00:00:00');
+
+// TF = note duration + animation speed only. NO pitch shift.
+const TF_CONFIG = {
+  '1H': {noteDur:0.7,  speed:3.5, pulseRate:0.055,breatheScale:0.55,dashSpeed:0.45,
+          ringSpeed:[0.007,0.004,0.0022], label:'1H'},
+  '4H': {noteDur:1.8,  speed:1.8, pulseRate:0.022,breatheScale:0.42,dashSpeed:0.18,
+          ringSpeed:[0.003,0.0018,0.001], label:'4H'},
+  '1D': {noteDur:4.0,  speed:1.0, pulseRate:0.011,breatheScale:0.30,dashSpeed:0.07,
+          ringSpeed:[0.0013,0.0008,0.00045], label:'1D'},
+  '1W': {noteDur:8.5,  speed:0.25,pulseRate:0.003,breatheScale:0.16,dashSpeed:0.016,
+          ringSpeed:[0.0003,0.00017,0.0001], label:'1W'},
+};
+let currentTF='1D';
+
+const INSTRUMENTS=[
+  {id:'dxy',   label:'DXY',   full:'US Dollar Index',          section:'percussion',color:'#ffffff',K:null, week:null,cgId:null,manual:true},
+  {id:'usdtd', label:'USDT.D',full:'Tether Dominance %',       section:'percussion',color:'#cccccc',K:null, week:null,cgId:null,manual:true},
+  {id:'btcd',  label:'BTC.D', full:'Bitcoin Dominance %',      section:'percussion',color:'#888888',K:null, week:null,cgId:null,manual:true},
+  {id:'vix',   label:'VIX',   full:'Volatility Index',         section:'percussion',color:'#ff6666',K:null, week:null,cgId:null,manual:true},
+  {id:'btc',   label:'BTC',   full:'Bitcoin',                  section:'strings',   color:'#ffd700',K:2.618,week:2,  cgId:'bitcoin'},
+  {id:'eth',   label:'ETH',   full:'Ethereum',                 section:'strings',   color:'#ffd700',K:2.0,  week:2,  cgId:'ethereum'},
+  {id:'bnb',   label:'BNB',   full:'BNB Chain',                section:'strings',   color:'#ffd700',K:2.0,  week:2,  cgId:'binancecoin'},
+  {id:'sol',   label:'SOL',   full:'Solana',                   section:'woodwinds', color:'#00ffff',K:3.8,  week:1,  cgId:'solana'},
+  {id:'avax',  label:'AVAX',  full:'Avalanche',                section:'woodwinds', color:'#00ffff',K:3.0,  week:1,  cgId:'avalanche-2'},
+  {id:'matic', label:'MATIC', full:'Polygon',                  section:'woodwinds', color:'#00ffff',K:3.5,  week:2,  cgId:'matic-network'},
+  {id:'link',  label:'LINK',  full:'Chainlink',                section:'woodwinds', color:'#00ffff',K:3.0,  week:2,  cgId:'chainlink'},
+  {id:'xrp',   label:'XRP',   full:'Ripple',                   section:'brass',     color:'#ff8c00',K:4.0,  week:3,  cgId:'ripple'},
+  {id:'ada',   label:'ADA',   full:'Cardano',                  section:'brass',     color:'#ff8c00',K:2.5,  week:3,  cgId:'cardano'},
+  {id:'dot',   label:'DOT',   full:'Polkadot',                 section:'brass',     color:'#ff8c00',K:2.5,  week:4,  cgId:'polkadot'},
+  {id:'gold',  label:'GOLD',  full:'Gold XAU/USD',             section:'continuo',  color:'#9977dd',K:1.3,  week:3,  cgId:null,manual:true},
+  {id:'silver',label:'SILVER',full:'Silver XAG/USD',           section:'continuo',  color:'#9977dd',K:1.8,  week:3,  cgId:null,manual:true},
+  {id:'qqq',   label:'QQQ',   full:'Nasdaq 100 ETF',           section:'continuo',  color:'#9977dd',K:1.2,  week:4,  cgId:null,manual:true},
+  {id:'spy',   label:'SPY',   full:'S&P 500 ETF',              section:'continuo',  color:'#9977dd',K:1.1,  week:4,  cgId:null,manual:true},
+  {id:'tlt',   label:'TLT',   full:'20yr Treasury Bond',       section:'continuo',  color:'#9977dd',K:null, week:null,cgId:null,manual:true},
+  {id:'hyg',   label:'HYG',   full:'High Yield Corp Bond',     section:'continuo',  color:'#9977dd',K:null, week:null,cgId:null,manual:true},
+];
+
+// Natural harmonic tuning — A1=55Hz, C major from bass (A1) to soprano (C6)
+const INST_FREQ={
+  gold:55.00, tlt:73.42, silver:65.41, hyg:98.00, qqq:82.41, spy:87.31,
+  xrp:146.83, ada:174.61, dot:196.00,
+  btc:261.63, eth:329.63, bnb:392.00,
+  sol:523.25, avax:659.26, matic:783.99, link:1046.50,
+  dxy:65.41, usdtd:130.81, btcd:98.00, vix:440.00,
+};
+const INST_NOTE={
+  btc:'C4',eth:'E4',bnb:'G4',sol:'C5',avax:'E5',matic:'G5',link:'C6',
+  xrp:'D3',ada:'F3',dot:'G3',gold:'A1',silver:'C2',tlt:'D2',qqq:'E2',
+  hyg:'G2',spy:'F2',dxy:'C2',usdtd:'C3',btcd:'G2',vix:'A4',
+};
+const INST_ROLE={
+  dxy:  'The conductor. Below 99.5 = full run. Above 100.5 = abort metals.',
+  usdtd:'Pressure vessel. Rising = fear/parking. Falling = capital deploying into alts.',
+  btcd: 'Speed modulator. r=−0.979. Falling = woodwinds lead.',
+  vix:  'Tension string. Resolves into rally when it drops from spike.',
+  btc:  'Root note. Foundation chord. K=2.618=φ². Week 2.',
+  eth:  'Major third above BTC. Slight delay. K=2.0.',
+  bnb:  'Perfect fifth. Tracks ETH closely.',
+  sol:  'Lead melody. Highest K=3.8. Fires Week 1. The canary.',
+  avax: 'Counter-melody. Fast responder. K=3.0 Wk1.',
+  matic:'Layer-2 signal. Ethereum ecosystem health. K=3.5 Wk2.',
+  link: 'Oracle signal. Leads before alt season. K=3.0 Wk2.',
+  xrp:  'Power brass. K=4.0. Fires Week 3 with maximum force.',
+  ada:  'Delayed power. Week 3. K=2.5.',
+  dot:  'Deep brass. Week 4 — last major signal. K=2.5.',
+  gold: 'Macro bass. DXY inverse. Fear/inflation hedge. K=1.3.',
+  silver:'Amplified gold. More volatile. K=1.8.',
+  qqq:  'Tech equity regime. K=1.2.',
+  spy:  'Broad macro baseline. K=1.1.',
+  tlt:  'Treasury pressure. Rising = rate fears.',
+  hyg:  'Credit spread. Strong = risk appetite.',
+};
+
+const HC_MEMORY=[
+  {id:'HC1',date:'Apr 2021',regime:'BULL',btcK:2.1,solK:4.2,ethK:1.9,xrpK:3.8,baseBTC:50000,note:'First harmonic window. BTC +110% from base.'},
+  {id:'HC2',date:'Nov 2021',regime:'BULL',btcK:1.8,solK:3.8,ethK:2.1,xrpK:2.9,baseBTC:60000,note:'ATH cycle. XRP Wk3 delay confirmed.'},
+  {id:'HC3',date:'Mar 2024',regime:'BULL',btcK:2.2,solK:3.5,ethK:1.8,xrpK:3.1,baseBTC:65000,note:'Post-halving. τ=168d first formal observation.'},
+  {id:'HC4',date:'Nov 2024',regime:'BULL',btcK:2.6,solK:4.1,ethK:2.0,xrpK:4.2,baseBTC:68000,note:'Election cycle. XRP Wk3 blowout +420%.'},
+  {id:'HC5',date:'Jan 2025',regime:'BULL',btcK:1.9,solK:3.2,ethK:1.7,xrpK:3.0,baseBTC:95000,note:'τ=168d confirmed. BTC.D r=−0.979 locked.'},
+  {id:'HC6',date:'Jun 18 2026',regime:'LIVE',btcK:2.618,solK:3.8,ethK:2.0,xrpK:4.0,baseBTC:null,live:true,note:'Loading. φ² BTC target. SOL leads Wk1.'},
+];
+
+// ─── STATE ───────────────────────────────────────────────────
+let prices={}, manualVals={}, baselines={}, selectedId=null;
+let eyeNodes=[], eyeConns=[], eyePulse=0, rafId=null;
+let ringAngles=[0,0,0], eyeRadii=[], eyeCX=0, eyeCY=0;
+let ripples=[], dashOffset=0;
+
+// ─── AUDIO ENGINE ─────────────────────────────────────────────
+let audioCtx=null, masterGainNode=null, soundEnabled=false;
+let masterVolume=0.75;
+
+function initAudio() {
+  if (!audioCtx) {
+    try {
+      const AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC) return false;
+      audioCtx=new AC();
+      masterGainNode=audioCtx.createGain();
+      masterGainNode.gain.value=masterVolume;
+      masterGainNode.connect(audioCtx.destination);
+    } catch(e){ setSndStatus('Audio init failed'); return false; }
+  }
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  return true;
+}
+
+function setVol(v){ masterVolume=v/100; if(masterGainNode) masterGainNode.gain.value=masterVolume; }
+function setSndStatus(msg){ document.getElementById('snd-status').textContent=msg; }
+
+function toggleSound() {
+  const btn=document.getElementById('snd-btn');
+  if (!soundEnabled) {
+    if (!initAudio()) return;
+    soundEnabled=true;
+    btn.className='on'; btn.textContent='♪ Sound ON';
+    // Immediate confirmation tone — so user knows audio works
+    playBell(261.63, 2.2, 0.5);
+    setTimeout(()=>playBell(329.63, 2.0, 0.3), 250);
+    setTimeout(()=>playBell(392.00, 1.8, 0.2), 500);
+    setSndStatus('listening to market…');
+    // Then play current market state
+    setTimeout(playMarketState, 800);
+  } else {
+    soundEnabled=false;
+    btn.className=''; btn.textContent='♪ Sound OFF';
+    setSndStatus('—');
+  }
+}
+
+// CORE: bell tone — clean sine, fast attack, natural decay
+function playBell(freq, dur, gain) {
+  if (!audioCtx||audioCtx.state==='closed') return;
+  if (audioCtx.state==='suspended') audioCtx.resume();
+  const g=gain||0.45, t=audioCtx.currentTime;
+  // Fundamental
+  const o=audioCtx.createOscillator(), e=audioCtx.createGain();
+  o.type='sine'; o.frequency.value=freq;
+  o.connect(e); e.connect(masterGainNode);
+  e.gain.setValueAtTime(0,t); e.gain.linearRampToValueAtTime(g,t+0.012);
+  e.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.start(t); o.stop(t+dur+0.05);
+  // 2nd harmonic (piano-like warmth)
+  const o2=audioCtx.createOscillator(), e2=audioCtx.createGain();
+  o2.type='sine'; o2.frequency.value=freq*2;
+  o2.connect(e2); e2.connect(masterGainNode);
+  e2.gain.setValueAtTime(0,t); e2.gain.linearRampToValueAtTime(g*0.2,t+0.012);
+  e2.gain.exponentialRampToValueAtTime(0.0001,t+dur*0.4);
+  o2.start(t); o2.stop(t+dur*0.4+0.05);
+  // 3rd harmonic (subtle character, only for bass frequencies)
+  if(freq<400){
+    const o3=audioCtx.createOscillator(), e3=audioCtx.createGain();
+    o3.type='sine'; o3.frequency.value=freq*3;
+    o3.connect(e3); e3.connect(masterGainNode);
+    e3.gain.setValueAtTime(0,t); e3.gain.linearRampToValueAtTime(g*0.07,t+0.012);
+    e3.gain.exponentialRampToValueAtTime(0.0001,t+dur*0.22);
+    o3.start(t); o3.stop(t+dur*0.22+0.05);
+  }
+}
+
+// CURVATURE TONE — sustained sine with slow attack/release
+// Represents the K-target: where the curvature is pointing
+// Distinct from the bell (sharp, NOW) — this is slow, resonant, DESTINATION
+function playCurvatureTone(freq, dur, gain) {
+  if (!audioCtx||audioCtx.state==='closed') return;
+  if (audioCtx.state==='suspended') audioCtx.resume();
+  const t=audioCtx.currentTime;
+  const o=audioCtx.createOscillator(), e=audioCtx.createGain();
+  o.type='sine'; o.frequency.value=freq;
+  o.connect(e); e.connect(masterGainNode);
+  // Slow attack (400ms) + flat sustain + slow release = a "resonance", not a note
+  e.gain.setValueAtTime(0,t);
+  e.gain.linearRampToValueAtTime(gain,t+0.4);
+  e.gain.setValueAtTime(gain,t+Math.max(0.5,dur-0.5));
+  e.gain.linearRampToValueAtTime(0,t+dur);
+  o.start(t); o.stop(t+dur+0.05);
+}
+
+// PLAY CURVATURE TONES — scans all instruments with baselines set
+// For each: emits a soft sustained tone at freq × K (the curved destination)
+// Gain scales with discharge progress — louder as you approach K-target
+// At discharge=1.0 the curvature tone and base tone converge (resolution)
+function playCurvatureTones() {
+  if (!soundEnabled||!audioCtx) return;
+  const tf=TF_CONFIG[currentTF];
+  let curveCount=0;
+  INSTRUMENTS.forEach(inst=>{
+    if (!inst.K||inst.K<1.4||!baselines[inst.id]) return; // skip if no K or no baseline
+    const dsc=getDischarge(inst.id);
+    if (dsc<0.04) return; // needs at least 4% discharge to be heard
+    const baseFreq=INST_FREQ[inst.id]; if(!baseFreq) return;
+    // K-target frequency — transpose into audible range below 2200Hz
+    let targetFreq=baseFreq*inst.K;
+    while(targetFreq>2200) targetFreq/=2;
+    // Gain proportional to discharge (whisper at 4%, full 0.13 at K-target)
+    const cg=Math.min(0.13, 0.03+dsc*0.12);
+    playCurvatureTone(targetFreq, tf.noteDur*1.8, cg);
+    curveCount++;
+  });
+  if(curveCount>0){
+    // Append curvature count to existing status without wiping the ladder step
+    const el=document.getElementById('snd-status');
+    const cur=el?.textContent||'';
+    el.textContent=cur.includes('Curvature')?cur:cur+' · Curvature('+curveCount+')';
+  }
+}
+
+// THE MAIN SOUND FUNCTION — sonifies the full 1UP ladder:
+// Unity→Distinction→Relationship→Movement→Coherence/Dissonance→Structure→New Distinctions
+// Called: on every 60s price refresh (like candle print), on DXY entry, on sound enable
+function playMarketState() {
+  if (!soundEnabled||!audioCtx) return;
+  if (audioCtx.state==='suspended') audioCtx.resume();
+  const tf=TF_CONFIG[currentTF];
+  const THRESHOLD=0.28;
+  // FOCUS — DXY below run threshold snaps the orchestra to attention
+  // Stagger compresses 50%, all gains ×1.25 — urgency made audible
+  const focusActive=manualVals.dxy>0&&manualVals.dxy<99.5;
+
+  // Score every instrument — score = |24h Δ| × section weight + K-discharge progress
+  const scored=INSTRUMENTS.map(inst=>{
+    const chg=prices[inst.id]?.change24h||0;
+    const dsc=getDischarge(inst.id);
+    const sectionW={percussion:0.55,strings:1.2,woodwinds:1.3,brass:1.1,continuo:0.8}[inst.section]||1;
+    return {inst, chg, dsc, score:(Math.abs(chg)*sectionW + dsc*3.5), freq:INST_FREQ[inst.id]};
+  });
+
+  const active=scored.filter(s=>s.score>THRESHOLD||s.dsc>0.04);
+
+  // ── UNITY — no movement → silence ─────────────────────────────
+  if(active.length===0){ setSndStatus('Unity · market quiet'); return; }
+
+  const posCount=active.filter(s=>s.chg>0.28).length;
+  const negCount=active.filter(s=>s.chg<-0.28).length;
+  const netDir=posCount-negCount;
+  // Dissonance = instruments substantially split between positive and negative
+  const isDissonant=posCount>=2&&negCount>=2&&Math.abs(netDir)<=2;
+  const coherence=Math.max(posCount,negCount);
+
+  // ── IDENTIFY THE STEP IN THE LADDER ───────────────────────────
+  let step;
+  if(active.length===1)                              step='Distinction';
+  else if(active.length===2)                         step='Relationship';
+  else if(isDissonant&&active.length>=4)             step='Dissonance';
+  else if(coherence>=3)                              step='Coherence';
+  else                                               step='Movement';
+  // Structure = baselines set + K-arcs singing
+  const structureActive=INSTRUMENTS.filter(i=>baselines[i.id]&&getDischarge(i.id)>0.05).length;
+  if(structureActive>=2&&step==='Coherence') step='Structure';
+
+  // ── ORDER VOICES BY STEP ──────────────────────────────────────
+  // Coherence/Structure: bass→treble (ascending harmonic, C major ascending)
+  // Dissonance: treble→bass (descending, inverted, tension expressed by falling line)
+  const voices=active
+    .sort((a,b)=>isDissonant ? b.freq-a.freq : a.freq-b.freq)
+    .slice(0,5);
+
+  // Focus compresses stagger 50% — the orchestra snaps to attention
+  const baseStagger=coherence>=3||isDissonant ? 170 : active.length>=2 ? 215 : 0;
+  const staggerMs=focusActive ? Math.round(baseStagger*0.5) : baseStagger;
+
+  voices.forEach((s,i)=>{
+    setTimeout(()=>{
+      if(!soundEnabled) return;
+      // Focus ×1.25 gain — louder, more urgent when DXY is below the run threshold
+      let g=Math.min(0.65, (0.20+Math.abs(s.chg)/10+s.dsc*0.28)*(focusActive?1.25:1.0));
+      // Dissonance plays softer — tension, not alarm
+      if(isDissonant) g*=0.65;
+      playBell(s.freq, tf.noteDur, g);
+      const node=eyeNodes.find(n=>n.inst.id===s.inst.id);
+      if(node) addRipple(node.x,node.y,isDissonant?'#ff8800':s.inst.color,36+Math.abs(s.chg)*2);
+    }, i*staggerMs);
+  });
+
+  // ── NEW DISTINCTIONS — lead voice emerges from coherent structure ──
+  // The outlier instrument (highest K × change) steps forward as a solo voice
+  if(coherence>=3&&!isDissonant){
+    const lead=voices.reduce((mx,s)=>s.score>mx.score?s:mx,voices[0]);
+    if(lead&&Math.abs(lead.chg)>2.5){
+      // Lead voice replays louder, after the chord settles
+      setTimeout(()=>{
+        if(!soundEnabled) return;
+        playBell(lead.freq, tf.noteDur*1.3, 0.52);
+        const node=eyeNodes.find(n=>n.inst.id===lead.inst.id);
+        if(node){ addRipple(node.x,node.y,lead.inst.color,55); addRipple(node.x,node.y,lead.inst.color,38); }
+      }, voices.length*staggerMs+380);
+      step='New Distinction · '+lead.inst.label;
+    }
+  }
+
+  // ── 1UP FIRE — φ-ratio confirmation chord ─────────────────────
+  // 5+ instruments aligned + DXY below run threshold = HC convergence
+  if(coherence>=5&&(manualVals.dxy>0?(manualVals.dxy<99.5):true)){
+    step='1UP CONVERGENCE';
+    setTimeout(()=>{
+      // C4 · C4×φ · C4×φ² — the golden ratio chord
+      [261.63, 261.63*1.618, 261.63*2.618].forEach((f,j)=>{
+        setTimeout(()=>playBell(f,tf.noteDur*1.5,0.30-j*0.07),j*320);
+      });
+    }, voices.length*staggerMs+700);
+  }
+
+  // Focus wraps the current step label — tighter, more urgent
+  if(focusActive&&step!=='1UP CONVERGENCE') step='Focus·'+step;
+
+  // CURVATURE — play K-target destination tones beneath the main chord
+  // Soft sustained sine at freq×K, louder as discharge progresses toward K-target
+  playCurvatureTones();
+
+  // Status bar shows exactly which step fired and which voices sounded
+  const labels=voices.slice(0,3).map(s=>(s.chg>=0?'+':'')+s.chg.toFixed(1)+'% '+s.inst.label);
+  setSndStatus(step+' · '+labels.join(' · '));
+}
+
+// Richer section-specific tone for node click — allows exploration of individual voices
+function playNodeTone(id) {
+  if(!initAudio()) return;
+  const freq=INST_FREQ[id]; if(!freq) return;
+  const inst=INSTRUMENTS.find(i=>i.id===id);
+  const tf=TF_CONFIG[currentTF];
+  const dur=tf.noteDur*1.5;
+  const wave={percussion:'square',strings:'triangle',woodwinds:'sine',brass:'sawtooth',continuo:'sine'}[inst?.section]||'sine';
+  const t=audioCtx.currentTime;
+  [freq,freq*1.5,freq*2].forEach((f,i)=>{
+    const o=audioCtx.createOscillator(),e=audioCtx.createGain();
+    o.type=i===0?wave:'sine'; o.frequency.value=f;
+    o.connect(e); e.connect(masterGainNode);
+    const g=0.48*(i===0?1:i===1?0.16:0.07);
+    const d=dur*(i===0?1:i===1?0.5:0.28);
+    e.gain.setValueAtTime(0,t); e.gain.linearRampToValueAtTime(g,t+0.015);
+    e.gain.exponentialRampToValueAtTime(0.0001,t+d);
+    o.start(t); o.stop(t+d+0.05);
+  });
+  const chg=prices[id]?.change24h;
+  setSndStatus(id.toUpperCase()+' · '+(INST_NOTE[id]||freq+'Hz')+(chg?(' · '+(chg>=0?'+':'')+chg.toFixed(2)+'%'):''));
+}
+
+function playSelected() {
+  if (!audioCtx&&!initAudio()) return;
+  if(selectedId) playNodeTone(selectedId);
+  else { initAudio(); playBell(261.63,2.0,0.5); setSndStatus('Middle C test · C4'); }
+}
+
+// ─── TIMEFRAME ────────────────────────────────────────────────
+function setTF(tf,btn) {
+  currentTF=tf;
+  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.getElementById('tf-overlay').textContent=tf;
+}
+
+// ─── COUNTDOWN ────────────────────────────────────────────────
+function updateCountdown(){
+  const diff=HC6_DATE-Date.now(),el=document.getElementById('cd-val');
+  if(diff<=0){el.textContent='FIRE';el.style.color='#f0f';return;}
+  const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000);
+  el.textContent=d>0?d+'d '+h+'h':h+'h';
+  el.style.color=d<=2?'#f0f':d<=5?'#ff0':'#0ff';
+}
+
+// ─── DXY ──────────────────────────────────────────────────────
+function updateDXY(v){
+  document.getElementById('dxy-label').textContent=v.toFixed(3);
+  const pct=Math.max(0,Math.min(1,(v-99.0)/2.0));
+  const arc=document.getElementById('dxy-arc');
+  arc.setAttribute('stroke-dashoffset',140*(1-pct));
+  arc.setAttribute('stroke',v<99.5?'#00cc44':v>100.5?'#ff3344':'#ffcc00');
+  const el=document.getElementById('ps-dxy'),dot=document.getElementById('pd-dxy');
+  if(v<99.5){el.textContent='DXY '+v.toFixed(3)+' ✓ BELOW 99.5 — run';dot.style.background='#00cc44';}
+  else if(v>100.5){el.textContent='DXY '+v.toFixed(3)+' ✗ ABOVE 100.5 — abort';dot.style.background='#ff3344';}
+  else{el.textContent='DXY '+v.toFixed(3)+' — watch zone';dot.style.background='#ffcc00';}
+  const n=eyeNodes.find(n=>n.inst.id==='dxy');
+  if(n) addRipple(n.x,n.y,'#ffffff',55);
+  playMarketState();
+}
+
+// ─── MANUAL ───────────────────────────────────────────────────
+function setManual(id,val){
+  const n=parseFloat(val); if(isNaN(n)) return;
+  manualVals[id]=n;
+  const pe=document.getElementById('p-'+id); if(pe) pe.textContent=fmtPrice(n,id);
+  if(id==='dxy') updateDXY(n);
+  if(id==='btcd'){document.getElementById('ps-btcd').textContent='BTC.D '+n.toFixed(2)+'% — '+(n<50?'Alts leading':'BTC heavy');document.getElementById('pd-btcd').style.background=n<50?'#0ff':'#ff8c00';}
+  if(id==='usdtd'){document.getElementById('ps-usdtd').textContent='USDT.D '+n.toFixed(2)+'% — '+(n<5?'Flow active':'Fear/parking');document.getElementById('pd-usdtd').style.background=n<5?'#00cc44':'#ffcc00';}
+  updateBar(id); drawFingerprint();
+  if(selectedId===id) updateNodePanel(id);
+}
+
+function fmtPrice(p,id){
+  if(p>10000) return '$'+p.toLocaleString(undefined,{maximumFractionDigits:0});
+  if(p>1) return '$'+p.toFixed(2);
+  if(p>0.001) return '$'+p.toFixed(4);
+  return p.toFixed(6);
+}
+
+function getDischarge(id){
+  const inst=INSTRUMENTS.find(i=>i.id===id);
+  if(!inst||!inst.K||!baselines[id]) return 0;
+  const price=prices[id]?.price||manualVals[id]; if(!price) return 0;
+  return Math.max(0,Math.min(1,(price-baselines[id])/(baselines[id]*(inst.K-1))));
+}
+
+function updateBar(id){
+  const inst=INSTRUMENTS.find(i=>i.id===id);
+  if(!inst||!inst.K||!baselines[id]) return;
+  const price=prices[id]?.price||manualVals[id]; if(!price) return;
+  const pct=Math.max(0,Math.min(100,((price-baselines[id])/(baselines[id]*(inst.K-1)))*100));
+  const b=document.getElementById('b-'+id); if(b) b.style.width=pct+'%';
+}
+
+function setBaseline(id,e){
+  e.preventDefault();
+  const price=prices[id]?.price||manualVals[id];
+  if(!price){alert('No price for '+id.toUpperCase()+'. Enter value first.');return;}
+  baselines[id]=price; updateBar(id); drawFingerprint();
+  if(selectedId===id) updateNodePanel(id);
+  const inst=INSTRUMENTS.find(i=>i.id===id);
+  const el=document.getElementById('c-'+id);
+  if(el&&inst){el.style.outline='1px solid '+inst.color; setTimeout(()=>el.style.outline='',500);}
+  const node=eyeNodes.find(n=>n.inst.id===id);
+  if(node){ [0,200,400].forEach(d=>setTimeout(()=>addRipple(node.x,node.y,inst.color,58),d)); }
+  if(soundEnabled) playNodeTone(id);
+  else { initAudio(); playNodeTone(id); }
+}
+
+// ─── FETCH ────────────────────────────────────────────────────
+async function fetchCrypto(){
+  const ids=INSTRUMENTS.filter(i=>i.cgId).map(i=>i.cgId).join(',');
+  try {
+    const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+ids+'&vs_currencies=usd&include_24hr_change=true');
+    if(!r.ok) throw new Error(r.status);
+    const data=await r.json();
+    INSTRUMENTS.filter(i=>i.cgId).forEach(inst=>{
+      const d=data[inst.cgId]; if(!d) return;
+      prices[inst.id]={price:d.usd,change24h:d.usd_24h_change};
+      const pe=document.getElementById('p-'+inst.id);
+      const ce=document.getElementById('ch-'+inst.id);
+      if(pe) pe.textContent=fmtPrice(d.usd,inst.id);
+      if(ce){const s=d.usd_24h_change>=0?'+':'';ce.textContent=s+d.usd_24h_change.toFixed(2)+'%';ce.className='i-chg '+(d.usd_24h_change>0.5?'pos':d.usd_24h_change<-0.5?'neg':'flat');}
+      updateBar(inst.id);
+    });
+    document.getElementById('last-upd').textContent=new Date().toLocaleTimeString();
+    drawFingerprint();
+    if(selectedId) updateNodePanel(selectedId);
+    // MARKET STATE SOUND — fires on each refresh (like candle print in TraderLive)
+    // Reads actual 24h change data and plays instruments proportional to their movement
+    if(soundEnabled) setTimeout(playMarketState, 400);
+    // CURVATURE TONES fire independently — they represent K-arc discharge resonance
+    // Even during Unity (silence) the curvature field is still building; you should hear it
+    if(soundEnabled) setTimeout(playCurvatureTones, 1200);
+  } catch(e){ document.getElementById('last-upd').textContent='Error'; }
+}
+async function fetchAll(){document.getElementById('last-upd').textContent='…';await fetchCrypto();}
+
+// ─── RIPPLES ─────────────────────────────────────────────────
+function addRipple(x,y,color,maxR){ ripples.push({x,y,r:3,maxR:maxR||46,alpha:0.75,color}); }
+
+// ─── FLOW ────────────────────────────────────────────────────
+function getFlowColor(da,db){
+  const avg=(da+db)/2,div=Math.abs(da-db);
+  if(avg>4) return '#00ee44'; if(avg>1) return '#88dd00';
+  if(avg<-4) return '#ff2233'; if(avg<-1) return '#ff6600';
+  if(div>5) return '#ff8800';
+  return '#3388ff';
+}
+
+// ─── THE EYE ─────────────────────────────────────────────────
+function initEye(){
+  const canvas=document.getElementById('eye-canvas');
+  const wrap=document.getElementById('eye-wrap');
+  canvas.width=wrap.offsetWidth; canvas.height=wrap.offsetHeight;
+  const W=canvas.width,H=canvas.height;
+  eyeCX=W/2; eyeCY=H/2;
+  eyeRadii=[Math.min(W,H)*0.11, Math.min(W,H)*0.245, Math.min(W,H)*0.40];
+
+  const rings=[
+    INSTRUMENTS.filter(i=>i.section==='percussion'),
+    [...INSTRUMENTS.filter(i=>i.section==='strings'),...INSTRUMENTS.filter(i=>i.section==='woodwinds')],
+    [...INSTRUMENTS.filter(i=>i.section==='brass'),...INSTRUMENTS.filter(i=>i.section==='continuo')],
+  ];
+
+  eyeNodes=[];
+  rings.forEach((ring,ri)=>{
+    ring.forEach((inst,ii)=>{
+      const baseAngle=(ii/ring.length)*Math.PI*2-Math.PI/2;
+      const x=eyeCX+Math.cos(baseAngle)*eyeRadii[ri];
+      const y=eyeCY+Math.sin(baseAngle)*eyeRadii[ri];
+      eyeNodes.push({inst,x,y,bx:x,by:y,baseAngle,pulse:Math.random()*Math.PI*2,ring:ri,hovered:false,lastBeat:-1});
+    });
+  });
+
+  eyeConns=[];
+  eyeNodes.forEach((a,i)=>{
+    eyeNodes.forEach((b,j)=>{
+      if(j<=i) return;
+      if(a.inst.section===b.inst.section||a.inst.id==='btc'||b.inst.id==='btc'||a.ring===b.ring)
+        eyeConns.push({a:i,b:j,dashOff:Math.random()*24});
+    });
+  });
+
+  canvas.onmousemove=function(e){
+    const r=canvas.getBoundingClientRect();
+    const sx=canvas.width/r.width,sy=canvas.height/r.height;
+    const mx=(e.clientX-r.left)*sx,my=(e.clientY-r.top)*sy;
+    let h=false;
+    eyeNodes.forEach(n=>{n.hovered=Math.hypot(mx-n.x,my-n.y)<20;if(n.hovered)h=true;});
+    canvas.style.cursor=h?'pointer':'default';
+  };
+  canvas.onclick=function(e){
+    const r=canvas.getBoundingClientRect();
+    const sx=canvas.width/r.width,sy=canvas.height/r.height;
+    const mx=(e.clientX-r.left)*sx,my=(e.clientY-r.top)*sy;
+    if(Math.hypot(mx-eyeCX,my-eyeCY)<20){showMem(5);return;}
+    eyeNodes.forEach(n=>{if(Math.hypot(mx-n.x,my-n.y)<20)selectInst(n.inst.id);});
+  };
+  if(rafId) cancelAnimationFrame(rafId);
+  animateEye();
+}
+
+function animateEye(){
+  const canvas=document.getElementById('eye-canvas'); if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const tf=TF_CONFIG[currentTF];
+  eyePulse+=tf.pulseRate;
+  dashOffset+=tf.dashSpeed;
+
+  // Orbital rotation — inner percussion fastest (sets the tempo), outer continuo slowest
+  tf.ringSpeed.forEach((s,ri)=>{ ringAngles[ri]+=s; });
+
+  eyeNodes.forEach(n=>{
+    const angle=n.baseAngle+ringAngles[n.ring];
+    n.bx=eyeCX+Math.cos(angle)*eyeRadii[n.ring];
+    n.by=eyeCY+Math.sin(angle)*eyeRadii[n.ring];
+    n.x+=(n.bx-n.x)*0.09+(Math.random()-0.5)*0.1;
+    n.y+=(n.by-n.y)*0.09+(Math.random()-0.5)*0.1;
+  });
+
+  ctx.fillStyle='rgba(3,3,13,0.17)'; ctx.fillRect(0,0,W,H);
+
+  // ── CONNECTIONS ──
+  eyeConns.forEach(c=>{
+    const a=eyeNodes[c.a],b=eyeNodes[c.b];
+    const da=prices[a.inst.id]?.change24h||0,db=prices[b.inst.id]?.change24h||0;
+    const fc=getFlowColor(da,db);
+    const d=(getDischarge(a.inst.id)+getDischarge(b.inst.id))/2;
+    const alpha=0.04+d*0.16+Math.abs(da+db)*0.007;
+    ctx.setLineDash([]);
+    ctx.strokeStyle=fc+Math.floor(Math.min(0.2,alpha)*255).toString(16).padStart(2,'0');
+    ctx.lineWidth=0.5+d*0.65; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    if((Math.abs(da+db)/2)>0.4||d>0.04){
+      const spd=(Math.abs(da+db)/2+d*3)*tf.dashSpeed*1.4;
+      const dir=(da+db)>=0?1:-1;
+      ctx.strokeStyle=fc+Math.floor(Math.min(0.55,alpha*3)*255).toString(16).padStart(2,'0');
+      ctx.lineWidth=1.1+d*0.8; ctx.setLineDash([4,8]);
+      ctx.lineDashOffset=-(dashOffset*spd*dir+c.dashOff);
+      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+      ctx.setLineDash([]); ctx.lineDashOffset=0;
+    }
+  });
+
+  // ── RIPPLES ──
+  ripples=ripples.filter(rp=>{
+    rp.r+=1.3*tf.speed; rp.alpha-=0.013*tf.speed; if(rp.alpha<=0) return false;
+    ctx.strokeStyle=rp.color+Math.floor(rp.alpha*255).toString(16).padStart(2,'0');
+    ctx.lineWidth=0.9; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2); ctx.stroke();
+    return rp.r<rp.maxR;
+  });
+
+  // ── NODES ──
+  eyeNodes.forEach(n=>{
+    n.pulse+=tf.pulseRate*1.5;
+    const d=getDischarge(n.inst.id);
+    const chg=prices[n.inst.id]?.change24h||0;
+    const baseR=7.5+(n.inst.K||0.65)*2.1;
+    const pulseAmp=(0.5+d*2.2+Math.abs(chg)*0.12)*tf.breatheScale;
+    const r=baseR+Math.sin(n.pulse)*pulseAmp;
+    const sel=selectedId===n.inst.id;
+
+    if(n.hovered||sel||d>0.05||Math.abs(chg)>0.8){
+      const gr=r*(1.7+d*0.8);
+      const gw=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,gr);
+      gw.addColorStop(0,n.inst.color+Math.floor((sel?0.25:n.hovered?0.18:0.07+d*0.1)*255).toString(16).padStart(2,'0'));
+      gw.addColorStop(1,n.inst.color+'00');
+      ctx.fillStyle=gw; ctx.beginPath(); ctx.arc(n.x,n.y,gr,0,Math.PI*2); ctx.fill();
+    }
+
+    ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2);
+    ctx.fillStyle=n.inst.color+'0d'; ctx.fill();
+    const sa=sel?1:n.hovered?0.82:0.35+d*0.3+Math.abs(chg)*0.01;
+    ctx.strokeStyle=n.inst.color+Math.floor(Math.min(1,sa)*255).toString(16).padStart(2,'0');
+    ctx.lineWidth=sel?2.1:n.hovered?1.7:1.1; ctx.stroke();
+
+    if(d>0.02){
+      ctx.beginPath(); ctx.arc(n.x,n.y,r+5,-Math.PI/2,-Math.PI/2+Math.PI*2*d);
+      ctx.strokeStyle=n.inst.color+'88'; ctx.lineWidth=1.8; ctx.stroke();
+    }
+    if(Math.abs(chg)>0.8){
+      const cp=Math.min(1,Math.abs(chg)/14);
+      ctx.beginPath(); ctx.arc(n.x,n.y,r+9,-Math.PI/2,-Math.PI/2+Math.PI*2*cp);
+      ctx.strokeStyle=(chg>0?'#00cc44':'#ff3344')+'2a'; ctx.lineWidth=1; ctx.stroke();
+    }
+
+    ctx.fillStyle=n.inst.color; ctx.font=(sel?'bold ':'')+Math.min(10,Math.max(7.5,r*0.78))+'px Segoe UI';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(n.inst.label,n.x,n.y);
+
+    const price=prices[n.inst.id]?.price||manualVals[n.inst.id];
+    if(price&&(n.hovered||sel)){
+      ctx.font='7px Segoe UI'; ctx.fillStyle=n.inst.color+'66';
+      ctx.fillText(fmtPrice(price,n.inst.id),n.x,n.y+r+9);
+    }
+    if(Math.abs(chg)>0.3){
+      ctx.fillStyle=chg>0?'#00cc44':'#ff3344';
+      ctx.beginPath(); ctx.arc(n.x+r-2,n.y-r+2,2.2,0,Math.PI*2); ctx.fill();
+    }
+
+    // Percussion beat ripple
+    if(n.inst.section==='percussion'&&(manualVals[n.inst.id]||prices[n.inst.id]?.price)){
+      const beat=Math.floor(eyePulse*tf.speed*1.1);
+      if(beat!==n.lastBeat){n.lastBeat=beat; addRipple(n.x,n.y,n.inst.color,35);}
+    }
+  });
+
+  // ── HC6 CENTRE ──
+  const hcR=10+Math.sin(eyePulse*2.1)*2.2*tf.breatheScale;
+  const ghc=ctx.createRadialGradient(eyeCX,eyeCY,0,eyeCX,eyeCY,hcR*3.2);
+  ghc.addColorStop(0,'rgba(255,0,255,0.14)'); ghc.addColorStop(1,'rgba(255,0,255,0)');
+  ctx.fillStyle=ghc; ctx.beginPath(); ctx.arc(eyeCX,eyeCY,hcR*3.2,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='rgba(255,0,255,0.5)'; ctx.lineWidth=1.1; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(eyeCX,eyeCY,hcR,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle='#f0f'; ctx.font='bold 8px Segoe UI'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('HC6',eyeCX,eyeCY-1); ctx.font='7px Segoe UI'; ctx.fillStyle='#f0f44'; ctx.fillText('click',eyeCX,eyeCY+8);
+
+  rafId=requestAnimationFrame(animateEye);
+}
+
+// ─── NODE PANEL ───────────────────────────────────────────────
+function selectInst(id){
+  selectedId=id;
+  INSTRUMENTS.forEach(i=>{ const el=document.getElementById('c-'+i.id); if(el) el.classList.remove('selected'); });
+  const el=document.getElementById('c-'+id); if(el) el.classList.add('selected');
+  updateNodePanel(id);
+  document.getElementById('node-panel').classList.add('open');
+  initAudio(); playNodeTone(id);
+}
+
+function updateNodePanel(id){
+  const inst=INSTRUMENTS.find(i=>i.id===id); if(!inst) return;
+  const price=prices[id]?.price||manualVals[id];
+  const chg=prices[id]?.change24h;
+  const d=getDischarge(id);
+  const secN={percussion:'Percussion — Conductors',strings:'Strings — Foundation',woodwinds:'Woodwinds — Lead Melody',brass:'Brass — Power/Delay',continuo:'Continuo — Macro Ground'};
+  document.getElementById('np-sec').textContent=secN[inst.section]||inst.section;
+  document.getElementById('np-sec').style.color=inst.color;
+  document.getElementById('np-tick').textContent=inst.label; document.getElementById('np-tick').style.color=inst.color;
+  document.getElementById('np-name').textContent=inst.full;
+  document.getElementById('np-role').textContent=INST_ROLE[id]||'—';
+  document.getElementById('np-price').textContent=price?fmtPrice(price,id):'— (enter value)';
+  document.getElementById('np-chg').textContent=chg!=null?(chg>=0?'+':'')+chg.toFixed(2)+'%':'—';
+  document.getElementById('np-chg').style.color=chg==null?'#444':chg>0?'#00cc44':chg<0?'#ff3344':'#444';
+  document.getElementById('np-k').textContent=inst.K?'×'+inst.K+(inst.K===2.618?' (φ²)':''):inst.K===null?'Regime signal':'—';
+  document.getElementById('np-freq').textContent=(INST_FREQ[id]||'—')+'Hz · '+(INST_NOTE[id]||'—');
+  document.getElementById('np-week').textContent=inst.week?'Week '+inst.week+' of HC window':'Conductor / Regime';
+  document.getElementById('np-bar').style.background=inst.color;
+  document.getElementById('np-bar').style.width=(d*100).toFixed(1)+'%';
+  document.getElementById('np-bar-pct').textContent=baselines[id]&&inst.K?(d*100).toFixed(1)+'% toward ×'+inst.K+' ('+fmtPrice(baselines[id]*inst.K,id)+')':'No baseline — right-click to set';
+  document.getElementById('np-play-btn').style.cssText=`background:${inst.color}12;border:1px solid ${inst.color}30;color:${inst.color}`;
+}
+
+function closeNodePanel(){
+  document.getElementById('node-panel').classList.remove('open');
+  selectedId=null;
+  INSTRUMENTS.forEach(i=>{ const el=document.getElementById('c-'+i.id); if(el) el.classList.remove('selected'); });
+}
+
+// ─── FINGERPRINT ──────────────────────────────────────────────
+function drawFingerprint(){
+  const svg=document.getElementById('fp-svg');
+  const N=INSTRUMENTS.length,cx=180,cy=185,maxR=134;
+  let h='';
+  [0.25,0.5,0.75,1].forEach(p=>h+=`<circle cx="${cx}" cy="${cy}" r="${maxR*p}" fill="none" stroke="#ffffff04" stroke-width="1"/>`);
+  const pts=[];
+  INSTRUMENTS.forEach((inst,i)=>{
+    const angle=(i/N)*Math.PI*2-Math.PI/2;
+    const d=getDischarge(inst.id)||(Math.abs(prices[inst.id]?.change24h||0)/160+0.03);
+    const r=maxR*Math.max(0.03,Math.min(1,d));
+    const fx=cx+Math.cos(angle)*maxR,fy=cy+Math.sin(angle)*maxR;
+    const px=cx+Math.cos(angle)*r,py=cy+Math.sin(angle)*r;
+    pts.push({px,py});
+    h+=`<line x1="${cx}" y1="${cy}" x2="${fx}" y2="${fy}" stroke="${inst.color}0b" stroke-width="1"/>`;
+    h+=`<circle cx="${px}" cy="${py}" r="${1.5+d*4}" fill="${inst.color}20" stroke="${inst.color}" stroke-width="${selectedId===inst.id?2.2:0.9}"/>`;
+    h+=`<text x="${cx+Math.cos(angle)*(maxR+13)}" y="${cy+Math.sin(angle)*(maxR+13)+3}" font-size="7.5" fill="${inst.color}" text-anchor="middle">${inst.label}</text>`;
+  });
+  if(pts.length>2) h+=`<polygon points="${pts.map(p=>p.px+','+p.py).join(' ')}" fill="rgba(0,255,255,0.015)" stroke="#0ff2" stroke-width="1"/>`;
+  svg.innerHTML=h;
+}
+
+// ─── MEMORY ───────────────────────────────────────────────────
+function buildMemory(){
+  document.getElementById('mem-row').innerHTML=HC_MEMORY.map((hc,i)=>`
+    <div class="mem-card${hc.live?' live':''}" onclick="showMem(${i})">
+      <div class="mc-id">${hc.id}</div><div class="mc-date">${hc.date}</div>
+      <div class="mc-regime ${hc.live?'live':'bull'}">${hc.regime}</div>
+      <div class="mc-k">BTC ×${hc.btcK}</div><div class="mc-k">SOL ×${hc.solK}</div>
+    </div>`).join('');
+}
+
+function showMem(i){
+  const hc=HC_MEMORY[i];
+  document.getElementById('md-title').textContent=hc.id+' — '+hc.date;
+  document.getElementById('md-table').innerHTML=`
+    <tr><td>Regime</td><td style="color:${hc.live?'#f0f':'#00cc44'}">${hc.regime}</td></tr>
+    <tr><td>BTC K</td><td style="color:#ffd700">×${hc.btcK}</td></tr>
+    <tr><td>SOL K</td><td style="color:#0ff">×${hc.solK}</td></tr>
+    <tr><td>ETH K</td><td style="color:#ffd700">×${hc.ethK}</td></tr>
+    <tr><td>XRP K</td><td style="color:#ff8c00">×${hc.xrpK}</td></tr>
+    ${hc.baseBTC?`<tr><td>BTC base</td><td>$${hc.baseBTC.toLocaleString()}</td></tr>`:''}
+    <tr><td>Notes</td><td style="color:#666;font-size:9px">${hc.note}</td></tr>`;
+  document.getElementById('mem-ov').classList.add('show');
+}
+function closeMem(){document.getElementById('mem-ov').classList.remove('show');}
+
+// ─── INIT ─────────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  updateCountdown(); setInterval(updateCountdown,30000);
+  buildMemory(); initEye(); drawFingerprint(); fetchAll();
+  setInterval(fetchAll,60000);
+});
+window.addEventListener('resize',()=>{ if(rafId) cancelAnimationFrame(rafId); initEye(); });
+</script>
+</body>
+</html>
